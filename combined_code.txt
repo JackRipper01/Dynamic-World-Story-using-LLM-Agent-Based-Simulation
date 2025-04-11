@@ -1,0 +1,530 @@
+
+============================== START FILE: src\config.py ==============================
+
+# config.py
+import os
+from dotenv import load_dotenv
+
+# Load API Key
+load_dotenv()
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise ValueError("Gemini API Key not found. Make sure it's set in the .env file.")
+
+# LLM Generation Settings
+GENERATION_CONFIG = {
+  "temperature": 0.9,
+  "top_p": 0.95,
+  "top_k": 50,
+  "max_output_tokens": 150,
+}
+
+# LLM Safety Settings
+SAFETY_SETTINGS = [
+    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+]
+
+# Model Name
+MODEL_NAME = "gemini-1.5-flash" # Or "gemini-1.5-pro"
+
+# Simulation Settings
+MAX_RECENT_EVENTS = 15 # How many events world remembers
+MAX_MEMORY_TOKENS = 600 # Rough limit for agent memory string
+SIMULATION_MAX_STEPS = 30
+
+# World Settings
+KNOWN_LOCATIONS = {
+    "Park": "A wide open park area with some trees.",
+    "Shelter": "A simple wooden shelter.",
+    "Forest Edge": "The edge of a dark forest."
+}
+
+# Agent Settings (Example Personalities)
+DEFAULT_PERSONALITIES = {
+    "Alice": "curious, slightly anxious, observant",
+    "Bob": "calm, pragmatic, speaks plainly"
+}
+
+============================== END FILE: src\config.py ==============================
+
+
+============================== START FILE: src\interpreter.py ==============================
+
+# interpreter.py
+import re
+import config # May need known locations if matching improves
+
+def interpret_and_update(agent_name, utterance, world_state):
+    """
+    Parses agent's natural language utterance and attempts to update world state.
+    Logs the original utterance as a world event for others to perceive.
+    Returns a description of the interpreted action (or failure).
+    """
+    interpreted_action_desc = f"'{utterance}' (No specific world action interpreted)" # Default return
+
+    # --- Log the attributed utterance ---
+    # KEY CHANGE: Always prefix the log message with the agent's name.
+    log_msg = f"{agent_name}: {utterance}"
+    # Log this attributed statement as a world event so everyone knows who said/did it.
+    # We can refine later if we want to hide pure "thoughts" from the public log.
+    world_state.log_event(log_msg)
+    # --- End Logging ---
+
+    # --- Interpretation Logic ---
+
+    # 1. Check for movement intent
+    # Regex looks for action verbs + direction + destination name
+    move_match = re.search(r'\b(go|move|walk|run|head)\s+(to|towards)\s+(?:the\s+)?([\w\s]+)\b', utterance, re.IGNORECASE)
+    if move_match:
+        destination_phrase = move_match.group(3).strip()
+        # Attempt to match the phrase against known location names
+        matched_location = None
+        # Make matching less strict (e.g., "Forest Edge" matches "forest")
+        for loc_name in world_state.location_descriptions.keys():
+            if destination_phrase.lower() in loc_name.lower() or loc_name.lower() in destination_phrase.lower():
+                matched_location = loc_name
+                break # Use the first plausible match
+
+        if matched_location:
+            print(f"[Interpreter]: Matched move intent from '{agent_name}' to '{matched_location}' (from phrase '{destination_phrase}')")
+            # world_state.move_agent handles its own logging on success
+            success, reason = world_state.move_agent(agent_name, matched_location)
+            if success:
+                # The move itself was logged by move_agent. Interpreter confirms.
+                interpreted_action_desc = f"Successfully interpreted move to {matched_location}."
+            else:
+                interpreted_action_desc = f"Interpreted move intent to {matched_location}, but move failed: {reason}."
+                print(f"[Interpreter]: Move failed: {reason}")
+        else:
+            interpreted_action_desc = f"Expressed intent to move towards '{destination_phrase}', but location unknown/unmatched."
+            print(f"[Interpreter]: Move intent detected for '{destination_phrase}', but couldn't match to known location.")
+        # Movement interpretation is usually exclusive
+        return interpreted_action_desc
+
+    # 2. Check for speech intent (targeting another agent)
+    # Regex: Looks for say/tell/ask [to] AgentName [optional punctuation] "message"
+    speak_match = re.search(r'\b(say|tell|ask)\s+(?:to\s+)?([A-Za-z]+)\b.*?(?:["\'`]?)(.+)(?:["\'`]?)$', utterance, re.IGNORECASE)
+    if speak_match:
+         target_agent = speak_match.group(2).strip().title() # Extract target agent name
+         message = speak_match.group(3).strip().strip(',.!? ') # Extract message content
+
+         # Check if target agent exists in the simulation
+         if target_agent in world_state.agent_locations:
+             # Optional: Check if target is in the same location
+             agent_location = world_state.agent_locations.get(agent_name)
+             target_location = world_state.agent_locations.get(target_agent)
+             if agent_location == target_location:
+                 print(f"[Interpreter]: Detected speech from '{agent_name}' to present agent '{target_agent}': '{message}'")
+                 interpreted_action_desc = f"Interpreted speech to {target_agent} ('{message}')."
+             else:
+                 print(f"[Interpreter]: Detected speech from '{agent_name}' to '{target_agent}', but they are in different locations.")
+                 interpreted_action_desc = f"Interpreted attempt to speak to {target_agent} (who is elsewhere). ('{message}')"
+         else:
+              interpreted_action_desc = f"Interpreted attempt to speak to '{target_agent}', but agent name unknown."
+              print(f"[Interpreter]: Speech detected to '{target_agent}', but agent name not registered.")
+         # Speech interpretation also usually takes precedence after move
+         return interpreted_action_desc
+
+    # 3. Check for other common action types (for interpreter feedback, logging already done)
+    if re.search(r'\b(look|examine|observe|watch|see)\b', utterance, re.IGNORECASE):
+         interpreted_action_desc = f"Interpreted as an observation action ('{utterance}')."
+    elif re.search(r'\b(wait|pause|stay|remain)\b', utterance, re.IGNORECASE):
+         interpreted_action_desc = f"Interpreted as waiting or pausing ('{utterance}')."
+    elif re.search(r'\b(think|ponder|consider|wonder|feel|realize)\b', utterance, re.IGNORECASE):
+         interpreted_action_desc = f"Interpreted as expressing a thought or feeling ('{utterance}')."
+    # Add more verbs like 'pick up', 'use', 'give' if you add object interaction later
+
+    # Return the final interpretation description for this utterance
+    return interpreted_action_desc
+
+============================== END FILE: src\interpreter.py ==============================
+
+
+============================== START FILE: src\main.py ==============================
+
+# main.py
+import time
+import google.generativeai as genai
+
+# Import our modules
+import config
+from world import WorldState
+from agent.agent import Agent
+from agent.memory import SimpleMemory # Import the specific memory type
+from agent.thinking import GeminiThinker # Import the specific thinker type
+from interpreter import interpret_and_update
+
+def run_simulation():
+    print("--- Starting Modular Free Agent Simulation ---")
+
+    # 1. Initialize LLM Model (using config)
+    print(f"Configuring Gemini model: {config.MODEL_NAME}")
+    genai.configure(api_key=config.GEMINI_API_KEY)
+    model = genai.GenerativeModel(
+        model_name=config.MODEL_NAME,
+        generation_config=config.GENERATION_CONFIG,
+        safety_settings=config.SAFETY_SETTINGS
+    )
+    print("Model configured.")
+
+    # 2. Initialize World State
+    world = WorldState(locations=config.KNOWN_LOCATIONS)
+    world.global_context['weather'] = "Misty" # Initial weather
+
+    # 3. Initialize Agents (using components)
+    agents = []
+    thinker = GeminiThinker(model) # Create one thinker instance (can be shared)
+
+    agent_configs = [
+        {"name": "Alice", "personality": config.DEFAULT_PERSONALITIES.get("Alice", "default")},
+        {"name": "Bob", "personality": config.DEFAULT_PERSONALITIES.get("Bob", "default")}
+    ]
+
+    for agent_conf in agent_configs:
+        agent_name = agent_conf["name"]
+        memory = SimpleMemory() # Each agent gets its own memory instance
+        agent = Agent(
+            name=agent_name,
+            personality=agent_conf["personality"],
+            memory_module=memory,
+            thinking_module=thinker
+        )
+        agents.append(agent)
+        # Add agent to world (define starting location)
+        start_location = "Park" # Or randomize / load from config
+        world.add_agent(agent_name, start_location)
+        world.log_event(f"{agent_name} appears in the {start_location}.") # Log initial appearance
+
+
+    # --- Simulation Steps ---
+    step = 0
+    while step < config.SIMULATION_MAX_STEPS:
+        step += 1
+        print(f"\n{'='*15} Simulation Step {step}/{config.SIMULATION_MAX_STEPS} {'='*15}")
+        print(world.get_full_state_string()) # Show world state at start
+
+        # --- Agent Phase ---
+        agent_actions = {} # Store agent name -> utterance
+        for agent in agents:
+            print(f"\n--- Processing {agent.name} ---")
+            utterance = agent.step(world) # Agent perceives, thinks, updates memory
+            agent_actions[agent.name] = utterance
+            time.sleep(1.5) # Pause for readability
+
+        # --- Interpretation and Update Phase ---
+        print("\n--- Interpreting Actions & Updating World ---")
+        for agent_name, utterance in agent_actions.items():
+             interpretation_result = interpret_and_update(agent_name, utterance, world)
+             print(f"[Interpreter Result for {agent_name}]: {interpretation_result}")
+             # Update agent's memory with the interpretation result? Optional.
+             # agent_object = next((a for a in agents if a.name == agent_name), None)
+             # if agent_object:
+             #    agent_object.memory.add_observation(f"World interpretation: {interpretation_result}")
+             time.sleep(0.5) # Small delay between interpretations
+
+        # --- Manual Control / End Step ---
+        print("\n--- End of Step ---")
+        print(world.get_full_state_string()) # Show world state after updates
+
+        # Manual stepping and control
+        user_input = input("Enter for next step, 'w <condition>' (e.g. w Sunny) to change weather, 'q' to quit: ").lower().strip()
+
+        if user_input == 'q':
+            print("Quitting simulation by user request.")
+            break
+        elif user_input.startswith('w '):
+            new_weather = user_input[2:].strip().title()
+            if new_weather:
+                old_weather = world.global_context['weather']
+                world.global_context['weather'] = new_weather
+                world.log_event(f"COMMAND: The weather suddenly changes from {old_weather} to {new_weather}.")
+            else:
+                print("Invalid command. Use 'w <condition>', e.g., 'w Rainy'.")
+        elif user_input: # Any other non-empty input could be a command later
+             print(f"Unknown command: '{user_input}'")
+        # Pressing Enter continues the loop
+
+    print(f"\n--- Simulation Ended after {step} steps ---")
+
+# --- Run ---
+if __name__ == "__main__":
+    run_simulation()
+
+============================== END FILE: src\main.py ==============================
+
+
+============================== START FILE: src\world.py ==============================
+
+# world.py
+import config # Import settings from config.py
+
+class WorldState:
+    def __init__(self, locations):
+        self.agent_locations = {} # agent_name -> location_name
+        self.location_descriptions = locations
+        self.global_context = {"weather": "Clear"}
+        self.recent_events = [] # List of strings describing what happened
+        print("WorldState initialized.")
+
+    def add_agent(self, agent_name, location_name):
+        if location_name in self.location_descriptions:
+            self.agent_locations[agent_name] = location_name
+            # Don't log event here, let the simulation loop decide when to log appearance
+            # self.log_event(f"{agent_name} appears in the {location_name}.")
+            print(f"World: Registered {agent_name} at {location_name}")
+        else:
+            print(f"Warning: Cannot add {agent_name} to unknown location '{location_name}'")
+
+    def move_agent(self, agent_name, new_location):
+        if agent_name not in self.agent_locations:
+            print(f"Warning: Cannot move unknown agent '{agent_name}'")
+            return False, "Agent not found"
+        if new_location not in self.location_descriptions:
+            print(f"Warning: Cannot move {agent_name} to unknown location '{new_location}'")
+            return False, "Destination not found"
+
+        old_location = self.agent_locations[agent_name]
+        if old_location != new_location:
+            self.agent_locations[agent_name] = new_location
+            event_desc = f"{agent_name} moved from {old_location} to {new_location}."
+            self.log_event(event_desc) # Log move after it happens
+            return True, event_desc
+        return False, "Agent already at destination" # Didn't actually move
+
+    def get_agents_at(self, location_name):
+        return [name for name, loc in self.agent_locations.items() if loc == location_name]
+
+    def log_event(self, event_description):
+        """Logs an event and makes it visible in the world context."""
+        # Avoid duplicate consecutive logs if possible (simple check)
+        if not self.recent_events or self.recent_events[-1] != event_description:
+             print(f"[World Event]: {event_description}")
+             self.recent_events.append(event_description)
+             # Keep event log from growing infinitely
+             if len(self.recent_events) > config.MAX_RECENT_EVENTS:
+                 self.recent_events.pop(0)
+
+    def get_context_for_agent(self, agent_name):
+        """Provides the contextual information an agent perceives."""
+        if agent_name not in self.agent_locations:
+            # This case should ideally be prevented by the simulation loop
+            return "You are currently disconnected from the world."
+
+        location = self.agent_locations[agent_name]
+        description = f"You ({agent_name}) are in the {location}. Description: {self.location_descriptions.get(location, 'An unknown area.')}\n"
+        description += f"Current conditions: Weather is {self.global_context.get('weather', 'unknown')}.\n"
+
+        other_agents = [name for name in self.get_agents_at(location) if name != agent_name]
+        if other_agents:
+            description += f"Others present: {', '.join(other_agents)}.\n"
+        else:
+            description += "You are alone here.\n"
+
+        # Add recent relevant events
+        if self.recent_events:
+             # Show last N events relevant to the agent's perception
+             visible_events = self.recent_events[-(config.MAX_RECENT_EVENTS // 2):] # Show recent half
+             if visible_events:
+                description += "Recent happenings you observed or might know about:\n - " + "\n - ".join(visible_events)
+
+        return description.strip()
+
+    def get_full_state_string(self):
+        """For debugging/observer view."""
+        state = f"--- World State ---\n"
+        state += f"Global Context: {self.global_context}\n"
+        state += f"Agent Locations: {self.agent_locations}\n"
+        state += f"Recent Events Log ({len(self.recent_events)} total):\n"
+        # Display the most recent events clearly
+        display_events = self.recent_events[-config.MAX_RECENT_EVENTS:] # Show up to max
+        for event in display_events:
+            state += f"  - {event}\n"
+        return state + "-------------------"
+
+============================== END FILE: src\world.py ==============================
+
+
+============================== START FILE: src\agent\agent.py ==============================
+
+# agent.py
+# No longer needs direct LLM imports, relies on Thinker/Memory modules
+
+class Agent:
+    def __init__(self, name, personality, memory_module, thinking_module):
+        self.name = name
+        self.personality = personality
+        self.memory = memory_module # An instance of BaseMemory
+        self.thinker = thinking_module # An instance of BaseThinker
+        self.last_utterance = "None" # Store the last decided utterance
+        print(f"Agent {name} initialized with {type(memory_module).__name__} and {type(thinking_module).__name__}.")
+
+    def step(self, world_state):
+        """Performs one step of the agent's cycle: perceive, think, decide."""
+        # 1. Get memory context
+        memory_context = self.memory.get_memory_context()
+
+        # 2. Think (call the thinking module)
+        # The thinker module gets world context via world_state.get_context_for_agent
+        utterance = self.thinker.generate_utterance(self, world_state, memory_context)
+        self.last_utterance = utterance
+
+        # 3. Update own memory AFTER thinking/acting
+        # Include both the world perception and the action taken
+        # World perception is implicitly handled by the thinker via get_context_for_agent
+        self.memory.add_observation(f"My action/thought: {utterance}")
+
+        return utterance
+
+============================== END FILE: src\agent\agent.py ==============================
+
+
+============================== START FILE: src\agent\memory.py ==============================
+
+# memory.py
+import config
+from abc import ABC, abstractmethod # For defining abstract base class
+
+class BaseMemory(ABC):
+    """Abstract base class for agent memory modules."""
+    @abstractmethod
+    def add_observation(self, observation_text):
+        """Adds a piece of information (perception, action result, thought) to memory."""
+        pass
+
+    @abstractmethod
+    def get_memory_context(self):
+        """Returns a string summary of relevant memories for the LLM prompt."""
+        pass
+
+    @abstractmethod
+    def clear(self):
+        """Clears the memory."""
+        pass
+
+class SimpleMemory(BaseMemory):
+    """A basic rolling string buffer memory."""
+    def __init__(self, max_length=config.MAX_MEMORY_TOKENS):
+        self.memory_buffer = ""
+        self.max_length = max_length # Approximate character length
+
+    def add_observation(self, observation_text):
+        # Add new observation, ensuring separation
+        new_entry = observation_text.strip()
+        if self.memory_buffer:
+            self.memory_buffer = f"{self.memory_buffer}\n{new_entry}"
+        else:
+            self.memory_buffer = new_entry
+
+        # Trim if exceeds max length (simple truncation from the beginning)
+        if len(self.memory_buffer) > self.max_length:
+            excess = len(self.memory_buffer) - self.max_length
+            # Try to cut off at a newline to keep entries somewhat intact
+            first_newline = self.memory_buffer.find('\n', excess)
+            if first_newline != -1:
+                 self.memory_buffer = self.memory_buffer[first_newline+1:]
+            else: # If no newline found after excess, just truncate
+                 self.memory_buffer = self.memory_buffer[excess:]
+        # print(f"DEBUG Memory Add: Added '{new_entry[:50]}...'. Buffer size: {len(self.memory_buffer)}") # Debug
+
+    def get_memory_context(self):
+        if not self.memory_buffer:
+            return "No specific memories recalled."
+        # Provide the most recent memories
+        return f"Recollections (most recent last):\n{self.memory_buffer}"
+
+    def clear(self):
+        self.memory_buffer = ""
+
+# Example of how you might add another memory type later:
+# class VectorMemory(BaseMemory):
+#     def __init__(self, embedding_model, vector_db):
+#         # ... implementation using embeddings ...
+#         pass
+#     def add_observation(self, observation_text):
+#         # ... embed and store ...
+#         pass
+#     def get_memory_context(self, query_text):
+#         # ... retrieve relevant memories based on query ...
+#         pass
+#     def clear(self):
+#         # ... clear db ...
+#         pass
+
+============================== END FILE: src\agent\memory.py ==============================
+
+
+============================== START FILE: src\agent\thinking.py ==============================
+
+# thinking.py
+import google.generativeai as genai
+import config
+from abc import ABC, abstractmethod
+
+class BaseThinker(ABC):
+    """Abstract base class for agent thinking/decision-making modules."""
+    @abstractmethod
+    def generate_utterance(self, agent, world_state, memory_context):
+        """Generates the agent's next action/thought/speech as a natural language string."""
+        pass
+
+class GeminiThinker(BaseThinker):
+    """Uses Google Gemini LLM to generate agent utterances."""
+    def __init__(self, model):
+        self.llm = model # Pass the initialized model instance
+
+    def generate_utterance(self, agent, world_state, memory_context):
+        """Formats prompt and calls the Gemini API."""
+        current_world_context = world_state.get_context_for_agent(agent.name)
+
+        prompt = f"""You are {agent.name}, a character in a simulated world.
+Your personality: {agent.personality}.
+
+Your current situation:
+{current_world_context}
+
+{memory_context}
+
+Based *only* on the above, what do you think, say, or do next?
+Describe your action, thought, or utterance in a single, short, natural sentence.
+Focus on what you *personally* do or perceive. Be concise.
+Examples:
+- I walk towards the Forest Edge.
+- I ask Bob, "Did you hear that noise?"
+- I examine the ground near the shelter.
+- I think this mist is unnerving.
+- I decide to wait and see what happens.
+
+Your response (one sentence):"""
+
+        print(f"\n[{agent.name} is thinking...]")
+        # print(f"--- DEBUG PROMPT for {agent.name} ---\n{prompt}\n--------------------") # Optional debug
+
+        try:
+            response = self.llm.generate_content(prompt)
+            # Basic cleanup: strip whitespace, take first line
+            utterance = response.text.strip().split('\n')[0]
+
+            # Validate response
+            if not utterance or len(utterance) < 5: # Arbitrary minimum length
+                 print(f"[{agent.name} Warning]: LLM gave short/empty response: '{utterance}'. Defaulting to wait.")
+                 utterance = f"{agent.name} waits silently, unsure what to do." # More descriptive default
+            else:
+                 # Ensure the response sounds like the agent (optional refinement)
+                 # if not utterance.lower().startswith(("i ", "my ", f"{agent.name.lower()} ")):
+                 #    utterance = f"{agent.name} thinks: {utterance}" # Frame it if needed
+                 print(f"[{agent.name} decides]: {utterance}")
+
+            return utterance
+
+        except Exception as e:
+            print(f"[{agent.name} Error]: LLM generation failed: {e}")
+            # Check for specific feedback if available
+            if hasattr(response, 'prompt_feedback') and response.prompt_feedback.block_reason:
+                 print(f"[{agent.name} Safety Block]: Reason: {response.prompt_feedback.block_reason}")
+            # Return a meaningful error state utterance
+            return f"{agent.name} pauses, feeling confused or encountering an issue."
+
+============================== END FILE: src\agent\thinking.py ==============================
