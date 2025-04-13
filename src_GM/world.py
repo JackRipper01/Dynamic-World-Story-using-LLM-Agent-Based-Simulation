@@ -9,6 +9,18 @@ class WorldState:
     def __init__(self, locations):
         self.agent_locations = {} # agent_name -> location_name
         self.location_descriptions = locations
+        self.location_connectivity = {  # Defines possible direct movements
+            "Park": ["Shelter", "Forest Edge"],
+            "Shelter": ["Park"],
+            "Forest Edge": ["Park"]
+            # Add more connections as locations are added
+        }
+        self.location_properties = {  # Defines states/features of locations
+            "Park": {"ground": "grassy"},
+            # Example: Shelter door starts unlocked
+            "Shelter": {"door_locked": False, "contains": []},
+            "Forest Edge": {"terrain": "uneven"}
+        }
         self.global_context = {"weather": "Clear"}
         self.recent_events = [] # Now stores Event tuples
         self.current_step = 0 # Track simulation step
@@ -17,60 +29,69 @@ class WorldState:
     def advance_step(self):
         self.current_step += 1
 
+    # --- NEW: Helper methods to access rules ---
+    def get_reachable_locations(self, from_location):
+        """Returns list of locations directly reachable from the given one."""
+        return self.location_connectivity.get(from_location, [])
+
+    def get_location_property(self, location, prop_name):
+        """Safely gets a property of a location."""
+        return self.location_properties.get(location, {}).get(prop_name, None)
+
+    def set_location_property(self, location, prop_name, value):
+        """Sets a property of a location, logging the change."""
+        if location in self.location_properties:
+            old_value = self.location_properties[location].get(
+                prop_name, 'unset')
+            if old_value != value:
+                self.location_properties[location][prop_name] = value
+                # Log this change? Maybe only if caused by an agent action/director?
+                # For now, just update the state. The interpreter might log the *cause*.
+                print(
+                    f"[World State]: Property '{prop_name}' of '{location}' changed from '{old_value}' to '{value}'.")
+                return True
+            return False  # Value already set
+        else:
+            print(
+                f"[World State Warning]: Tried to set property on unknown location '{location}'")
+            return False
+    # --- End NEW Helpers ---
+    
     def add_agent(self, agent_name, location_name):
         if location_name in self.location_descriptions:
             self.agent_locations[agent_name] = location_name
             print(f"World: Registered {agent_name} at {location_name}")
-            # Log appearance locally
             self.log_event(f"{agent_name} appears.",
                            scope='local',
                            location=location_name,
                            triggered_by="Setup")
-        else:
-            print(f"Warning: Cannot add {agent_name} to unknown location '{location_name}'")
-    
-    def move_agent(self, agent_name, new_location):
-        if agent_name not in self.agent_locations:
-            print(f"Warning: Cannot move unknown agent '{agent_name}'")
-            return False, "Agent not found"
-        if new_location not in self.location_descriptions:
-            print(f"Warning: Cannot move {agent_name} to unknown location '{new_location}'")
-            return False, "Destination not found"
+            # Potentially update location properties if needed (e.g., adding agent to 'contains')
+            if 'contains' in self.location_properties.get(location_name, {}):
+                self.location_properties[location_name]['contains'].append(agent_name)
 
-        old_location = self.agent_locations[agent_name]
-        if old_location != new_location:
-            self.agent_locations[agent_name] = new_location
-            # Log departure from old location and arrival at new location
-            # Departure event
-            self.log_event(f"{agent_name} departs towards {new_location}.",
-                           scope='local', # Or 'action'? Let's use 'local' for observation focus
-                           location=old_location,
-                           triggered_by=agent_name)
-            # Arrival event
-            self.log_event(f"{agent_name} arrives from {old_location}.",
-                           scope='local',
-                           location=new_location,
-                           triggered_by=agent_name)
-            return True, f"Moved from {old_location} to {new_location}"
-        return False, "Agent already at destination"
+        else:
+            print(
+                f"Warning: Cannot add {agent_name} to unknown location '{location_name}'")
+    
 
     def get_agents_at(self, location_name):
+        # Add simple check if location exists
+        if location_name not in self.location_descriptions:
+            return []
         return [name for name, loc in self.agent_locations.items() if loc == location_name]
+
+
 
     def log_event(self, event_description, scope='local', location=None, triggered_by="Simulation"):
         """Logs a structured event with scope and location."""
         log_prefix = f"[{triggered_by} @ {location or 'Global'}/{scope}]"
-
-        new_event = Event(description=event_description, location=location, scope=scope, step=self.current_step)
-
+        new_event = Event(description=event_description,
+                            location=location, scope=scope, step=self.current_step)
         # Avoid exact duplicate events in the same step if needed (optional)
-        # if self.recent_events and self.recent_events[-1] == new_event: return
-
+        if self.recent_events and self.recent_events[-1] == new_event: return
         print(f"{log_prefix}: {event_description}")
         self.recent_events.append(new_event)
-
-        # Keep event log from growing infinitely
-        if len(self.recent_events) > config.MAX_RECENT_EVENTS * 2: # Store a bit more history internally
+        if len(self.recent_events) > config.MAX_RECENT_EVENTS * 2:
             self.recent_events.pop(0)
 
     def set_weather(self, new_weather, triggered_by="Simulation"):
@@ -112,25 +133,26 @@ class WorldState:
                 visible_events_descriptions.append(event.description)
             # Perceive local/action events happening at the agent's current location
             elif event.location == agent_location and event.scope in ['local', 'action']:
-                 # Avoid showing agent its own action description if memory already handles it?
-                 # Let's include it for now, signifies observability by others.
-                 # Prefix might be useful: e.g., "Here: Someone arrives from Park."
-                 visible_events_descriptions.append(f"(Here) {event.description}") # Add context marker
+                # Avoid showing agent its own action description if memory already handles it?
+                # Let's include it for now, signifies observability by others.
+                # Prefix might be useful: e.g., "Here: Someone arrives from Park."
+                visible_events_descriptions.append(f"(Here) {event.description}") # Add context marker
 
         if visible_events_descriptions:
-             description += "Recent happenings you observed or might know about:\n - " + "\n - ".join(visible_events_descriptions)
+            description += "Recent happenings you observed or might know about:\n - " + "\n - ".join(visible_events_descriptions)
         else:
-             description += "Nothing noteworthy seems to have happened recently."
-
-
+            description += "Nothing noteworthy seems to have happened recently."
         return description.strip()
 
-
     def get_full_state_string(self):
-        """For debugging/observer view. Shows structured events."""
+        """For debugging/observer view. Shows structured events and properties."""
         state = f"--- World State (Step: {self.current_step}) ---\n"
         state += f"Global Context: {self.global_context}\n"
         state += f"Agent Locations: {self.agent_locations}\n"
+        # Display Properties and Connectivity for clarity
+        state += f"Location Properties: {self.location_properties}\n"
+        state += f"Location Connectivity: {self.location_connectivity}\n"
+        # Display Recent Events
         state += f"Recent Events Log ({len(self.recent_events)} total, showing last {config.MAX_RECENT_EVENTS}):\n"
         display_events = self.recent_events[-config.MAX_RECENT_EVENTS:]
         for event in display_events:

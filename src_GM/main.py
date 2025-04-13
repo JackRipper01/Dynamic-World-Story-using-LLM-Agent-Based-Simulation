@@ -8,8 +8,8 @@ import config
 from world import WorldState
 from agent.agent import Agent
 from agent.memory import SimpleMemory
-from agent.thinking import GeminiThinker
-from interpreter import interpret_and_update
+from agent.thinking import GeminiThinker 
+from interpreter import LLMInterpreter  # Import the LLM interpreter
 from director import Director # Import the new Director class
 
 
@@ -28,7 +28,7 @@ def run_simulation():
 
     # 2. Initialize World State
     world = WorldState(locations=config.KNOWN_LOCATIONS)
-    world.global_context['weather'] = "Misty" # Initial weather
+    world.global_context['weather'] = "Clear" # Initial weather
 
     # 3. Initialize Agents
     agents = []
@@ -54,6 +54,9 @@ def run_simulation():
     # 4. Initialize Director
     director = Director(world, model, config.NARRATIVE_GOAL) # Pass world, model, and goal
 
+    ## 5. Initialize Interpreter
+    interpreter = LLMInterpreter(model, world)
+    
     # --- Simulation Steps ---
     step = 0
     while step < config.SIMULATION_MAX_STEPS:
@@ -70,8 +73,8 @@ def run_simulation():
             # Get agent's location BEFORE they act (in case they move)
             current_loc = world.agent_locations.get(agent.name, None)
             if not current_loc:
-                 print(f"[Sim Warning]: Agent {agent.name} has no location! Skipping.")
-                 continue
+                print(f"[Sim Warning]: Agent {agent.name} has no location! Skipping.")
+                continue
             agent_current_locations[agent.name] = current_loc
 
             utterance = agent.step(world) # Agent perceives (filtered), thinks, updates memory
@@ -79,16 +82,22 @@ def run_simulation():
             time.sleep(1.5)
 
         # --- Interpretation Phase ---
-        print("\n--- Interpreting Agent Actions & Updating World ---")
+        print("\n--- Resolving Agent Actions via LLM Interpreter ---")
         for agent_name, utterance in agent_actions.items():
-             agent_loc = agent_current_locations.get(agent_name)
-             if agent_loc:
-                 # Pass agent's location at the time of action
-                 interpretation_result = interpret_and_update(agent_name, agent_loc, utterance, world)
-                 print(f"[Interpreter Result for {agent_name} @ {agent_loc}]: {interpretation_result}")
-             else:
-                  print(f"[Sim Warning]: Cannot interpret action for {agent_name}, location unknown.")
-             time.sleep(0.5)
+            agent_loc = agent_current_locations.get(agent_name)
+            if agent_loc:
+                # Call the new LLM-based resolver
+                resolution_result = interpreter.interpret_and_resolve_action(
+                    agent_name, agent_loc, utterance
+                )
+                if resolution_result:
+                    # Log the interpreter's reasoning/decision for debugging?
+                    print(f"[Resolver Result for {agent_name}]: Type={resolution_result.get('action_type')}, Success={resolution_result.get('success')}, Reason={resolution_result.get('reasoning', 'N/A')}")
+                else:
+                    print(f"[Resolver Result for {agent_name}]: Failed to resolve action.")
+            else:
+                print(f"[Sim Warning]: Cannot resolve action for {agent_name}, location unknown.")
+            time.sleep(0.5) # Optional pause
 
         # --- Director Phase --- 
         director.step() # Let the director observe, think, and act
@@ -121,7 +130,7 @@ def run_simulation():
              else:
                  print("Invalid command. Use 'w <condition>'.")
         elif user_input:
-             print(f"Unknown command: '{user_input}'")
+            print(f"Unknown command: '{user_input}'")
         # Pressing Enter continues
 
     print(f"\n--- Simulation Ended after {step} steps ---")
