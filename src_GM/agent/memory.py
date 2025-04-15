@@ -42,7 +42,7 @@ class SimpleMemory(BaseMemory):
                  self.memory_buffer = self.memory_buffer[first_newline+1:]
             else: # If no newline found after excess, just truncate
                  self.memory_buffer = self.memory_buffer[excess:]
-        # print(f"DEBUG Memory Add: Added '{new_entry[:50]}...'. Buffer size: {len(self.memory_buffer)}") # Debug
+        print(f"DEBUG Memory Add: Added '{new_entry[:50]}...'. Buffer size: {len(self.memory_buffer)}") # Debug
 
     def get_memory_context(self):
         if not self.memory_buffer:

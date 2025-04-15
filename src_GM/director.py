@@ -21,7 +21,7 @@ class Director:
         """Gathers the necessary information from the world state for the LLM."""
         # Get a concise summary of the current state
         agent_locations = self.world.agent_locations
-        recent_events = self.world.recent_events[-5:] # Last 5 events
+        recent_events = self.world.event_log[-5:]  # Last 5 events
         weather = self.world.global_context.get('weather', 'unknown')
 
         observation = f"Current State Summary:\n"
@@ -30,10 +30,19 @@ class Director:
         observation += f"- Recent Events:\n"
         if recent_events:
             for event in recent_events:
-                 prefix = f"[{event.scope} @ {event.location or 'Global'}]"
-                 observation += f"    - {prefix} {event.description}\n"
+                # Check if the event object still has these attributes (it should)
+                # Event = namedtuple("Event", ["description", "location", "scope", "step", "triggered_by"])
+                location_str = event.location or 'Global'
+                scope_str = event.scope or 'UnknownScope'
+                triggered_by_str = event.triggered_by or 'UnknownTrigger'
+                # Added check for attribute existence just in case, though they should be there
+                desc_str = getattr(event, 'description', 'No description')
+
+                # Updated prefix formatting for clarity and robustness
+                prefix = f"[S{event.step} {triggered_by_str} @ {location_str}/{scope_str}]"
+                observation += f"    - {prefix} {desc_str}\n"  # Use desc_str
         else:
-            observation += "    - Nothing noteworthy recently.\n"
+            observation += "    - Nothing noteworthy recently in event log.\n"
 
         # Add goal progress check (simple example: are agents together?)
         agents_in_same_location = False

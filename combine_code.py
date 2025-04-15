@@ -5,7 +5,7 @@ import sys
 # --- Configuration ---
 # The directory containing your source (.py) files
 # Assumes 'src' is in the same directory as this script
-SOURCE_DIRECTORY = 'src'
+SOURCE_DIRECTORY = 'src_GM'
 # The name of the output file where combined code will be saved
 OUTPUT_FILENAME = 'combined_code.txt'
 # --- End Configuration ---

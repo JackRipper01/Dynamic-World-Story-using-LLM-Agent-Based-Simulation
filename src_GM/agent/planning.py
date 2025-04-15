@@ -3,14 +3,14 @@ import google.generativeai as genai
 import config
 from abc import ABC, abstractmethod
 
-class BaseThinker(ABC):
+class BasePlanning(ABC):
     """Abstract base class for agent thinking/decision-making modules."""
     @abstractmethod
     def generate_output(self, agent, static_world_context, memory_context):  # Renamed
         """Generates the agent's next intended action/thought/speech output."""
         pass
 
-class GeminiThinker(BaseThinker):
+class SimplePlanning(BasePlanning):
     """Uses Google Gemini LLM to generate agent utterances."""
     def __init__(self, model):
         self.llm = model # Pass the initialized model instance

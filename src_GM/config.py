@@ -51,7 +51,30 @@ DEFAULT_PERSONALITIES = {
     "Bob": "calm, pragmatic, speaks plainly"
 }
 
-# Director Settings --- NEW SECTION ---
+# --- Component Selection ---
+# Choose the implementations for different parts of the simulation
+# (Allows easy switching for experiments)
+
+# Options: "SimpleMemory", "VectorMemory" (future)
+AGENT_MEMORY_TYPE = "SimpleMemory"
+# Options: "GeminiThinker", "RuleBasedThinker" (future)
+AGENT_PLANNING_TYPE = "GeminiThinker"
+
+# Action Resolution Strategy (Crucial for your experiments!)
+# Options: "LLMResolver", "StructuredValidator", "Passthrough", "HybridRefine" (future)
+ACTION_RESOLVER_TYPE = "LLMResolver"  # Start with the current LLM-based logic
+
+# Event Perception Model (How agents receive events)
+# Options: "DirectDispatch", "SummaryContext" (old way)
+EVENT_PERCEPTION_MODEL = "DirectDispatch"
+
 NARRATIVE_GOAL = "Develop a beautiful and funny story."
 # DIRECTOR_COOLDOWN_MIN = 2 # Example: Could make cooldown configurable
 # DIRECTOR_COOLDOWN_MAX = 5
+
+agent_configs = [
+    {"name": "Alice", "personality": DEFAULT_PERSONALITIES.get(
+        "Alice", "default")},
+    {"name": "Bob", "personality": DEFAULT_PERSONALITIES.get(
+        "Bob", "default")}
+]

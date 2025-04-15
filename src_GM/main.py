@@ -1,21 +1,47 @@
 # main.py
 import time
+from typing import List
 import google.generativeai as genai
-
 
 # Import our modules
 import config
+
 from world import WorldState
 from agent.agent import Agent
-from agent.memory import SimpleMemory
-from agent.thinking import GeminiThinker 
-from interpreter import LLMInterpreter  # Import the LLM interpreter
-from director import Director # Import the new Director class
+from director import Director 
+
+# --- Factory Functions (or simple conditionals) ---
 
 
+def get_memory_module(memory_type):
+    if memory_type == "SimpleMemory":
+        from agent.memory import SimpleMemory
+        return SimpleMemory()
+    else:
+        raise ValueError(f"Unknown memory type: {memory_type}")
+
+
+def get_planning_module(planning_type, model):
+    if planning_type == "GeminiThinker":
+        from agent.planning import SimplePlanning
+        return SimplePlanning(model)
+    
+    else:
+        raise ValueError(f"Unknown thinker type: {planning_type}")
+
+
+def get_action_resolver(resolver_type, model, world_ref=None):  
+    if resolver_type == "LLMResolver":
+        from action_resolver import LLMActionResolver
+        return LLMActionResolver(model, world_ref)
+    
+    else:
+        raise ValueError(f"Unknown action resolver type: {resolver_type}")
+    
 def run_simulation():
     print("--- Starting Modular Free Agent Simulation with Director ---")
-
+    print(f"Config: Memory={config.AGENT_MEMORY_TYPE}, Thinker={config.AGENT_PLANNING_TYPE}, Resolver={config.ACTION_RESOLVER_TYPE}, Perception={config.EVENT_PERCEPTION_MODEL}")
+    
     # 1. Initialize LLM Model
     print(f"Configuring Gemini model: {config.MODEL_NAME}")
     genai.configure(api_key=config.GEMINI_API_KEY)
@@ -31,31 +57,31 @@ def run_simulation():
     world.global_context['weather'] = "Clear" # Initial weather
 
     # 3. Initialize Agents
-    agents = []
-    thinker = GeminiThinker(model)
-    agent_configs = [
-        {"name": "Alice", "personality": config.DEFAULT_PERSONALITIES.get("Alice", "default")},
-        {"name": "Bob", "personality": config.DEFAULT_PERSONALITIES.get("Bob", "default")}
-    ]
-    for agent_conf in agent_configs:
+    agents: List[Agent] = []
+    
+    for agent_conf in config.agent_configs:
         agent_name = agent_conf["name"]
-        memory = SimpleMemory()
+        memory = get_memory_module(config.AGENT_MEMORY_TYPE)
+        thinker = get_planning_module(config.AGENT_PLANNING_TYPE, model)
         agent = Agent(
             name=agent_name,
             personality=agent_conf["personality"],
             memory_module=memory,
-            thinking_module=thinker
+            planning_module=thinker
         )
         agents.append(agent)
         start_location = "Park"
-        world.add_agent(agent_name, start_location)
-        world.log_event(f"{agent_name} appears in the {start_location}.", triggered_by="Setup") # Log initial appearance
+        world.add_agent_to_location(
+            agent_name, start_location, triggered_by="Setup")
+        world.register_agent(agent)
 
-    # 4. Initialize Director
-    director = Director(world, model, config.NARRATIVE_GOAL) # Pass world, model, and goal
+    # 4. Initialize Director (remains mostly the same, observes world state)
+    director_model = model  
+    director = Director(world, director_model, config.NARRATIVE_GOAL)
 
-    ## 5. Initialize Interpreter
-    interpreter = LLMInterpreter(model, world)
+    ## 5. Initialize Action Resolver
+    action_resolver = get_action_resolver(
+        config.ACTION_RESOLVER_TYPE, model, world_ref=world)
     
     # --- Simulation Steps ---
     step = 0
@@ -65,9 +91,14 @@ def run_simulation():
         print(f"\n{'='*15} Simulation Step {step}/{config.SIMULATION_MAX_STEPS} {'='*15}")
         print(world.get_full_state_string())
 
-        # --- Agent Phase ---
-        agent_actions = {} # agent_name -> utterance
-        agent_current_locations = {} # Store locations for interpreter
+        # --- Director Phase ---
+        director.step()  # Let the director observe, think, and act
+        time.sleep(1.0)  # Optional pause after director
+        
+        # --- Agent Thinking Phase ---
+        # Agents decide their *intended* actions based on perceived events & memory
+        agent_intentions = {}  # agent_name -> intended_action_output
+        agent_current_locations = {}  # Store locations for resolver
         for agent in agents:
             print(f"\n--- Processing {agent.name} ---")
             # Get agent's location BEFORE they act (in case they move)
@@ -77,32 +108,78 @@ def run_simulation():
                 continue
             agent_current_locations[agent.name] = current_loc
 
-            utterance = agent.step(world) # Agent perceives (filtered), thinks, updates memory
-            agent_actions[agent.name] = utterance
-            time.sleep(1.5)
+            # Agent perceives dispatched events (handled by world.log_event -> agent.perceive)
+            # Agent plan based on memory (inc. perceptions) and static context
+            # Agent updates own memory with intent
+            intended_output = agent.plan(world)
+            agent_intentions[agent.name] = intended_output
+            time.sleep(1.0)  # LLM rate limiting/pause
 
-        # --- Interpretation Phase ---
-        print("\n--- Resolving Agent Actions via LLM Interpreter ---")
-        for agent_name, utterance in agent_actions.items():
+        # --- Action Resolution Phase ---
+        # The Action Resolver interprets intentions and determines outcomes
+        print("\n--- Action Resolution Phase ---")
+        resolution_results = {}  # agent_name -> resolution_dict
+        all_state_updates = []  # Collect updates from all agents first
+        all_outcome_events = []  # Collect outcome events
+        
+        for agent_name, intent in agent_intentions.items():
             agent_loc = agent_current_locations.get(agent_name)
-            if agent_loc:
-                # Call the new LLM-based resolver
-                resolution_result = interpreter.interpret_and_resolve_action(
-                    agent_name, agent_loc, utterance
+            if agent_loc and action_resolver:
+                print(f"-- Resolving for {agent_name} at {agent_loc} --")
+                result = action_resolver.resolve(
+                    agent_name, agent_loc, intent, world
                 )
-                if resolution_result:
-                    # Log the interpreter's reasoning/decision for debugging?
-                    print(f"[Resolver Result for {agent_name}]: Type={resolution_result.get('action_type')}, Success={resolution_result.get('success')}, Reason={resolution_result.get('reasoning', 'N/A')}")
-                else:
-                    print(f"[Resolver Result for {agent_name}]: Failed to resolve action.")
+                resolution_results[agent_name] = result
+                if result and result.get("success"):
+                    print(
+                        f"[Resolver OK] {agent_name}: {result.get('action_type')} -> {result.get('outcome_description')}")
+                    if result.get("world_state_updates"):
+                        all_state_updates.extend(result["world_state_updates"])
+                    # Create the event tuple for logging *after* state updates
+                    all_outcome_events.append(
+                        (result['outcome_description'],
+                        'action_outcome', agent_loc, agent_name)
+                    )
+                elif result:  # Handled failure case
+                    print(
+                        f"[Resolver FAIL] {agent_name}: {result.get('reasoning', 'Unknown reason')}")
+                    # Log the failure outcome event
+                    all_outcome_events.append(
+                        (result['outcome_description'],
+                        'action_outcome', agent_loc, agent_name)
+                    )
+                else:  # Severe failure in resolver itself
+                    print(
+                        f"[Resolver ERROR] Critical failure resolving for {agent_name}")
+                    # Log a generic system failure event?
+                    all_outcome_events.append(
+                        (f"System error resolving {agent_name}'s action.",
+                        'system_error', agent_loc, 'System')
+                    )
             else:
-                print(f"[Sim Warning]: Cannot resolve action for {agent_name}, location unknown.")
-            time.sleep(0.5) # Optional pause
+                print(
+                    f"[Sim Warning]: Cannot resolve action for {agent_name}, location or resolver unknown.")
+            time.sleep(0.5)
 
-        # --- Director Phase --- 
-        director.step() # Let the director observe, think, and act
-        time.sleep(1.0) # Optional pause after director
+        
+        # --- World Update Phase ---
+        # Apply all accumulated state changes atomically (conceptually)
+        print("\n--- World Update Phase ---")
+        if all_state_updates:
+            world.apply_state_updates(
+                all_state_updates, triggered_by="AgentActions")
+        else:
+            print("No world state updates required.")
 
+        # Log all outcome events AFTER state updates are done
+        print("\n--- Logging Action Outcomes ---")
+        for desc, scope, loc, trig_by in all_outcome_events:
+            # This will dispatch perceptions
+            world.log_event(desc, scope, loc, trig_by)
+            
+        
+            
+            
         # --- Manual Control / End Step ---
         
         print("\n--- End of Step ---")
