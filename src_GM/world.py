@@ -1,6 +1,8 @@
 # src/world.py
+from typing import Dict
 import config
 from collections import namedtuple
+from agent.agent import Agent
 
 # Define a structure for events for clarity
 Event = namedtuple(
@@ -27,23 +29,20 @@ class WorldState:
         self.event_log = []  # Now stores Event tuples
         self.current_step = 0  # Track simulation step
 
-        # agent_name -> agent_object (for dispatch)
-        self.registered_agents = {}
-        
-        print("WorldState initialized.")
-
-    def register_agent(self, agent):
+        self.registered_agents: Dict[str, Agent] = {}  # Added type hint
+        # Store the passed dispatcher instance
+    def register_agent(self, agent:Agent):
         """Registers an agent to receive events."""
         if agent.name not in self.registered_agents:
             self.registered_agents[agent.name] = agent
             print(
-                f"[World Event Dispatch]: Registered {agent.name} for events.")
+                f"[World Event Update]: Registered {agent.name} for events.")
     
     def unregister_agent(self, agent_name):
         """Unregisters an agent."""
         if agent_name in self.registered_agents:
             del self.registered_agents[agent_name]
-            print(f"[World Event Dispatch]: Unregistered {agent_name}.")
+            print(f"[World Event Update]: Unregistered {agent_name}.")
 
     def advance_step(self):
         self.current_step += 1
@@ -118,7 +117,7 @@ class WorldState:
         return [name for name, loc in self.agent_locations.items() if loc == location_name]
 
     def log_event(self, description, scope='local', location=None, triggered_by="Simulation", dispatch=True):
-        """Logs an event and dispatches it to relevant registered agents."""
+        """Logs an event """
         new_event = Event(description=description, location=location,
                           scope=scope, step=self.current_step, triggered_by=triggered_by)
         self.event_log.append(new_event)
@@ -129,37 +128,7 @@ class WorldState:
         if len(self.event_log) > config.MAX_RECENT_EVENTS * 2:  # Keep a longer internal log
             self.event_log.pop(0)
 
-        # --- Event Dispatch Logic ---
-        if dispatch and config.EVENT_PERCEPTION_MODEL == "DirectDispatch":
-            dispatched_to = []
-            for agent_name, agent_obj in self.registered_agents.items():
-                agent_current_loc = self.agent_locations.get(agent_name)
-                should_perceive = False
-                # Global events are perceived by everyone
-                if scope == 'global':
-                    should_perceive = True
-                # Local events are perceived by agents at that location
-                elif scope == 'local' and location == agent_current_loc:
-                    should_perceive = True
-                # Action outcomes might be perceived by others at the location
-                elif scope == 'action_outcome' and location == agent_current_loc:
-                    # Avoid agent perceiving echo of their own action description? Maybe filter here.
-                    # if triggered_by != agent_name:  # Simple filter: don't dispatch action outcome to self
-                    #     should_perceive = True
-                    # Or let agent memory handle duplicates? Simpler for now.
-                    should_perceive = True
-
-                if should_perceive:
-                    try:
-                        agent_obj.perceive(new_event)
-                        dispatched_to.append(agent_name)
-                    except Exception as e:
-                        print(
-                            f"[Dispatch Error]: Failed to dispatch event to {agent_name}: {e}")
-            if dispatched_to:
-                print(
-                    f"[World Event Dispatch]: Event dispatched to: {dispatched_to}")
-
+        
 
     def set_weather(self, new_weather, triggered_by="Simulation"):
         """Changes the weather and logs the event."""

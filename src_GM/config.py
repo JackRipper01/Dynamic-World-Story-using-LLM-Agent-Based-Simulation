@@ -66,7 +66,7 @@ ACTION_RESOLVER_TYPE = "LLMResolver"  # Start with the current LLM-based logic
 
 # Event Perception Model (How agents receive events)
 # Options: "DirectDispatch", "SummaryContext" (old way)
-EVENT_PERCEPTION_MODEL = "DirectDispatch"
+EVENT_PERCEPTION_MODEL = "DirectEventDispatcher"
 
 NARRATIVE_GOAL = "Develop a beautiful and funny story."
 # DIRECTOR_COOLDOWN_MIN = 2 # Example: Could make cooldown configurable

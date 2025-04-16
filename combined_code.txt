@@ -5,7 +5,7 @@ import google.generativeai as genai  # Keep LLM import here if resolver uses it
 import json
 import re
 from abc import ABC, abstractmethod
-
+from world import WorldState
 
 class BaseActionResolver(ABC):
     """
@@ -58,7 +58,7 @@ class LLMActionResolver(BaseActionResolver):
         # Maybe pass specific rule functions or data? For now, keep it simple.
         self.world_ref = world_state_ref_for_prompting_rules  # Use carefully
 
-    def resolve(self, agent_name: str, agent_location: str, action_output: str, world_state) -> dict:
+    def resolve(self, agent_name: str, agent_location: str, action_output: str, world_state:WorldState) -> dict:
         print(
             f"[LLM Resolver @ {agent_location}]: Resolving for {agent_name}: '{action_output}'")
 
@@ -223,7 +223,7 @@ DEFAULT_PERSONALITIES = {
 # Options: "SimpleMemory", "VectorMemory" (future)
 AGENT_MEMORY_TYPE = "SimpleMemory"
 # Options: "GeminiThinker", "RuleBasedThinker" (future)
-AGENT_THINKER_TYPE = "GeminiThinker"
+AGENT_PLANNING_TYPE = "GeminiThinker"
 
 # Action Resolution Strategy (Crucial for your experiments!)
 # Options: "LLMResolver", "StructuredValidator", "Passthrough", "HybridRefine" (future)
@@ -231,11 +231,18 @@ ACTION_RESOLVER_TYPE = "LLMResolver"  # Start with the current LLM-based logic
 
 # Event Perception Model (How agents receive events)
 # Options: "DirectDispatch", "SummaryContext" (old way)
-EVENT_PERCEPTION_MODEL = "DirectDispatch"
+EVENT_PERCEPTION_MODEL = "DirectEventDispatcher"
 
 NARRATIVE_GOAL = "Develop a beautiful and funny story."
 # DIRECTOR_COOLDOWN_MIN = 2 # Example: Could make cooldown configurable
 # DIRECTOR_COOLDOWN_MAX = 5
+
+agent_configs = [
+    {"name": "Alice", "personality": DEFAULT_PERSONALITIES.get(
+        "Alice", "default")},
+    {"name": "Bob", "personality": DEFAULT_PERSONALITIES.get(
+        "Bob", "default")}
+]
 
 
 ============================== END FILE: src_GM\config.py ==============================
@@ -402,230 +409,151 @@ Your suggestion:"""
 ============================== END FILE: src_GM\director.py ==============================
 
 
-============================== START FILE: src_GM\interpreter.py ==============================
+============================== START FILE: src_GM\event_dispatcher.py ==============================
 
-# interpreter.py
-import re
-import google.generativeai as genai
-import json  # For parsing LLM output
-import config
+# src_GM/event_dispatcher.py
+from abc import ABC, abstractmethod
+from typing import List, Dict
+
+from world import Event  # Import the Event namedtuple
+from agent.agent import Agent  # Import the Agent class
 
 
-class LLMInterpreter:  
-     def __init__(self, model, world_state):
-          self.llm = model
-          self.world = world_state  # Need world to get rules/state for prompt
+class BaseEventDispatcher(ABC):
+    """
+    Abstract Base Class for strategies that determine which agents
+    should perceive an event and deliver it to them.
+    """
 
-     def interpret_and_resolve_action(self, agent_name, agent_location, utterance):
-          """
-               Uses LLM to understand intent, check feasibility, determine outcome,
-               and return structured results including the event description.
-               """
-          print(
-               f"[LLM Interpreter @ {agent_location}]: Resolving action for {agent_name}: '{utterance}'")
+    @abstractmethod
+    def dispatch_event(self, event: Event, registered_agents: Dict[str, Agent], agent_locations: Dict[str, str]) -> List[str]:
+        """
+        Determines which agents perceive the event and calls their perceive method.
 
-          # 1. Gather Context for Prompt
-          world_rules, current_state_summary = self._get_relevant_world_context(
-               agent_location)
+        Args:
+            event: The Event object to dispatch.
+            registered_agents: A dictionary mapping agent names to Agent objects.
+            agent_locations: A dictionary mapping agent names to their current location strings.
 
-          # 2. Craft the Prompt
-          prompt = self._build_resolver_prompt(
-               agent_name, agent_location, utterance, world_rules, current_state_summary
-          )
+        Returns:
+            A list of agent names to whom the event was successfully dispatched.
+        """
+        pass
 
-          # 3. Call LLM
-          try:
-               # Configure LLM to ideally return JSON
-               # Add JSON mode if available/needed
-               response = self.llm.generate_content(prompt)
-               raw_output = response.text
 
-               # 4. Parse LLM Output
-               result = self._parse_llm_output(raw_output)
+class DirectEventDispatcher(BaseEventDispatcher):
+    """
+    Dispatches events based on scope and agent location.
+    - Global events go to everyone.
+    - Local events go to agents at that location.
+    - Action outcomes go to agents at that location.
+    (Based on the logic previously in WorldState.log_event)
+    """
 
-               # 5. Log the Outcome Event (This is what others perceive)
-               if result and result.get("outcome_description"):
-                    # Log the LLM-generated outcome
-                    self.world.log_event(
-                    result["outcome_description"],
-                    scope='action_outcome',  # New scope? Or keep 'action'?
-                    location=agent_location,  # Or potentially new location if move succeeded
-                    triggered_by=agent_name
-                    )
-               else:
-                    # Log a failure to interpret if parsing failed
-                    self.world.log_event(
-                         f"{agent_name} does something unclear ('{utterance}').",
-                    scope='action_outcome',
-                    location=agent_location,
-                    triggered_by=agent_name
-                    )
+    def dispatch_event(self, event: Event, registered_agents: Dict[str, Agent], agent_locations: Dict[str, str]) -> List[str]:
+        dispatched_to = []
+        # Log processing start
+        print(
+            f"[Dispatcher '{type(self).__name__}']: Processing event: {event.scope} @ {event.location or 'Global'} - '{event.description[:50]}...'")
+
+        for agent_name, agent_obj in registered_agents.items():
+            agent_current_loc = agent_locations.get(agent_name)
+            should_perceive = False
+
+            # Determine if the agent should perceive based on scope and location
+            if event.scope == 'global':
+                should_perceive = True
+            elif event.location == agent_current_loc:  # Check if agent is at the event location
+                if event.scope == 'local':
+                    should_perceive = True
+                elif event.scope == 'action_outcome':
+                    # Original logic: Dispatch action outcome even to the agent who performed it.
+                    # The agent's memory/processing can decide how to handle it (e.g., ignore if redundant).
+                    # If filtering is desired *here*, uncomment the check below:
+                    # if event.triggered_by != agent_name:
+                    #    should_perceive = True
+                    should_perceive = True  # Current: Dispatch action outcome to all at location
+
+            # If perception criteria met, attempt to call agent's perceive method
+            if should_perceive:
+                try:
+                    # print(f"[Dispatcher]: Attempting to dispatch to {agent_name}...") # Debug
+                    # Call the agent's perception handler
+                    agent_obj.perceive(event)
+                    dispatched_to.append(agent_name)
+                except AttributeError:
                     print(
-                         f"[LLM Interpreter Error]: Failed to parse LLM output: {raw_output}")
-                    return None  # Indicate failure
-
-               # 6. Apply Direct World State Changes (if specified by LLM)
-               self._apply_state_updates(
-                    agent_name, result.get("world_state_update"))
-
-               return result  # Return the full structured result for logging/debugging
-
-          except Exception as e:
-               print(f"[LLM Interpreter Error]: LLM call or parsing failed: {e}")
-               # Log generic failure event
-               self.world.log_event(
-                    f"{agent_name}'s action ('{utterance}') seems to fail or cause confusion.",
-                    scope='action_outcome',
-                    location=agent_location,
-                    triggered_by=agent_name
-               )
-               return None
-
-
-     def _get_relevant_world_context(self, location):
-          # Fetch rules, connectivity, properties relevant to the location
-          # Example:
-          rules = f"Rules: Shelter door is currently {'locked' if self.world.location_properties.get('Shelter', {}).get('door_locked') else 'unlocked'}."
-          connectivity = f"From {location}, you can reach: {self.world.location_connectivity.get(location, [])}."
-          # Simplified
-          state_summary = f"Others present: {self.world.get_agents_at(location)}."
-          # Combine relevant parts
-          return rules, f"{connectivity}\n{state_summary}"
-
-     def _build_resolver_prompt(self, agent_name, location, utterance, rules, state_summary):
-          # Construct the detailed prompt asking for JSON output
-          # (This needs careful design based on desired capabilities)
-          prompt = f"""You are the Action Resolver for a simulation.
-     Agent '{agent_name}' is at location '{location}'.
-     Their intended action is: "{utterance}"
-
-     Relevant world state and rules:
-     {rules}
-     {state_summary}
-
-     Analyze the agent's intended action based on the world state. Determine if it's possible.
-     Output a JSON object describing the outcome:
-     {{
-     "action_type": "MOVE | SPEAK | INTERACT | OBSERVE | WAIT | FAIL",
-     "parameters": {{ // action-specific details, e.g., "destination": "X", "target": "Y" }},
-     "success": true | false,
-     "reasoning": "Brief explanation of why it succeeded or failed.", // For debugging
-     "outcome_description": "A short sentence describing what actually happened as an observer would see it.",
-     "world_state_update": {{ // OPTIONAL: Direct changes needed, e.g., "agent_location": "NewLoc" }}
-     }}
-
-     Example Outcome (Move success): {{"action_type": "MOVE", "parameters": {{"destination": "Park"}}, "success": true, "reasoning": "Path to Park is clear.", "outcome_description": "{agent_name} walks towards the Park.", "world_state_update": {{"agent_location": "Park"}} }}
-     Example Outcome (Move fail): {{"action_type": "MOVE", "parameters": {{"destination": "Shelter"}}, "success": false, "reasoning": "Shelter door is locked.", "outcome_description": "{agent_name} tries the Shelter door, but it's locked.", "world_state_update": null }}
-     Example Outcome (Speak): {{"action_type": "SPEAK", "parameters": {{"target": "Bob", "message": "Hello"}}, "success": true, "reasoning": "Bob is present.", "outcome_description": "{agent_name} says to Bob, 'Hello'.", "world_state_update": null }}
-
-     Your JSON Output:
-     ```json
-     """ # Expect JSON within ```json ... ``` block
-          # Note: Using ```json block helps LLM format correctly
-          return prompt
-
-     def _parse_llm_output(self, raw_output):
-          try:
-               # Extract JSON from potential markdown code blocks
-               json_match = re.search(r'```json\s*([\s\S]+?)\s*```', raw_output)
-               if json_match:
-                    json_str = json_match.group(1)
-               else:
-                    # Assume raw output might be JSON directly if no block found
-                    json_str = raw_output
-
-               data = json.loads(json_str)
-               # Basic validation (add more checks as needed)
-               if 'action_type' in data and 'success' in data and 'outcome_description' in data:
-                    return data
-               else:
-                    print("[LLM Interpreter Warning]: Parsed JSON missing required keys.")
-                    return None
-          except json.JSONDecodeError as e:
-               print(
-                    f"[LLM Interpreter Error]: JSON Decode failed: {e}. Raw output: {raw_output}")
-               return None
-          except Exception as e:
-               print(f"[LLM Interpreter Error]: Unexpected parsing error: {e}")
-               return None
-
-
-     def _apply_state_updates(self, agent_name, updates):
-          if not updates:
-               return
-          print(
-               f"[LLM Interpreter]: Applying state updates for {agent_name}: {updates}")
-          if "agent_location" in updates:
-               new_loc = updates["agent_location"]
-               # Directly update, assuming LLM validated reachability
-               if new_loc in self.world.location_descriptions:
-                    self.world.agent_locations[agent_name] = new_loc
-                    # Note: We might need adjustment if move_agent had other side effects
-               else:
+                        f"[Dispatcher Error]: Agent {agent_name} object lacks 'perceive' method!")
+                except Exception as e:
                     print(
-                         f"[LLM Interpreter Error]: LLM suggested moving {agent_name} to invalid location '{new_loc}'!")
-          # Add handlers for other potential updates (e.g., inventory changes)
+                        f"[Dispatcher Error]: Failed during perceive call for {agent_name}: {e}")
+
+        if dispatched_to:
+            print(
+                f"[Dispatcher '{type(self).__name__}']: Event dispatched to: {dispatched_to}")
+        # else:
+            # print(f"[Dispatcher '{type(self).__name__}']: Event not dispatched to any agents based on rules.") # Can be verbose
+
+        return dispatched_to
 
 
-============================== END FILE: src_GM\interpreter.py ==============================
+============================== END FILE: src_GM\event_dispatcher.py ==============================
 
 
 ============================== START FILE: src_GM\main.py ==============================
 
 # main.py
+from collections import namedtuple
 import time
+from typing import List
 import google.generativeai as genai
-import importlib
 
 # Import our modules
 import config
+
 from world import WorldState
 from agent.agent import Agent
-from director import Director # Import the new Director class
-# Import base and initial implementation
-from action_resolver import BaseActionResolver, LLMActionResolver
+from director import Director 
 
-# --- Factory Functions (or simple conditionals) ---
-
+Event = namedtuple(
+    "Event", ["description", "location", "scope", "step", "triggered_by"])
 
 def get_memory_module(memory_type):
     if memory_type == "SimpleMemory":
         from agent.memory import SimpleMemory
         return SimpleMemory()
-    # Elif memory_type == "VectorMemory":
-    #    from agent.memory import VectorMemory
-    #    return VectorMemory(...) # Needs setup
     else:
         raise ValueError(f"Unknown memory type: {memory_type}")
 
 
-def get_thinking_module(thinker_type, model):
-    if thinker_type == "GeminiThinker":
-        from agent.thinking import GeminiThinker
-        return GeminiThinker(model)
-    # Elif thinker_type == "RuleBasedThinker":
-    #    from agent.thinking import RuleBasedThinker
-    #    return RuleBasedThinker(...)
+def get_planning_module(planning_type, model):
+    if planning_type == "GeminiThinker":
+        from agent.planning import SimplePlanning
+        return SimplePlanning(model)
+    
     else:
-        raise ValueError(f"Unknown thinker type: {thinker_type}")
+        raise ValueError(f"Unknown thinker type: {planning_type}")
 
 
-def get_action_resolver(resolver_type, model, world_ref=None):  # Pass model if needed
+def get_action_resolver(resolver_type, model, world_ref=None):  
     if resolver_type == "LLMResolver":
-        # LLMActionResolver might need the model
+        from action_resolver import LLMActionResolver
         return LLMActionResolver(model, world_ref)
-    # Elif resolver_type == "StructuredValidator":
-    #    from action_resolver import StructuredValidatorResolver
-    #    return StructuredValidatorResolver() # Might not need model
-    # Elif resolver_type == "Passthrough":
-    #     from action_resolver import PassthroughResolver
-    #     return PassthroughResolver()
+    
     else:
         raise ValueError(f"Unknown action resolver type: {resolver_type}")
     
+
+def get_event_dispatcher(dispatcher_type: str):
+    if dispatcher_type == "DirectEventDispatcher":
+        from event_dispatcher import DirectEventDispatcher
+        return DirectEventDispatcher()
+    else:
+        raise ValueError(f"Unknown event dispatcher type: {dispatcher_type}")
+
 def run_simulation():
-    print("--- Starting Modular Free Agent Simulation with Director ---")
-    print(f"Config: Memory={config.AGENT_MEMORY_TYPE}, Thinker={config.AGENT_THINKER_TYPE}, Resolver={config.ACTION_RESOLVER_TYPE}, Perception={config.EVENT_PERCEPTION_MODEL}")
+    print("--- Starting Agent Simulation with Director ---")
+    print(f"Config: Memory={config.AGENT_MEMORY_TYPE}, Thinker={config.AGENT_PLANNING_TYPE}, Resolver={config.ACTION_RESOLVER_TYPE}, Perception={config.EVENT_PERCEPTION_MODEL}")
     
     # 1. Initialize LLM Model
     print(f"Configuring Gemini model: {config.MODEL_NAME}")
@@ -637,25 +565,23 @@ def run_simulation():
     )
     print("Model configured.")
 
-    # 2. Initialize World State
+    # 2. Initialize World State and Event Dispatcher
+    event_dispatcher= get_event_dispatcher(config.EVENT_PERCEPTION_MODEL)
     world = WorldState(locations=config.KNOWN_LOCATIONS)
     world.global_context['weather'] = "Clear" # Initial weather
 
     # 3. Initialize Agents
-    agents = []
-    agent_configs = [
-        {"name": "Alice", "personality": config.DEFAULT_PERSONALITIES.get("Alice", "default")},
-        {"name": "Bob", "personality": config.DEFAULT_PERSONALITIES.get("Bob", "default")}
-    ]
-    for agent_conf in agent_configs:
+    agents: List[Agent] = []
+    
+    for agent_conf in config.agent_configs:
         agent_name = agent_conf["name"]
         memory = get_memory_module(config.AGENT_MEMORY_TYPE)
-        thinker = get_thinking_module(config.AGENT_THINKER_TYPE, model)
+        thinker = get_planning_module(config.AGENT_PLANNING_TYPE, model)
         agent = Agent(
             name=agent_name,
             personality=agent_conf["personality"],
             memory_module=memory,
-            thinking_module=thinker
+            planning_module=thinker
         )
         agents.append(agent)
         start_location = "Park"
@@ -664,14 +590,14 @@ def run_simulation():
         world.register_agent(agent)
 
     # 4. Initialize Director (remains mostly the same, observes world state)
-    director_model = model  # Director might need its own model instance later?
+    director_model = model  
     director = Director(world, director_model, config.NARRATIVE_GOAL)
 
     ## 5. Initialize Action Resolver
     action_resolver = get_action_resolver(
         config.ACTION_RESOLVER_TYPE, model, world_ref=world)
     
-    # --- Simulation Steps ---
+    # --- Simulation Steps ---------------------------------------------------------------------------------------------
     step = 0
     while step < config.SIMULATION_MAX_STEPS:
         step += 1
@@ -679,7 +605,12 @@ def run_simulation():
         print(f"\n{'='*15} Simulation Step {step}/{config.SIMULATION_MAX_STEPS} {'='*15}")
         print(world.get_full_state_string())
 
-        # --- Agent Thinking Phase ---
+        # --- Director Phase -------------------------------------------------------------------------------------------
+        director.step()  # Let the director observe, think, and act
+        time.sleep(1.0)  # Optional pause after director
+        
+        
+        # --- Agent Thinking Phase --------------------------------------------------------------------------------------
         # Agents decide their *intended* actions based on perceived events & memory
         agent_intentions = {}  # agent_name -> intended_action_output
         agent_current_locations = {}  # Store locations for resolver
@@ -692,14 +623,14 @@ def run_simulation():
                 continue
             agent_current_locations[agent.name] = current_loc
 
-            # Agent perceives dispatched events (handled by world.log_event -> agent.perceive)
-            # Agent thinks based on memory (inc. perceptions) and static context
+            # Agent plan based on memory (inc. perceptions) and static context
             # Agent updates own memory with intent
-            intended_output = agent.think(world)
+            intended_output = agent.plan(world)
             agent_intentions[agent.name] = intended_output
             time.sleep(1.0)  # LLM rate limiting/pause
 
-        # --- Action Resolution Phase ---
+
+        # --- Action Resolution Phase --------------------------------------------------------------------------------
         # The Action Resolver interprets intentions and determines outcomes
         print("\n--- Action Resolution Phase ---")
         resolution_results = {}  # agent_name -> resolution_dict
@@ -745,11 +676,8 @@ def run_simulation():
                     f"[Sim Warning]: Cannot resolve action for {agent_name}, location or resolver unknown.")
             time.sleep(0.5)
 
-        # --- Director Phase --- 
-        director.step() # Let the director observe, think, and act
-        time.sleep(1.0) # Optional pause after director
-
-        # --- World Update Phase ---
+        
+        # --- World Update Phase --------------------------------------------------------------------------------------
         # Apply all accumulated state changes atomically (conceptually)
         print("\n--- World Update Phase ---")
         if all_state_updates:
@@ -758,11 +686,18 @@ def run_simulation():
         else:
             print("No world state updates required.")
 
-        # Log all outcome events AFTER state updates are done
+        
+        # --- Agents Perceiving and Event Logging Phase -------------------------------------------------------------------
+        #Agents perceive changes in world and action of other agents or ambient events by dispatching the new event to them
+        
+        # Log all outcome events AFTER state updates are done and dispatch events to agent
         print("\n--- Logging Action Outcomes ---")
         for desc, scope, loc, trig_by in all_outcome_events:
-            # This will dispatch perceptions
             world.log_event(desc, scope, loc, trig_by)
+            
+            # This will dispatch perceptions
+            new_event= Event(desc,scope,loc,world.current_step,trig_by)
+            event_dispatcher.dispatch_event(new_event,world.registered_agents,world.agent_locations)
             
         # --- Manual Control / End Step ---
         
@@ -807,8 +742,10 @@ if __name__ == "__main__":
 ============================== START FILE: src_GM\world.py ==============================
 
 # src/world.py
+from typing import Dict
 import config
 from collections import namedtuple
+from agent.agent import Agent
 
 # Define a structure for events for clarity
 Event = namedtuple(
@@ -835,23 +772,20 @@ class WorldState:
         self.event_log = []  # Now stores Event tuples
         self.current_step = 0  # Track simulation step
 
-        # agent_name -> agent_object (for dispatch)
-        self.registered_agents = {}
-        
-        print("WorldState initialized.")
-
-    def register_agent(self, agent):
+        self.registered_agents: Dict[str, Agent] = {}  # Added type hint
+        # Store the passed dispatcher instance
+    def register_agent(self, agent:Agent):
         """Registers an agent to receive events."""
         if agent.name not in self.registered_agents:
             self.registered_agents[agent.name] = agent
             print(
-                f"[World Event Dispatch]: Registered {agent.name} for events.")
+                f"[World Event Update]: Registered {agent.name} for events.")
     
     def unregister_agent(self, agent_name):
         """Unregisters an agent."""
         if agent_name in self.registered_agents:
             del self.registered_agents[agent_name]
-            print(f"[World Event Dispatch]: Unregistered {agent_name}.")
+            print(f"[World Event Update]: Unregistered {agent_name}.")
 
     def advance_step(self):
         self.current_step += 1
@@ -926,7 +860,7 @@ class WorldState:
         return [name for name, loc in self.agent_locations.items() if loc == location_name]
 
     def log_event(self, description, scope='local', location=None, triggered_by="Simulation", dispatch=True):
-        """Logs an event and dispatches it to relevant registered agents."""
+        """Logs an event """
         new_event = Event(description=description, location=location,
                           scope=scope, step=self.current_step, triggered_by=triggered_by)
         self.event_log.append(new_event)
@@ -937,37 +871,7 @@ class WorldState:
         if len(self.event_log) > config.MAX_RECENT_EVENTS * 2:  # Keep a longer internal log
             self.event_log.pop(0)
 
-        # --- Event Dispatch Logic ---
-        if dispatch and config.EVENT_PERCEPTION_MODEL == "DirectDispatch":
-            dispatched_to = []
-            for agent_name, agent_obj in self.registered_agents.items():
-                agent_current_loc = self.agent_locations.get(agent_name)
-                should_perceive = False
-                # Global events are perceived by everyone
-                if scope == 'global':
-                    should_perceive = True
-                # Local events are perceived by agents at that location
-                elif scope == 'local' and location == agent_current_loc:
-                    should_perceive = True
-                # Action outcomes might be perceived by others at the location
-                elif scope == 'action_outcome' and location == agent_current_loc:
-                    # Avoid agent perceiving echo of their own action description? Maybe filter here.
-                    # if triggered_by != agent_name:  # Simple filter: don't dispatch action outcome to self
-                    #     should_perceive = True
-                    # Or let agent memory handle duplicates? Simpler for now.
-                    should_perceive = True
-
-                if should_perceive:
-                    try:
-                        agent_obj.perceive(new_event)
-                        dispatched_to.append(agent_name)
-                    except Exception as e:
-                        print(
-                            f"[Dispatch Error]: Failed to dispatch event to {agent_name}: {e}")
-            if dispatched_to:
-                print(
-                    f"[World Event Dispatch]: Event dispatched to: {dispatched_to}")
-
+        
 
     def set_weather(self, new_weather, triggered_by="Simulation"):
         """Changes the weather and logs the event."""
@@ -1054,29 +958,30 @@ class WorldState:
 ============================== START FILE: src_GM\agent\agent.py ==============================
 
 # agent.py
-# No longer needs direct LLM imports, relies on Thinker/Memory modules
+# No longer needs direct LLM imports, relies on Planning/Memory modules
+from agent.memory import BaseMemory
+from agent.planning import BasePlanning
+# from world import WorldState
 
 class Agent:
-    def __init__(self, name, personality, memory_module, thinking_module):
+    def __init__(self, name:str, personality:str, memory_module:BaseMemory, planning_module:BasePlanning):
         self.name = name
         self.personality = personality
         self.memory = memory_module # An instance of BaseMemory
-        self.thinker = thinking_module # An instance of BaseThinker
-        self.action_buffer = None  # Store the output of think() before resolution
-        print(f"Agent {name} initialized with {type(memory_module).__name__} and {type(thinking_module).__name__}.")
+        self.planning = planning_module # An instance of BasePlanning
+        self.action_buffer = None  # Store the output of plan() before resolution
+        print(f"Agent {name} initialized with {type(memory_module).__name__} and {type(planning_module).__name__}.")
 
     def perceive(self, event):
         """Processes a perceived event from the world and stores it in memory."""
         # Simple formatting for now, could be more sophisticated
-        # Avoid adding perception of own action's *outcome* if resolver logs it better?
-        # Let's keep it simple: add all perceived events. Memory can handle redundancy.
         perception_text = f"[Perception @ Step {event.step}] ({event.scope} at {event.location or 'Global'} by {event.triggered_by}): {event.description}"
         self.memory.add_observation(perception_text)
         print(f"DEBUG {self.name} Perceived: {perception_text}") # Optional debug
 
-    def think(self, world_state):
+    def plan(self, world_state):
         """
-        Agent's thinking cycle. Uses memory and thinker to decide next action intent.
+        Agent's thinking cycle. Uses memory and planning to decide next action intent.
         Does NOT execute the action, just returns the intended output.
         """
         # 1. Get memory context
@@ -1086,9 +991,9 @@ class Agent:
         # Pass only what's necessary, avoid full dynamic state if using event perception
         static_context = world_state.get_static_context_for_agent(self.name)
 
-        # 3. Think (call the thinking module)
+        # 3. Plan (call the planning module)
         # Pass agent reference (for personality), static context, and memory context
-        action_output = self.thinker.generate_output(
+        action_output = self.planning.generate_output(
             self, static_context, memory_context)
 
         # 4. Store intended action (important!)
@@ -1182,21 +1087,21 @@ class SimpleMemory(BaseMemory):
 ============================== END FILE: src_GM\agent\memory.py ==============================
 
 
-============================== START FILE: src_GM\agent\thinking.py ==============================
+============================== START FILE: src_GM\agent\planning.py ==============================
 
 # thinking.py
 import google.generativeai as genai
 import config
 from abc import ABC, abstractmethod
 
-class BaseThinker(ABC):
+class BasePlanning(ABC):
     """Abstract base class for agent thinking/decision-making modules."""
     @abstractmethod
     def generate_output(self, agent, static_world_context, memory_context):  # Renamed
         """Generates the agent's next intended action/thought/speech output."""
         pass
 
-class GeminiThinker(BaseThinker):
+class SimplePlanning(BasePlanning):
     """Uses Google Gemini LLM to generate agent utterances."""
     def __init__(self, model):
         self.llm = model # Pass the initialized model instance
@@ -1249,4 +1154,4 @@ Your intended output (one sentence):"""  # Changed 'response' to 'intended outpu
             return f"Intend to pause due to confusion."  # Return an intent
 
 
-============================== END FILE: src_GM\agent\thinking.py ==============================
+============================== END FILE: src_GM\agent\planning.py ==============================

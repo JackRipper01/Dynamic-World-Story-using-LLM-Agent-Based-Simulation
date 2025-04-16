@@ -1,4 +1,5 @@
 # main.py
+from collections import namedtuple
 import time
 from typing import List
 import google.generativeai as genai
@@ -10,8 +11,8 @@ from world import WorldState
 from agent.agent import Agent
 from director import Director 
 
-# --- Factory Functions (or simple conditionals) ---
-
+Event = namedtuple(
+    "Event", ["description", "location", "scope", "step", "triggered_by"])
 
 def get_memory_module(memory_type):
     if memory_type == "SimpleMemory":
@@ -38,8 +39,16 @@ def get_action_resolver(resolver_type, model, world_ref=None):
     else:
         raise ValueError(f"Unknown action resolver type: {resolver_type}")
     
+
+def get_event_dispatcher(dispatcher_type: str):
+    if dispatcher_type == "DirectEventDispatcher":
+        from event_dispatcher import DirectEventDispatcher
+        return DirectEventDispatcher()
+    else:
+        raise ValueError(f"Unknown event dispatcher type: {dispatcher_type}")
+
 def run_simulation():
-    print("--- Starting Modular Free Agent Simulation with Director ---")
+    print("--- Starting Agent Simulation with Director ---")
     print(f"Config: Memory={config.AGENT_MEMORY_TYPE}, Thinker={config.AGENT_PLANNING_TYPE}, Resolver={config.ACTION_RESOLVER_TYPE}, Perception={config.EVENT_PERCEPTION_MODEL}")
     
     # 1. Initialize LLM Model
@@ -52,7 +61,8 @@ def run_simulation():
     )
     print("Model configured.")
 
-    # 2. Initialize World State
+    # 2. Initialize World State and Event Dispatcher
+    event_dispatcher= get_event_dispatcher(config.EVENT_PERCEPTION_MODEL)
     world = WorldState(locations=config.KNOWN_LOCATIONS)
     world.global_context['weather'] = "Clear" # Initial weather
 
@@ -83,7 +93,7 @@ def run_simulation():
     action_resolver = get_action_resolver(
         config.ACTION_RESOLVER_TYPE, model, world_ref=world)
     
-    # --- Simulation Steps ---
+    # --- Simulation Steps ---------------------------------------------------------------------------------------------
     step = 0
     while step < config.SIMULATION_MAX_STEPS:
         step += 1
@@ -91,11 +101,12 @@ def run_simulation():
         print(f"\n{'='*15} Simulation Step {step}/{config.SIMULATION_MAX_STEPS} {'='*15}")
         print(world.get_full_state_string())
 
-        # --- Director Phase ---
+        # --- Director Phase -------------------------------------------------------------------------------------------
         director.step()  # Let the director observe, think, and act
         time.sleep(1.0)  # Optional pause after director
         
-        # --- Agent Thinking Phase ---
+        
+        # --- Agent Thinking Phase --------------------------------------------------------------------------------------
         # Agents decide their *intended* actions based on perceived events & memory
         agent_intentions = {}  # agent_name -> intended_action_output
         agent_current_locations = {}  # Store locations for resolver
@@ -108,14 +119,14 @@ def run_simulation():
                 continue
             agent_current_locations[agent.name] = current_loc
 
-            # Agent perceives dispatched events (handled by world.log_event -> agent.perceive)
             # Agent plan based on memory (inc. perceptions) and static context
             # Agent updates own memory with intent
             intended_output = agent.plan(world)
             agent_intentions[agent.name] = intended_output
             time.sleep(1.0)  # LLM rate limiting/pause
 
-        # --- Action Resolution Phase ---
+
+        # --- Action Resolution Phase --------------------------------------------------------------------------------
         # The Action Resolver interprets intentions and determines outcomes
         print("\n--- Action Resolution Phase ---")
         resolution_results = {}  # agent_name -> resolution_dict
@@ -162,7 +173,7 @@ def run_simulation():
             time.sleep(0.5)
 
         
-        # --- World Update Phase ---
+        # --- World Update Phase --------------------------------------------------------------------------------------
         # Apply all accumulated state changes atomically (conceptually)
         print("\n--- World Update Phase ---")
         if all_state_updates:
@@ -171,14 +182,18 @@ def run_simulation():
         else:
             print("No world state updates required.")
 
-        # Log all outcome events AFTER state updates are done
+        
+        # --- Agents Perceiving and Event Logging Phase -------------------------------------------------------------------
+        #Agents perceive changes in world and action of other agents or ambient events by dispatching the new event to them
+        
+        # Log all outcome events AFTER state updates are done and dispatch events to agent
         print("\n--- Logging Action Outcomes ---")
         for desc, scope, loc, trig_by in all_outcome_events:
-            # This will dispatch perceptions
             world.log_event(desc, scope, loc, trig_by)
             
-        
-            
+            # This will dispatch perceptions
+            new_event= Event(desc,scope,loc,world.current_step,trig_by)
+            event_dispatcher.dispatch_event(new_event,world.registered_agents,world.agent_locations)
             
         # --- Manual Control / End Step ---
         

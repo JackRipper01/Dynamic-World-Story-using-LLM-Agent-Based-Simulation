@@ -2,7 +2,7 @@
 # No longer needs direct LLM imports, relies on Planning/Memory modules
 from agent.memory import BaseMemory
 from agent.planning import BasePlanning
-from world import WorldState
+# from world import WorldState
 
 class Agent:
     def __init__(self, name:str, personality:str, memory_module:BaseMemory, planning_module:BasePlanning):
@@ -20,7 +20,7 @@ class Agent:
         self.memory.add_observation(perception_text)
         print(f"DEBUG {self.name} Perceived: {perception_text}") # Optional debug
 
-    def plan(self, world_state:WorldState):
+    def plan(self, world_state):
         """
         Agent's thinking cycle. Uses memory and planning to decide next action intent.
         Does NOT execute the action, just returns the intended output.
