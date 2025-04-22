@@ -1,5 +1,7 @@
 
 ============================== START FILE: src_GM\action_resolver.py ==============================
+ ```
+python
 
 import google.generativeai as genai  # Keep LLM import here if resolver uses it
 import json
@@ -158,10 +160,13 @@ Your JSON Output:
             return None
 
 
+```
 ============================== END FILE: src_GM\action_resolver.py ==============================
 
 
 ============================== START FILE: src_GM\config.py ==============================
+ ```
+python
 
 # config.py
 import os
@@ -245,10 +250,13 @@ agent_configs = [
 ]
 
 
+```
 ============================== END FILE: src_GM\config.py ==============================
 
 
 ============================== START FILE: src_GM\director.py ==============================
+ ```
+python
 
 # src/director.py
 import google.generativeai as genai
@@ -406,10 +414,13 @@ Your suggestion:"""
         self.act(suggestion)
         print("--- End Director Phase ---")
 
+```
 ============================== END FILE: src_GM\director.py ==============================
 
 
 ============================== START FILE: src_GM\event_dispatcher.py ==============================
+ ```
+python
 
 # src_GM/event_dispatcher.py
 from abc import ABC, abstractmethod
@@ -497,10 +508,13 @@ class DirectEventDispatcher(BaseEventDispatcher):
         return dispatched_to
 
 
+```
 ============================== END FILE: src_GM\event_dispatcher.py ==============================
 
 
 ============================== START FILE: src_GM\main.py ==============================
+ ```
+python
 
 # main.py
 from collections import namedtuple
@@ -736,10 +750,13 @@ if __name__ == "__main__":
     run_simulation()
 
 
+```
 ============================== END FILE: src_GM\main.py ==============================
 
 
 ============================== START FILE: src_GM\world.py ==============================
+ ```
+python
 
 # src/world.py
 from typing import Dict
@@ -952,10 +969,13 @@ class WorldState:
                     f"[World State Apply Error]: Failed to apply update {update}: {e}")
 
 
+```
 ============================== END FILE: src_GM\world.py ==============================
 
 
 ============================== START FILE: src_GM\agent\agent.py ==============================
+ ```
+python
 
 # agent.py
 # No longer needs direct LLM imports, relies on Planning/Memory modules
@@ -1009,10 +1029,13 @@ class Agent:
     # to the agent via perceive().
 
 
+```
 ============================== END FILE: src_GM\agent\agent.py ==============================
 
 
 ============================== START FILE: src_GM\agent\memory.py ==============================
+ ```
+python
 
 # memory.py
 import config
@@ -1084,10 +1107,13 @@ class SimpleMemory(BaseMemory):
 #         # ... clear db ...
 #         pass
 
+```
 ============================== END FILE: src_GM\agent\memory.py ==============================
 
 
 ============================== START FILE: src_GM\agent\planning.py ==============================
+ ```
+python
 
 # thinking.py
 import google.generativeai as genai
@@ -1154,4 +1180,5 @@ Your intended output (one sentence):"""  # Changed 'response' to 'intended outpu
             return f"Intend to pause due to confusion."  # Return an intent
 
 
+```
 ============================== END FILE: src_GM\agent\planning.py ==============================

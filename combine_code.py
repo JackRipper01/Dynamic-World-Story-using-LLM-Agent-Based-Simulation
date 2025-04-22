@@ -38,7 +38,7 @@ def combine_py_files(src_dir, output_file):
                 print(f"  Adding: {relative_path}")
 
                 # Add a header indicating the file path
-                combined_code.append(f"\n{'=' * 30} START FILE: {relative_path} {'=' * 30}\n")
+                combined_code.append(f"\n{'=' * 30} START FILE: {relative_path} {'=' * 30}\n ```\npython\n")
 
                 try:
                     with open(full_filepath, 'r', encoding='utf-8') as infile:
@@ -49,7 +49,7 @@ def combine_py_files(src_dir, output_file):
                     combined_code.append(f"\n{error_message}\n")
 
                 # Add a footer
-                combined_code.append(f"\n{'=' * 30} END FILE: {relative_path} {'=' * 30}\n")
+                combined_code.append(f"\n```\n{'=' * 30} END FILE: {relative_path} {'=' * 30}\n")
 
     output_filepath = os.path.join(script_dir, output_file)
 
