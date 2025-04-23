@@ -136,20 +136,81 @@ Your JSON Output:
                 "world_state_updates": []
             }
 
-    # Add the _parse_llm_output helper method here (copied from your interpreter)
     def _parse_llm_output(self, raw_output):
+        json_str = raw_output # Start with the raw output
         try:
-            json_match = re.search(r'```json\s*([\s\S]+?)\s*```', raw_output)
+            # Attempt to extract JSON from markdown code block first
+            json_match = re.search(r'```json\s*([\s\S]+?)\s*```', raw_output, re.IGNORECASE)
             if json_match:
-                json_str = json_match.group(1)
+                json_str = json_match.group(1).strip()
             else:
-                json_str = raw_output
+                # If no markdown block, assume the whole output might be JSON (or needs fixing)
+                # Find the first '{' and last '}' to potentially isolate JSON-like content
+                start_brace = raw_output.find('{')
+                end_brace = raw_output.rfind('}')
+                if start_brace != -1 and end_brace != -1 and end_brace > start_brace:
+                    json_str = raw_output[start_brace:end_brace+1].strip()
+                # else: keep raw_output as json_str if no braces found
+
+            # First attempt to parse the extracted/raw string
             data = json.loads(json_str)
-            # Add more validation if needed
             return data
+
         except json.JSONDecodeError as e:
-            print(f"[LLM Resolver Error]: JSON Decode failed: {e}. Raw output: {raw_output}")
-            return None
+            print(f"[LLM Resolver Warning]: Initial JSON Decode failed: {e}. Attempting LLM fix...")
+            print(f"--- Faulty JSON String ---\n{json_str}\n------------------------")
+
+            # --- LLM Fix Attempt using a specialized model ---
+            try:
+                # Configure and instantiate a dedicated model for JSON fixing
+                # Lower temperature for more deterministic output
+                fixer_generation_config = {
+                    "temperature": 0.1, # Low temperature for focused fixing
+                    "top_p": 0.95,
+                    "top_k": 50,
+                    "max_output_tokens": 1024, # Allow potentially larger fixed JSON
+                }
+                # Assuming config.MODEL_NAME and config.SAFETY_SETTINGS are accessible
+                # You might need to import 'config' if not already done in this file
+                fixer_model = genai.GenerativeModel(
+                    model_name=config.MODEL_NAME, # Or a specific model if desired
+                    generation_config=fixer_generation_config,
+                )
+
+                # Slightly relaxed prompt, still discouraging extra text
+                fix_prompt = f"""The following text is supposed to be a valid JSON object, but it failed parsing due to syntax errors. Please correct the syntax errors and output ONLY the corrected JSON object. Aim to output *only* the raw, valid JSON object itself. Do not include any explanations or apologies.
+
+Broken JSON string:
+{json_str}
+
+Corrected JSON object:""" # Removed the explicit "Do not include ... ```json ... ```"
+
+                # Use the specialized fixer_model
+                fix_response = fixer_model.generate_content(fix_prompt)
+                fixed_json_raw = fix_response.text.strip()
+
+                # Handle potential markdown block in the fixer's response
+                final_json_str = fixed_json_raw
+                fixed_json_match = re.search(r'```json\s*([\s\S]+?)\s*```', fixed_json_raw, re.IGNORECASE)
+                if fixed_json_match:
+                     final_json_str = fixed_json_match.group(1).strip()
+                # else: use the stripped raw response if no markdown block found
+
+                print(f"--- LLM Fixer Model Suggestion ---\n{final_json_str}\n--------------------------------")
+                fixed_data = json.loads(final_json_str) # Parse the potentially extracted string
+                print("[LLM Resolver Info]: Successfully parsed LLM-fixed JSON.")
+                return fixed_data
+
+            except json.JSONDecodeError as fix_e:
+                print(f"[LLM Resolver Error]: LLM fix failed - JSON Decode failed again: {fix_e}. Fixed attempt: {final_json_str}")
+                return None
+            except Exception as fix_e:
+                # Catch errors during fixer model instantiation or generation
+                print(f"[LLM Resolver Error]: LLM fix attempt failed with exception: {fix_e}")
+                return None
+            # --- End LLM Fix Attempt ---
+
         except Exception as e:
-            print(f"[LLM Resolver Error]: Unexpected parsing error: {e}")
+            # Catch any other unexpected errors during initial processing
+            print(f"[LLM Resolver Error]: Unexpected parsing error before fix attempt: {e}. Raw output: {raw_output}")
             return None
