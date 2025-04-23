@@ -1,15 +1,16 @@
 # agent.py
-# No longer needs direct LLM imports, relies on Planning/Memory modules
 from agent.memory import BaseMemory
 from agent.planning import BasePlanning
 # from world import WorldState
 
 class Agent:
-    def __init__(self, name:str, personality:str, memory_module:BaseMemory, planning_module:BasePlanning):
+    def __init__(self, name:str,gender:str, personality:str, memory_module:BaseMemory, planning_module:BasePlanning, initial_goals: list[str] = None):
         self.name = name
+        self.gender = gender
         self.personality = personality
         self.memory = memory_module # An instance of BaseMemory
         self.planning = planning_module # An instance of BasePlanning
+        self.goals = initial_goals if initial_goals is not None else [] # List of goal descriptions
         self.action_buffer = None  # Store the output of plan() before resolution
         print(f"Agent {name} initialized with {type(memory_module).__name__} and {type(planning_module).__name__}.")
 
@@ -20,20 +21,27 @@ class Agent:
         self.memory.add_observation(perception_text)
         print(f"DEBUG {self.name} Perceived: {perception_text}") # Optional debug
 
+    def add_goal(self, goal_description: str):
+        """Adds a new goal to the agent's list."""
+        if goal_description not in self.goals:
+            self.goals.append(goal_description)
+            print(f"DEBUG {self.name} added goal: {goal_description}")
+            # Optionally, add this event to memory
+            self.memory.add_observation(f"[Internal] Added new goal: {goal_description}")
+
     def plan(self, world_state):
         """
-        Agent's thinking cycle. Uses memory and planning to decide next action intent.
+        Agent's thinking cycle. Uses memory, goals, and planning to decide next action intent.
         Does NOT execute the action, just returns the intended output.
         """
         # 1. Get memory context
         memory_context = self.memory.get_memory_context()
 
         # 2. Get minimal static world context (if needed by the thinker)
-        # Pass only what's necessary, avoid full dynamic state if using event perception
         static_context = world_state.get_static_context_for_agent(self.name)
 
         # 3. Plan (call the planning module)
-        # Pass agent reference (for personality), static context, and memory context
+        # Pass agent reference (for personality/goals), static context, and memory context
         action_output = self.planning.generate_output(
             self, static_context, memory_context)
 
