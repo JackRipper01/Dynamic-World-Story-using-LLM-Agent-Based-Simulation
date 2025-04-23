@@ -47,7 +47,7 @@ class WorldState:
     def advance_step(self):
         self.current_step += 1
 
-    # --- NEW: Helper methods to access rules ---
+    # --- Helper methods to access rules ---
     def get_reachable_locations(self, from_location):
         """Returns list of locations directly reachable from the given one."""
         return self.location_connectivity.get(from_location, [])
@@ -78,7 +78,7 @@ class WorldState:
             return True
         return False
     
-    # --- End NEW Helpers ---
+    # --- End Helpers ---
 
     def add_agent_to_location(self, agent_name, location_name, triggered_by="Setup"):
         """Adds agent and updates location state if needed."""
@@ -129,7 +129,6 @@ class WorldState:
             self.event_log.pop(0)
 
         
-
     def set_weather(self, new_weather, triggered_by="Simulation"):
         """Changes the weather and logs the event."""
         old_weather = self.global_context.get('weather', 'unknown')
