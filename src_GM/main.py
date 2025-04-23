@@ -57,7 +57,7 @@ def run_simulation():
     model = genai.GenerativeModel(
         model_name=config.MODEL_NAME,
         generation_config=config.GENERATION_CONFIG,
-        safety_settings=config.SAFETY_SETTINGS
+        # safety_settings=config.SAFETY_SETTINGS
     )
     print("Model configured.")
 
@@ -75,12 +75,14 @@ def run_simulation():
         thinker = get_planning_module(config.AGENT_PLANNING_TYPE, model)
         agent = Agent(
             name=agent_name,
+            gender=agent_conf["gender"],
             personality=agent_conf["personality"],
+            initial_goals=agent_conf["initial_goals"],
             memory_module=memory,
             planning_module=thinker
         )
         agents.append(agent)
-        start_location = "Park"
+        start_location = agent_conf["initial_location"]
         world.add_agent_to_location(
             agent_name, start_location, triggered_by="Setup")
         world.register_agent(agent)
@@ -102,8 +104,8 @@ def run_simulation():
         print(world.get_full_state_string())
 
         # --- Director Phase -------------------------------------------------------------------------------------------
-        director.step()  # Let the director observe, think, and act
-        time.sleep(1.0)  # Optional pause after director
+        # director.step()  # Let the director observe, think, and act
+        # time.sleep(1.0)  # Optional pause after director
         
         
         # --- Agent Thinking Phase --------------------------------------------------------------------------------------
