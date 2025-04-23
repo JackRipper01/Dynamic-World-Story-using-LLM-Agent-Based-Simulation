@@ -18,20 +18,20 @@ GENERATION_CONFIG = {
 }
 
 # LLM Safety Settings
-SAFETY_SETTINGS = [
-    {"category": "HARM_CATEGORY_HARASSMENT",
-        "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-    {"category": "HARM_CATEGORY_HATE_SPEECH",
-        "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-        "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-        "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-]
+# SAFETY_SETTINGS = [
+#     {"category": "HARM_CATEGORY_HARASSMENT",
+#         "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+#     {"category": "HARM_CATEGORY_HATE_SPEECH",
+#         "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+#     {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+#         "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+#     {"category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+#         "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+# ]
 
 
 # Model Name
-MODEL_NAME = "gemini-1.5-flash"
+MODEL_NAME = "gemini-2.0-flash-lite"
 
 # Simulation Settings
 MAX_RECENT_EVENTS = 15
@@ -50,7 +50,6 @@ DEFAULT_PERSONALITIES = {
     "Alice": "curious, slightly anxious, observant",
     "Bob": "calm, pragmatic, speaks plainly"
 }
-
 # --- Component Selection ---
 # Choose the implementations for different parts of the simulation
 # (Allows easy switching for experiments)
@@ -73,8 +72,15 @@ NARRATIVE_GOAL = "Develop a beautiful and funny story."
 # DIRECTOR_COOLDOWN_MAX = 5
 
 agent_configs = [
-    {"name": "Alice", "personality": DEFAULT_PERSONALITIES.get(
-        "Alice", "default")},
-    {"name": "Bob", "personality": DEFAULT_PERSONALITIES.get(
-        "Bob", "default")}
+    {"name": "Alice", 
+     "personality": "impatient, suspicious, ambitious",
+     "gender": "female",
+     "initial_location": "Park",
+     "initial_goals": ["Claim the shelter as my own territory.", "Find a man who can be my husband."]},
+    
+    {"name": "Bob",
+     "personality": "stubborn, territorial, easily annoyed",
+     "gender": "male",
+     "initial_location": "Park",
+    "initial_goals": ["Establish dominance in the area."]}
 ]
