@@ -14,10 +14,13 @@ from director import Director
 Event = namedtuple(
     "Event", ["description", "location", "scope", "step", "triggered_by"])
 
-def get_memory_module(memory_type):
+def get_memory_module(agent,memory_type):
     if memory_type == "SimpleMemory":
         from agent.memory import SimpleMemory
         return SimpleMemory()
+    if memory_type == "ShortLongTMemory":
+        from agent.memory import ShortLongTMemory
+        return ShortLongTMemory(agent,reflection_threshold=10)
     else:
         raise ValueError(f"Unknown memory type: {memory_type}")
 
@@ -71,16 +74,17 @@ def run_simulation():
     
     for agent_conf in config.agent_configs:
         agent_name = agent_conf["name"]
-        memory = get_memory_module(config.AGENT_MEMORY_TYPE)
         thinker = get_planning_module(config.AGENT_PLANNING_TYPE, model)
         agent = Agent(
             name=agent_name,
             gender=agent_conf["gender"],
             personality=agent_conf["personality"],
             initial_goals=agent_conf["initial_goals"],
-            memory_module=memory,
+            memory_module=None,
             planning_module=thinker
         )
+        agent.memory=get_memory_module(agent,config.AGENT_MEMORY_TYPE)
+        
         agents.append(agent)
         start_location = agent_conf["initial_location"]
         world.add_agent_to_location(

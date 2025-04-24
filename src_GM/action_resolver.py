@@ -3,6 +3,7 @@ import json
 import re
 from abc import ABC, abstractmethod
 from world import WorldState
+import config
 
 class BaseActionResolver(ABC):
     """

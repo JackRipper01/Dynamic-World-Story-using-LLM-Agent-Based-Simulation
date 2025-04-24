@@ -1,4 +1,4 @@
-# thinking.py
+# planning.py
 import google.generativeai as genai
 import config
 from abc import ABC, abstractmethod

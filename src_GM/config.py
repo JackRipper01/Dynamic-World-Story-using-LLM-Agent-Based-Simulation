@@ -55,7 +55,7 @@ DEFAULT_PERSONALITIES = {
 # (Allows easy switching for experiments)
 
 # Options: "SimpleMemory", "VectorMemory" (future)
-AGENT_MEMORY_TYPE = "SimpleMemory"
+AGENT_MEMORY_TYPE = "ShortLongTMemory"
 # Options: "GeminiThinker", "RuleBasedThinker" (future)
 AGENT_PLANNING_TYPE = "GeminiThinker"
 
