@@ -1,5 +1,6 @@
 # memory.py
 import config
+import google.generativeai as genai  # Add this import
 from abc import ABC, abstractmethod 
 from typing import TYPE_CHECKING, Optional, List, Dict, Any
 if TYPE_CHECKING:
@@ -50,7 +51,7 @@ class SimpleMemory(BaseMemory):
         new_entry = prefix + observation_text.strip()
         
         # Add new observation, ensuring separation
-        new_entry = observation_text.strip()
+        # Don't overwrite new_entry here
         if self.memory_buffer:
             self.memory_buffer = f"{self.memory_buffer}\n{new_entry}"
         else:
@@ -95,25 +96,25 @@ class ShortLongTMemory(BaseMemory):
         self.unreflected_count = 0 # Counter for triggering reflection
 
         # Configure and instantiate the reflection model
-        self.reflection_model = None
+        self.reflection_model = None  # Initialize to None
         try:
             # Configure and instantiate a dedicated model 
             generation_config = {
                     "temperature": 0.7, # Slightly less random for reflections
                     "top_p": 0.9,
                     "top_k": 40,
-                    # "max_output_tokens": 256 # Limit reflection length if needed
+                    "max_output_tokens": 256 # Limit reflection length if needed
                 }
             
-            self.reflection_mode = genai.GenerativeModel(
+            # Fix the variable name from reflection_mode to reflection_model
+            self.reflection_model = genai.GenerativeModel(
                 model_name=config.MODEL_NAME, # Or a specific model if desired
                 generation_config=generation_config,
             )
             print(f"DEBUG {self.agent.name}: Reflection model '{config.MODEL_NAME}' initialized for ShortLongTermMemory.")
         except Exception as e:
             print(f"ERROR {self.agent.name}: Failed to initialize reflection model '{config.MODEL_NAME}': {e}. Reflections will be disabled.")
-        # response = model.generate_content(fix_prompt)
-        # response_text = response.text.strip()
+        
 
     def add_observation(self, observation_text: str, step: Optional[int] = None, type: str = "Generic"):
         """Adds observation to short-term memory and triggers reflection if threshold is met."""
@@ -148,6 +149,7 @@ class ShortLongTMemory(BaseMemory):
         # --- Prepare Prompt for Reflection LLM ---
         # Basic agent context
         prompt_context = f"Agent Name: {self.agent.name}\n"
+        prompt_context += f"Goals: {self.agent.goals}\n"
         prompt_context += f"Personality: {self.agent.personality}\n\n"
         prompt_context += "Recent events and thoughts:\n"
 
@@ -167,7 +169,7 @@ class ShortLongTMemory(BaseMemory):
         full_prompt = prompt_context + prompt_instruction
 
         print(f"DEBUG {self.agent.name}: Generating reflection...")
-        # print(f"--- Reflection Prompt ---\n{full_prompt}\n-----------------------") # Uncomment for deep debug
+        print(f"--- Reflection Prompt ---\n{full_prompt}\n-----------------------") # Uncomment for deep debug
 
         # --- Call LLM for Reflection ---
         try:
