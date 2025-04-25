@@ -14,7 +14,7 @@ GENERATION_CONFIG = {
     "temperature": 0.9,  # Director might benefit from slightly lower temp if too random
     "top_p": 0.95,
     "top_k": 50,
-    "max_output_tokens": 150,
+    "max_output_tokens": 200,  # Increased to allow for more detailed responses
 }
 
 # LLM Safety Settings
@@ -67,20 +67,22 @@ ACTION_RESOLVER_TYPE = "LLMResolver"  # Start with the current LLM-based logic
 # Options: "DirectDispatch", "SummaryContext" (old way)
 EVENT_PERCEPTION_MODEL = "DirectEventDispatcher"
 
-NARRATIVE_GOAL = "Develop a beautiful and funny story."
+NARRATIVE_GOAL = "Create a humorous story about two strangers with conflicting goals who must eventually cooperate."
 # DIRECTOR_COOLDOWN_MIN = 2 # Example: Could make cooldown configurable
 # DIRECTOR_COOLDOWN_MAX = 5
 
 agent_configs = [
     {"name": "Alice", 
-     "personality": "impatient, suspicious, ambitious",
-     "gender": "female",
-     "initial_location": "Park",
-     "initial_goals": ["Claim the shelter as my own territory.", "Find a man who can be my husband."]},
+     "personality": "creative, adventurous, slightly mischievous, believes in supernatural phenomena",
+     "gender": "woman",
+     "initial_location": "Forest Edge",
+     "initial_goals": ["Find magical ingredients in the forest for a special potion", 
+                       "Convince someone to help explore the deeper parts of the forest", 
+                       "Establish a comfortable base camp"]},
     
     {"name": "Bob",
-     "personality": "stubborn, territorial, easily annoyed",
-     "gender": "male",
-     "initial_location": "Park",
-    "initial_goals": ["Establish dominance in the area."]}
+     "personality": "practical, skeptical, organized, values comfort and security above all",
+     "gender": "man",
+     "initial_location": "Forest Edge",
+    "initial_goals": ["Find a reliable source of food and water."]}
 ]
