@@ -29,7 +29,6 @@ class BaseActionResolver(ABC):
                 "success": bool,
                 "action_type": "MOVE" | "SPEAK" | "INTERACT" | "OBSERVE" | "WAIT" | "FAIL" | "UNKNOWN",
                 "parameters": dict, # Action specific details derived by the resolver
-                "reasoning": str, # Explanation (optional)
                 "outcome_description": str, # What an observer sees happen
                 # List of direct state changes, e.g., [('agent_location', agent_name, 'NewLoc'), ('lock_state', 'ShelterDoor', False)]
                 "world_state_updates": list,
@@ -85,16 +84,15 @@ Output a JSON object describing the outcome:
     "success": true | false,
     "action_type": "MOVE | SPEAK | INTERACT | OBSERVE | WAIT | FAIL | UNKNOWN",
     "parameters": {{ // e.g., "destination": "X", "target": "Y", "message": "..." }},
-    "reasoning": "Brief explanation.",
     "outcome_description": "Short sentence of what an observer sees.",
     "world_state_updates": [ // OPTIONAL: List of ['attribute', 'target', 'new_value'] tuples
         // e.g., ["agent_location", "{agent_name}", "Park"], ["location_property", "Shelter", "door_locked", false]
     ]
 }}
 
-Example (Move success): {{"success": true, "action_type": "MOVE", "parameters": {{"destination": "Park"}}, "reasoning": "Path is clear.", "outcome_description": "{agent_name} walks towards the Park.", "world_state_updates": [["agent_location", "{agent_name}", "Park"]] }}
-Example (Move fail): {{"success": false, "action_type": "MOVE", "parameters": {{"destination": "Shelter"}}, "reasoning": "Door is locked.", "outcome_description": "{agent_name} tries the Shelter door, but it's locked.", "world_state_updates": [] }}
-Example (Speak): {{"success": true, "action_type": "SPEAK", "parameters": {{"target": "Bob", "message": "Hello"}}, "reasoning": "Bob is present.", "outcome_description": "{agent_name} says to Bob, 'Hello'.", "world_state_updates": [] }}
+Example (Move success): {{"success": true, "action_type": "MOVE", "parameters": {{"destination": "Park"}}, "outcome_description": "{agent_name} walks towards the Park.", "world_state_updates": [["agent_location", "{agent_name}", "Park"]] }}
+Example (Move fail): {{"success": false, "action_type": "MOVE", "parameters": {{"destination": "Shelter"}}, "outcome_description": "{agent_name} tries the Shelter door, but it's locked.", "world_state_updates": [] }}
+Example (Speak): {{"success": true, "action_type": "SPEAK", "parameters": {{"target": "Bob", "message": "Hello"}}, "outcome_description": "{agent_name} says to Bob, 'Hello'.", "world_state_updates": [] }}
 
 Your JSON Output:
 ```json
@@ -123,7 +121,6 @@ Your JSON Output:
                         "success": False,
                     "action_type": "FAIL",
                     "parameters": {"raw_output": action_output},
-                    "reasoning": "Failed to interpret action via LLM.",
                     "outcome_description": f"{agent_name} does something unclear or fails ('{action_output}').",
                     "world_state_updates": []
                     }
@@ -132,7 +129,6 @@ Your JSON Output:
             print(f"[LLM Resolver Error]: LLM call or processing failed: {e}")
             return {  # Generic failure dictionary
                 "success": False, "action_type": "FAIL", "parameters": {"raw_output": action_output},
-                "reasoning": f"LLM exception: {e}",
                 "outcome_description": f"{agent_name}'s action ('{action_output}') causes confusion or fails.",
                 "world_state_updates": []
             }
@@ -155,6 +151,22 @@ Your JSON Output:
 
             # First attempt to parse the extracted/raw string
             data = json.loads(json_str)
+            
+            # Ensure all required fields are present
+            if 'success' in data and 'action_type' in data:
+                # Add default outcome_description if missing
+                if 'outcome_description' not in data:
+                    agent_name = "the agent"  # Default fallback
+                    action_type = data.get('action_type', 'UNKNOWN')
+                    if action_type == "SPEAK" and 'parameters' in data and 'message' in data['parameters']:
+                        data['outcome_description'] = f"{agent_name} says, '{data['parameters']['message']}'"
+                    else:
+                        data['outcome_description'] = f"{agent_name} performs a {action_type.lower()} action."
+                
+                # Ensure world_state_updates is a list
+                if 'world_state_updates' not in data:
+                    data['world_state_updates'] = []
+                    
             return data
 
         except json.JSONDecodeError as e:
