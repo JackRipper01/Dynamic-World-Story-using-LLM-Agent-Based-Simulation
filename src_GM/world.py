@@ -151,7 +151,32 @@ class WorldState:
          context += f"Current Weather: {self.global_context.get('weather', 'Unknown')}.\n"
          exits = self.get_reachable_locations(location)
          context += f"Visible Exits: {exits if exits else 'None'}.\n"
-         # Add other static elements if needed (e.g., visible objects)
+         
+         # Add location properties that are visible/relevant
+         location_props = self.location_properties.get(location, {})
+         visible_props = []
+         if 'ground' in location_props:
+             visible_props.append(f"The ground is {location_props['ground']}")
+         if 'terrain' in location_props:
+             visible_props.append(f"The terrain is {location_props['terrain']}")
+         if 'door_locked' in location_props:
+             visible_props.append(f"The door is {'locked' if location_props['door_locked'] else 'unlocked'}")
+         if visible_props:
+             context += f"Location Features: {'. '.join(visible_props)}.\n"
+         
+         # Add information about other agents in the location
+         other_agents = [name for name in self.get_agents_at(location) if name != agent_name]
+         if other_agents:
+             context += f"Other agents present: {', '.join(other_agents)}.\n"
+         else:
+             context += "You are alone here.\n"
+             
+         # Add information about items in the location
+         if 'contains' in location_props and location_props['contains']:
+             items = location_props['contains']
+             if isinstance(items, list) and items:
+                 context += f"You can see: {', '.join(items)}.\n"
+             
          return context
 
     def get_full_state_string(self):
