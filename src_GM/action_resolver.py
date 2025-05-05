@@ -37,9 +37,7 @@ class BaseActionResolver(ABC):
         """
         pass
 
-
 # --- Concrete Implementation (Moves logic from LLMInterpreter) ---
-
 
 class LLMActionResolver(BaseActionResolver):
     """
@@ -56,8 +54,9 @@ class LLMActionResolver(BaseActionResolver):
         self.world_ref = world_state_ref_for_prompting_rules  # Use carefully
 
     def resolve(self, agent_name: str, agent_location: str, action_output: str, world_state:WorldState) -> dict:
-        print(
-            f"[LLM Resolver @ {agent_location}]: Resolving for {agent_name}: '{action_output}'")
+        if config.SIMULATION_MODE == 'debug' or config.SIMULATION_MODE == 'only_resolver':
+            print(
+                f"[LLM Resolver @ {agent_location}]: Resolving for {agent_name}: '{action_output}'")
 
         # 1. Gather Context (Simplified example - adapt as needed)
         # This part needs careful design - what *minimal* context does the resolver need?
@@ -208,8 +207,8 @@ Corrected JSON object:""" # Removed the explicit "Do not include ... ```json ...
                 if fixed_json_match:
                      final_json_str = fixed_json_match.group(1).strip()
                 # else: use the stripped raw response if no markdown block found
-
-                print(f"--- LLM Fixer Model Suggestion ---\n{final_json_str}\n--------------------------------")
+                if config.SIMULATION_MODE == 'debug' or config.SIMULATION_MODE == 'only_resolver':
+                    print(f"--- LLM Fixer Model Suggestion ---\n{final_json_str}\n--------------------------------")
                 fixed_data = json.loads(final_json_str) # Parse the potentially extracted string
                 print("[LLM Resolver Info]: Successfully parsed LLM-fixed JSON.")
                 return fixed_data

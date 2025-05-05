@@ -59,7 +59,8 @@ Examples of valid single intents:
 Important: Provide only ONE intended action, thought, or utterance. Do not combine multiple intents.
 Your intended output (one single intent):"""
 
-        print(f"\n[{agent.name} is thinking...]")
+        if config.SIMULATION_MODE == 'debug':
+            print(f"\n[{agent.name} is thinking...]")
         # print(f"--- DEBUG PROMPT for {agent.name} ---\n{prompt}\n--------------------")
         response=None
         try:
@@ -73,8 +74,9 @@ Your intended output (one single intent):"""
                     f"[{agent.name} Warning]: LLM gave short/empty response: '{utterance}'. Defaulting to wait intent.")
                 utterance = f"Intend to wait silently."
             else:
-                # Print the potentially multi-line intent
-                print(f"[{agent.name} intends]: {utterance}")
+                if config.SIMULATION_MODE == 'debug':
+                    # Print the potentially multi-line intent
+                    print(f"[{agent.name} intends]: {utterance}")
 
             return utterance
 

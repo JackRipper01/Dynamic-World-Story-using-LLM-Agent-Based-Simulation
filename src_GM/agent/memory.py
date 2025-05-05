@@ -66,7 +66,8 @@ class SimpleMemory(BaseMemory):
                  self.memory_buffer = self.memory_buffer[first_newline+1:]
             else: # If no newline found after excess, just truncate
                  self.memory_buffer = self.memory_buffer[excess:]
-        print(f"DEBUG Memory Add: Added '{new_entry[:50]}...'. Buffer size: {len(self.memory_buffer)}") # Debug
+        if config.SIMULATION_MODE == 'debug':
+            print(f"DEBUG Memory Add: Added '{new_entry[:50]}...'. Buffer size: {len(self.memory_buffer)}") # Debug
 
     def get_memory_context(self, **kwargs) -> str:
         """Returns the entire (potentially trimmed) memory buffer."""
@@ -167,9 +168,9 @@ class ShortLongTMemory(BaseMemory):
         )
 
         full_prompt = prompt_context + prompt_instruction
-
-        print(f"DEBUG {self.agent.name}: Generating reflection...")
-        print(f"--- Reflection Prompt ---\n{full_prompt}\n-----------------------") # Uncomment for deep debug
+        if config.SIMULATION_MODE == 'debug':
+            print(f"DEBUG {self.agent.name}: Generating reflection...")
+            print(f"--- Reflection Prompt ---\n{full_prompt}\n-----------------------") # Uncomment for deep debug
 
         # --- Call LLM for Reflection ---
         try:
@@ -178,7 +179,8 @@ class ShortLongTMemory(BaseMemory):
 
             if reflection_text:
                 self.long_term_memory.append(reflection_text)
-                print(f"DEBUG {self.agent.name} Reflection Added: '{reflection_text[:80]}...'")
+                if config.SIMULATION_MODE == 'debug':
+                    print(f"DEBUG {self.agent.name} Reflection Added: '{reflection_text[:80]}...'")
             else:
                 print(f"WARN {self.agent.name}: Reflection generated empty text.")
 

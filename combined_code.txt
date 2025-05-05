@@ -1,4 +1,6 @@
 
+Here is all the code in one txt file:
+
 ============================== START FILE: src_GM\action_resolver.py ==============================
  ```
 python
@@ -8,6 +10,7 @@ import json
 import re
 from abc import ABC, abstractmethod
 from world import WorldState
+import config
 
 class BaseActionResolver(ABC):
     """
@@ -33,7 +36,6 @@ class BaseActionResolver(ABC):
                 "success": bool,
                 "action_type": "MOVE" | "SPEAK" | "INTERACT" | "OBSERVE" | "WAIT" | "FAIL" | "UNKNOWN",
                 "parameters": dict, # Action specific details derived by the resolver
-                "reasoning": str, # Explanation (optional)
                 "outcome_description": str, # What an observer sees happen
                 # List of direct state changes, e.g., [('agent_location', agent_name, 'NewLoc'), ('lock_state', 'ShelterDoor', False)]
                 "world_state_updates": list,
@@ -89,16 +91,15 @@ Output a JSON object describing the outcome:
     "success": true | false,
     "action_type": "MOVE | SPEAK | INTERACT | OBSERVE | WAIT | FAIL | UNKNOWN",
     "parameters": {{ // e.g., "destination": "X", "target": "Y", "message": "..." }},
-    "reasoning": "Brief explanation.",
     "outcome_description": "Short sentence of what an observer sees.",
     "world_state_updates": [ // OPTIONAL: List of ['attribute', 'target', 'new_value'] tuples
         // e.g., ["agent_location", "{agent_name}", "Park"], ["location_property", "Shelter", "door_locked", false]
     ]
 }}
 
-Example (Move success): {{"success": true, "action_type": "MOVE", "parameters": {{"destination": "Park"}}, "reasoning": "Path is clear.", "outcome_description": "{agent_name} walks towards the Park.", "world_state_updates": [["agent_location", "{agent_name}", "Park"]] }}
-Example (Move fail): {{"success": false, "action_type": "MOVE", "parameters": {{"destination": "Shelter"}}, "reasoning": "Door is locked.", "outcome_description": "{agent_name} tries the Shelter door, but it's locked.", "world_state_updates": [] }}
-Example (Speak): {{"success": true, "action_type": "SPEAK", "parameters": {{"target": "Bob", "message": "Hello"}}, "reasoning": "Bob is present.", "outcome_description": "{agent_name} says to Bob, 'Hello'.", "world_state_updates": [] }}
+Example (Move success): {{"success": true, "action_type": "MOVE", "parameters": {{"destination": "Park"}}, "outcome_description": "{agent_name} walks towards the Park.", "world_state_updates": [["agent_location", "{agent_name}", "Park"]] }}
+Example (Move fail): {{"success": false, "action_type": "MOVE", "parameters": {{"destination": "Shelter"}}, "outcome_description": "{agent_name} tries the Shelter door, but it's locked.", "world_state_updates": [] }}
+Example (Speak): {{"success": true, "action_type": "SPEAK", "parameters": {{"target": "Bob", "message": "Hello"}}, "outcome_description": "{agent_name} says to Bob, 'Hello'.", "world_state_updates": [] }}
 
 Your JSON Output:
 ```json
@@ -127,7 +128,6 @@ Your JSON Output:
                         "success": False,
                     "action_type": "FAIL",
                     "parameters": {"raw_output": action_output},
-                    "reasoning": "Failed to interpret action via LLM.",
                     "outcome_description": f"{agent_name} does something unclear or fails ('{action_output}').",
                     "world_state_updates": []
                     }
@@ -136,27 +136,103 @@ Your JSON Output:
             print(f"[LLM Resolver Error]: LLM call or processing failed: {e}")
             return {  # Generic failure dictionary
                 "success": False, "action_type": "FAIL", "parameters": {"raw_output": action_output},
-                "reasoning": f"LLM exception: {e}",
                 "outcome_description": f"{agent_name}'s action ('{action_output}') causes confusion or fails.",
                 "world_state_updates": []
             }
 
-    # Add the _parse_llm_output helper method here (copied from your interpreter)
     def _parse_llm_output(self, raw_output):
+        json_str = raw_output # Start with the raw output
         try:
-            json_match = re.search(r'```json\s*([\s\S]+?)\s*```', raw_output)
+            # Attempt to extract JSON from markdown code block first
+            json_match = re.search(r'```json\s*([\s\S]+?)\s*```', raw_output, re.IGNORECASE)
             if json_match:
-                json_str = json_match.group(1)
+                json_str = json_match.group(1).strip()
             else:
-                json_str = raw_output
+                # If no markdown block, assume the whole output might be JSON (or needs fixing)
+                # Find the first '{' and last '}' to potentially isolate JSON-like content
+                start_brace = raw_output.find('{')
+                end_brace = raw_output.rfind('}')
+                if start_brace != -1 and end_brace != -1 and end_brace > start_brace:
+                    json_str = raw_output[start_brace:end_brace+1].strip()
+                # else: keep raw_output as json_str if no braces found
+
+            # First attempt to parse the extracted/raw string
             data = json.loads(json_str)
-            # Add more validation if needed
+            
+            # Ensure all required fields are present
+            if 'success' in data and 'action_type' in data:
+                # Add default outcome_description if missing
+                if 'outcome_description' not in data:
+                    agent_name = "the agent"  # Default fallback
+                    action_type = data.get('action_type', 'UNKNOWN')
+                    if action_type == "SPEAK" and 'parameters' in data and 'message' in data['parameters']:
+                        data['outcome_description'] = f"{agent_name} says, '{data['parameters']['message']}'"
+                    else:
+                        data['outcome_description'] = f"{agent_name} performs a {action_type.lower()} action."
+                
+                # Ensure world_state_updates is a list
+                if 'world_state_updates' not in data:
+                    data['world_state_updates'] = []
+                    
             return data
+
         except json.JSONDecodeError as e:
-            print(f"[LLM Resolver Error]: JSON Decode failed: {e}. Raw output: {raw_output}")
-            return None
+            print(f"[LLM Resolver Warning]: Initial JSON Decode failed: {e}. Attempting LLM fix...")
+            print(f"--- Faulty JSON String ---\n{json_str}\n------------------------")
+
+            # --- LLM Fix Attempt using a specialized model ---
+            try:
+                # Configure and instantiate a dedicated model for JSON fixing
+                # Lower temperature for more deterministic output
+                fixer_generation_config = {
+                    "temperature": 0.1, # Low temperature for focused fixing
+                    "top_p": 0.95,
+                    "top_k": 50,
+                    "max_output_tokens": 1024, # Allow potentially larger fixed JSON
+                }
+                # Assuming config.MODEL_NAME and config.SAFETY_SETTINGS are accessible
+                # You might need to import 'config' if not already done in this file
+                fixer_model = genai.GenerativeModel(
+                    model_name=config.MODEL_NAME, # Or a specific model if desired
+                    generation_config=fixer_generation_config,
+                )
+
+                # Slightly relaxed prompt, still discouraging extra text
+                fix_prompt = f"""The following text is supposed to be a valid JSON object, but it failed parsing due to syntax errors. Please correct the syntax errors and output ONLY the corrected JSON object. Aim to output *only* the raw, valid JSON object itself. Do not include any explanations or apologies.
+
+Broken JSON string:
+{json_str}
+
+Corrected JSON object:""" # Removed the explicit "Do not include ... ```json ... ```"
+
+                # Use the specialized fixer_model
+                fix_response = fixer_model.generate_content(fix_prompt)
+                fixed_json_raw = fix_response.text.strip()
+
+                # Handle potential markdown block in the fixer's response
+                final_json_str = fixed_json_raw
+                fixed_json_match = re.search(r'```json\s*([\s\S]+?)\s*```', fixed_json_raw, re.IGNORECASE)
+                if fixed_json_match:
+                     final_json_str = fixed_json_match.group(1).strip()
+                # else: use the stripped raw response if no markdown block found
+
+                print(f"--- LLM Fixer Model Suggestion ---\n{final_json_str}\n--------------------------------")
+                fixed_data = json.loads(final_json_str) # Parse the potentially extracted string
+                print("[LLM Resolver Info]: Successfully parsed LLM-fixed JSON.")
+                return fixed_data
+
+            except json.JSONDecodeError as fix_e:
+                print(f"[LLM Resolver Error]: LLM fix failed - JSON Decode failed again: {fix_e}. Fixed attempt: {final_json_str}")
+                return None
+            except Exception as fix_e:
+                # Catch errors during fixer model instantiation or generation
+                print(f"[LLM Resolver Error]: LLM fix attempt failed with exception: {fix_e}")
+                return None
+            # --- End LLM Fix Attempt ---
+
         except Exception as e:
-            print(f"[LLM Resolver Error]: Unexpected parsing error: {e}")
+            # Catch any other unexpected errors during initial processing
+            print(f"[LLM Resolver Error]: Unexpected parsing error before fix attempt: {e}. Raw output: {raw_output}")
             return None
 
 
@@ -184,24 +260,24 @@ GENERATION_CONFIG = {
     "temperature": 0.9,  # Director might benefit from slightly lower temp if too random
     "top_p": 0.95,
     "top_k": 50,
-    "max_output_tokens": 150,
+    "max_output_tokens": 200,  # Increased to allow for more detailed responses
 }
 
 # LLM Safety Settings
-SAFETY_SETTINGS = [
-    {"category": "HARM_CATEGORY_HARASSMENT",
-        "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-    {"category": "HARM_CATEGORY_HATE_SPEECH",
-        "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-        "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-        "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-]
+# SAFETY_SETTINGS = [
+#     {"category": "HARM_CATEGORY_HARASSMENT",
+#         "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+#     {"category": "HARM_CATEGORY_HATE_SPEECH",
+#         "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+#     {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+#         "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+#     {"category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+#         "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+# ]
 
 
 # Model Name
-MODEL_NAME = "gemini-1.5-flash"
+MODEL_NAME = "gemini-2.0-flash-lite"
 
 # Simulation Settings
 MAX_RECENT_EVENTS = 15
@@ -220,13 +296,12 @@ DEFAULT_PERSONALITIES = {
     "Alice": "curious, slightly anxious, observant",
     "Bob": "calm, pragmatic, speaks plainly"
 }
-
 # --- Component Selection ---
 # Choose the implementations for different parts of the simulation
 # (Allows easy switching for experiments)
 
 # Options: "SimpleMemory", "VectorMemory" (future)
-AGENT_MEMORY_TYPE = "SimpleMemory"
+AGENT_MEMORY_TYPE = "ShortLongTMemory"
 # Options: "GeminiThinker", "RuleBasedThinker" (future)
 AGENT_PLANNING_TYPE = "GeminiThinker"
 
@@ -238,15 +313,24 @@ ACTION_RESOLVER_TYPE = "LLMResolver"  # Start with the current LLM-based logic
 # Options: "DirectDispatch", "SummaryContext" (old way)
 EVENT_PERCEPTION_MODEL = "DirectEventDispatcher"
 
-NARRATIVE_GOAL = "Develop a beautiful and funny story."
+NARRATIVE_GOAL = "Create a humorous story about two strangers with conflicting goals who must eventually cooperate."
 # DIRECTOR_COOLDOWN_MIN = 2 # Example: Could make cooldown configurable
 # DIRECTOR_COOLDOWN_MAX = 5
 
 agent_configs = [
-    {"name": "Alice", "personality": DEFAULT_PERSONALITIES.get(
-        "Alice", "default")},
-    {"name": "Bob", "personality": DEFAULT_PERSONALITIES.get(
-        "Bob", "default")}
+    {"name": "Alice", 
+     "personality": "creative, adventurous, slightly mischievous, believes in supernatural phenomena",
+     "gender": "woman",
+     "initial_location": "Forest Edge",
+     "initial_goals": ["Find magical ingredients in the forest for a special potion", 
+                       "Convince someone to help explore the deeper parts of the forest", 
+                       "Establish a comfortable base camp"]},
+    
+    {"name": "Bob",
+     "personality": "practical, skeptical, organized, values comfort and security above all",
+     "gender": "man",
+     "initial_location": "Forest Edge",
+    "initial_goals": ["Find a reliable source of food and water."]}
 ]
 
 
@@ -532,10 +616,13 @@ from director import Director
 Event = namedtuple(
     "Event", ["description", "location", "scope", "step", "triggered_by"])
 
-def get_memory_module(memory_type):
+def get_memory_module(agent,memory_type):
     if memory_type == "SimpleMemory":
         from agent.memory import SimpleMemory
         return SimpleMemory()
+    if memory_type == "ShortLongTMemory":
+        from agent.memory import ShortLongTMemory
+        return ShortLongTMemory(agent,reflection_threshold=10)
     else:
         raise ValueError(f"Unknown memory type: {memory_type}")
 
@@ -575,7 +662,7 @@ def run_simulation():
     model = genai.GenerativeModel(
         model_name=config.MODEL_NAME,
         generation_config=config.GENERATION_CONFIG,
-        safety_settings=config.SAFETY_SETTINGS
+        # safety_settings=config.SAFETY_SETTINGS
     )
     print("Model configured.")
 
@@ -589,16 +676,19 @@ def run_simulation():
     
     for agent_conf in config.agent_configs:
         agent_name = agent_conf["name"]
-        memory = get_memory_module(config.AGENT_MEMORY_TYPE)
         thinker = get_planning_module(config.AGENT_PLANNING_TYPE, model)
         agent = Agent(
             name=agent_name,
+            gender=agent_conf["gender"],
             personality=agent_conf["personality"],
-            memory_module=memory,
+            initial_goals=agent_conf["initial_goals"],
+            memory_module=None,
             planning_module=thinker
         )
+        agent.memory=get_memory_module(agent,config.AGENT_MEMORY_TYPE)
+        
         agents.append(agent)
-        start_location = "Park"
+        start_location = agent_conf["initial_location"]
         world.add_agent_to_location(
             agent_name, start_location, triggered_by="Setup")
         world.register_agent(agent)
@@ -620,8 +710,8 @@ def run_simulation():
         print(world.get_full_state_string())
 
         # --- Director Phase -------------------------------------------------------------------------------------------
-        director.step()  # Let the director observe, think, and act
-        time.sleep(1.0)  # Optional pause after director
+        # director.step()  # Let the director observe, think, and act
+        # time.sleep(1.0)  # Optional pause after director
         
         
         # --- Agent Thinking Phase --------------------------------------------------------------------------------------
@@ -807,7 +897,7 @@ class WorldState:
     def advance_step(self):
         self.current_step += 1
 
-    # --- NEW: Helper methods to access rules ---
+    # --- Helper methods to access rules ---
     def get_reachable_locations(self, from_location):
         """Returns list of locations directly reachable from the given one."""
         return self.location_connectivity.get(from_location, [])
@@ -838,7 +928,7 @@ class WorldState:
             return True
         return False
     
-    # --- End NEW Helpers ---
+    # --- End Helpers ---
 
     def add_agent_to_location(self, agent_name, location_name, triggered_by="Setup"):
         """Adds agent and updates location state if needed."""
@@ -889,7 +979,6 @@ class WorldState:
             self.event_log.pop(0)
 
         
-
     def set_weather(self, new_weather, triggered_by="Simulation"):
         """Changes the weather and logs the event."""
         old_weather = self.global_context.get('weather', 'unknown')
@@ -912,7 +1001,32 @@ class WorldState:
          context += f"Current Weather: {self.global_context.get('weather', 'Unknown')}.\n"
          exits = self.get_reachable_locations(location)
          context += f"Visible Exits: {exits if exits else 'None'}.\n"
-         # Add other static elements if needed (e.g., visible objects)
+         
+         # Add location properties that are visible/relevant
+         location_props = self.location_properties.get(location, {})
+         visible_props = []
+         if 'ground' in location_props:
+             visible_props.append(f"The ground is {location_props['ground']}")
+         if 'terrain' in location_props:
+             visible_props.append(f"The terrain is {location_props['terrain']}")
+         if 'door_locked' in location_props:
+             visible_props.append(f"The door is {'locked' if location_props['door_locked'] else 'unlocked'}")
+         if visible_props:
+             context += f"Location Features: {'. '.join(visible_props)}.\n"
+         
+         # Add information about other agents in the location
+         other_agents = [name for name in self.get_agents_at(location) if name != agent_name]
+         if other_agents:
+             context += f"Other agents present: {', '.join(other_agents)}.\n"
+         else:
+             context += "You are alone here.\n"
+             
+         # Add information about items in the location
+         if 'contains' in location_props and location_props['contains']:
+             items = location_props['contains']
+             if isinstance(items, list) and items:
+                 context += f"You can see: {', '.join(items)}.\n"
+             
          return context
 
     def get_full_state_string(self):
@@ -978,17 +1092,18 @@ class WorldState:
 python
 
 # agent.py
-# No longer needs direct LLM imports, relies on Planning/Memory modules
 from agent.memory import BaseMemory
 from agent.planning import BasePlanning
 # from world import WorldState
 
 class Agent:
-    def __init__(self, name:str, personality:str, memory_module:BaseMemory, planning_module:BasePlanning):
+    def __init__(self, name:str,gender:str, personality:str, memory_module:BaseMemory, planning_module:BasePlanning, initial_goals: list[str] = None):
         self.name = name
+        self.gender = gender
         self.personality = personality
         self.memory = memory_module # An instance of BaseMemory
         self.planning = planning_module # An instance of BasePlanning
+        self.goals = initial_goals if initial_goals is not None else [] # List of goal descriptions
         self.action_buffer = None  # Store the output of plan() before resolution
         print(f"Agent {name} initialized with {type(memory_module).__name__} and {type(planning_module).__name__}.")
 
@@ -999,20 +1114,27 @@ class Agent:
         self.memory.add_observation(perception_text)
         print(f"DEBUG {self.name} Perceived: {perception_text}") # Optional debug
 
+    def add_goal(self, goal_description: str):
+        """Adds a new goal to the agent's list."""
+        if goal_description not in self.goals:
+            self.goals.append(goal_description)
+            print(f"DEBUG {self.name} added goal: {goal_description}")
+            # Optionally, add this event to memory
+            self.memory.add_observation(f"[Internal] Added new goal: {goal_description}")
+
     def plan(self, world_state):
         """
-        Agent's thinking cycle. Uses memory and planning to decide next action intent.
+        Agent's thinking cycle. Uses memory, goals, and planning to decide next action intent.
         Does NOT execute the action, just returns the intended output.
         """
         # 1. Get memory context
         memory_context = self.memory.get_memory_context()
 
         # 2. Get minimal static world context (if needed by the thinker)
-        # Pass only what's necessary, avoid full dynamic state if using event perception
         static_context = world_state.get_static_context_for_agent(self.name)
 
         # 3. Plan (call the planning module)
-        # Pass agent reference (for personality), static context, and memory context
+        # Pass agent reference (for personality/goals), static context, and memory context
         action_output = self.planning.generate_output(
             self, static_context, memory_context)
 
@@ -1039,18 +1161,35 @@ python
 
 # memory.py
 import config
-from abc import ABC, abstractmethod # For defining abstract base class
+import google.generativeai as genai  # Add this import
+from abc import ABC, abstractmethod 
+from typing import TYPE_CHECKING, Optional, List, Dict, Any
+if TYPE_CHECKING:
+   from agent import Agent 
 
+# --- Base Memory Class ---
 class BaseMemory(ABC):
     """Abstract base class for agent memory modules."""
+    def __init__(self, agent: 'Agent'):
+        """Initializes the memory module, linking it to its agent."""
+        self.agent = agent # Store the agent reference
+
     @abstractmethod
-    def add_observation(self, observation_text):
-        """Adds a piece of information (perception, action result, thought) to memory."""
+    def add_observation(self, observation_text: str, step: Optional[int] = None, type: str = "Generic"):
+        """Adds a piece of information to memory.
+
+        Args:
+            observation_text: The core text of the memory.
+            step: The simulation step number when the observation occurred (optional).
+            type: The type of memory (e.g., "Perception", "Intent", "Dialogue", "Reflection").
+        """
         pass
 
     @abstractmethod
-    def get_memory_context(self):
-        """Returns a string summary of relevant memories for the LLM prompt."""
+    def get_memory_context(self, **kwargs) -> str:
+        """Returns a string summary of relevant memories for the LLM prompt.
+           Accepts optional keyword arguments for more specific retrieval if implemented.
+        """
         pass
 
     @abstractmethod
@@ -1060,18 +1199,25 @@ class BaseMemory(ABC):
 
 class SimpleMemory(BaseMemory):
     """A basic rolling string buffer memory."""
-    def __init__(self, max_length=config.MAX_MEMORY_TOKENS):
+    def __init__(self, agent: 'Agent', max_length: int = config.MAX_MEMORY_TOKENS):
+        """Initializes SimpleMemory."""
+        super().__init__(agent) 
         self.memory_buffer = ""
         self.max_length = max_length # Approximate character length
 
-    def add_observation(self, observation_text:str):
+    def add_observation(self, observation_text: str, step: Optional[int] = None, type: str = "Generic"):
+        """Adds observation text to the buffer, prepending type/step if available."""
+        # Format the entry with available metadata
+        prefix = f"[T:{type}" + (f" S:{step}" if step is not None else "") + "] "
+        new_entry = prefix + observation_text.strip()
+        
         # Add new observation, ensuring separation
-        new_entry = observation_text.strip()
+        # Don't overwrite new_entry here
         if self.memory_buffer:
             self.memory_buffer = f"{self.memory_buffer}\n{new_entry}"
         else:
             self.memory_buffer = new_entry
-
+            
         # Trim if exceeds max length (simple truncation from the beginning)
         if len(self.memory_buffer) > self.max_length:
             excess = len(self.memory_buffer) - self.max_length
@@ -1083,29 +1229,169 @@ class SimpleMemory(BaseMemory):
                  self.memory_buffer = self.memory_buffer[excess:]
         print(f"DEBUG Memory Add: Added '{new_entry[:50]}...'. Buffer size: {len(self.memory_buffer)}") # Debug
 
-    def get_memory_context(self):
+    def get_memory_context(self, **kwargs) -> str:
+        """Returns the entire (potentially trimmed) memory buffer."""
         if not self.memory_buffer:
             return "No specific memories recalled."
-        # Provide the most recent memories
         return f"Recollections (most recent last):\n{self.memory_buffer}"
 
     def clear(self):
         self.memory_buffer = ""
 
-# Example of how you might add another memory type later:
-# class VectorMemory(BaseMemory):
-#     def __init__(self, embedding_model, vector_db):
-#         # ... implementation using embeddings ...
-#         pass
-#     def add_observation(self, observation_text):
-#         # ... embed and store ...
-#         pass
-#     def get_memory_context(self, query_text):
-#         # ... retrieve relevant memories based on query ...
-#         pass
-#     def clear(self):
-#         # ... clear db ...
-#         pass
+# --- Short-Long Term Memory with Reflection ---
+class ShortLongTMemory(BaseMemory):
+    """Memory storing recent events (short-term) and LLM-generated
+       reflections/summaries (long-term). Does NOT use embeddings."""
+    def __init__(self, agent: 'Agent', reflection_threshold: int = 5):
+        """
+        Initializes ShortLongTermMemory.
+
+        Args:
+            agent: The agent this memory belongs to.
+            reflection_threshold: Number of new short-term memories needed to trigger a reflection.
+        """
+        super().__init__(agent)
+        self.short_term_memory: List[Dict[str, Any]] = [] # Stores {'step': int, 'type': str, 'text': str}
+        self.long_term_memory: List[str] = [] # Stores reflection strings
+        self.reflection_threshold = reflection_threshold
+        self.unreflected_count = 0 # Counter for triggering reflection
+
+        # Configure and instantiate the reflection model
+        self.reflection_model = None  # Initialize to None
+        try:
+            # Configure and instantiate a dedicated model 
+            generation_config = {
+                    "temperature": 0.7, # Slightly less random for reflections
+                    "top_p": 0.9,
+                    "top_k": 40,
+                    "max_output_tokens": 256 # Limit reflection length if needed
+                }
+            
+            # Fix the variable name from reflection_mode to reflection_model
+            self.reflection_model = genai.GenerativeModel(
+                model_name=config.MODEL_NAME, # Or a specific model if desired
+                generation_config=generation_config,
+            )
+            print(f"DEBUG {self.agent.name}: Reflection model '{config.MODEL_NAME}' initialized for ShortLongTermMemory.")
+        except Exception as e:
+            print(f"ERROR {self.agent.name}: Failed to initialize reflection model '{config.MODEL_NAME}': {e}. Reflections will be disabled.")
+        
+
+    def add_observation(self, observation_text: str, step: Optional[int] = None, type: str = "Generic"):
+        """Adds observation to short-term memory and triggers reflection if threshold is met."""
+        memory_entry = {
+            "step": step,
+            "type": type,
+            "text": observation_text.strip()
+        }
+        self.short_term_memory.append(memory_entry)
+        self.unreflected_count += 1
+        # print(f"DEBUG {self.agent.name} Memory Add ShortTerm: Added '{memory_entry['text'][:50]}...'. Unreflected: {self.unreflected_count}")
+
+        # --- Trigger Reflection ---
+        if self.reflection_model and self.unreflected_count >= self.reflection_threshold:
+            self._reflect()
+            self.unreflected_count = 0 # Reset counter after reflection
+
+    def _reflect(self):
+        """Generates and stores a long-term reflection based on recent short-term memories."""
+        if not self.reflection_model:
+            print(f"DEBUG {self.agent.name}: Skipping reflection, model not available.")
+            return
+        if len(self.short_term_memory) < self.reflection_threshold:
+            # Should not happen if called correctly, but safety check
+            return
+
+        # Get the most recent memories that haven't been reflected upon yet
+        # For simplicity, we take the last 'reflection_threshold' entries.
+        # A more robust way might track indices, but this works for now.
+        memories_to_reflect = self.short_term_memory[-self.reflection_threshold:]
+
+        # --- Prepare Prompt for Reflection LLM ---
+        # Basic agent context
+        prompt_context = f"Agent Name: {self.agent.name}\n"
+        prompt_context += f"Goals: {self.agent.goals}\n"
+        prompt_context += f"Personality: {self.agent.personality}\n\n"
+        prompt_context += "Recent events and thoughts:\n"
+
+        # Format the memories for the prompt
+        for mem in memories_to_reflect:
+            prefix = f"[T:{mem['type']}" + (f" S:{mem['step']}" if mem['step'] is not None else "") + "]"
+            prompt_context += f"{prefix} {mem['text']}\n"
+
+        # Reflection Instruction
+        prompt_instruction = (
+            "\nBased on the agent's personality and the recent events listed above, "
+            "what are 1-3 high-level insights, conclusions, important observations, "
+            "or summaries about the current situation, relationships, or goals? "
+            "Focus on significance and synthesis, not just listing the events. Be concise."
+        )
+
+        full_prompt = prompt_context + prompt_instruction
+
+        print(f"DEBUG {self.agent.name}: Generating reflection...")
+        print(f"--- Reflection Prompt ---\n{full_prompt}\n-----------------------") # Uncomment for deep debug
+
+        # --- Call LLM for Reflection ---
+        try:
+            response = self.reflection_model.generate_content(full_prompt)
+            reflection_text = response.text.strip()
+
+            if reflection_text:
+                self.long_term_memory.append(reflection_text)
+                print(f"DEBUG {self.agent.name} Reflection Added: '{reflection_text[:80]}...'")
+            else:
+                print(f"WARN {self.agent.name}: Reflection generated empty text.")
+
+        except Exception as e:
+            print(f"ERROR {self.agent.name}: Failed to generate reflection: {e}")
+            # Optionally add a placeholder LTM entry indicating failure?
+
+    def get_memory_context(self, **kwargs) -> str:
+        """Returns a formatted string containing both long-term reflections
+           and recent short-term observations."""
+
+        context = "--- Core Reflections & Summaries ---\n"
+        if self.long_term_memory:
+            # Maybe limit the number of reflections shown? For now, show all.
+            context += "\n".join(f"- {ltm}" for ltm in self.long_term_memory) + "\n"
+        else:
+            context += "No long-term reflections generated yet.\n"
+
+        context += "\n--- Recent Observations (most recent last) ---\n"
+        if self.short_term_memory:
+            # Limit the number of short-term memories shown in context?
+            max_short_term_in_context = kwargs.get('max_short_term_entries', 20) # Example limit
+            start_index = max(0, len(self.short_term_memory) - max_short_term_in_context)
+            if start_index > 0:
+                context += "[...older observations omitted...]\n"
+
+            for mem in self.short_term_memory[start_index:]:
+                prefix = f"[T:{mem['type']}" + (f" S:{mem['step']}" if mem['step'] is not None else "") + "]"
+                context += f"{prefix} {mem['text']}\n"
+        else:
+            context += "No recent observations recorded.\n"
+
+        # Limit total context length if needed (crude truncation)
+        max_total_length = kwargs.get('max_context_length', 4000) # Example limit
+        if len(context) > max_total_length:
+            context = f"... (Memory Context Trimmed) ...\n{context[-max_total_length:]}"
+
+        # print(f"DEBUG {self.agent.name} Memory Context Requested. Length: {len(context)}")
+        return context.strip()
+    def clear(self):
+        """Clears both short-term and long-term memory."""
+        self.short_term_memory = []
+        self.long_term_memory = []
+        self.unreflected_count = 0
+        print(f"DEBUG {self.agent.name}: Memory cleared.")
+        
+
+    
+
+    
+
+    
 
 ```
 ============================== END FILE: src_GM\agent\memory.py ==============================
@@ -1115,7 +1401,7 @@ class SimpleMemory(BaseMemory):
  ```
 python
 
-# thinking.py
+# planning.py
 import google.generativeai as genai
 import config
 from abc import ABC, abstractmethod
@@ -1128,46 +1414,69 @@ class BasePlanning(ABC):
         pass
 
 class SimplePlanning(BasePlanning):
-    """Uses Google Gemini LLM to generate agent utterances."""
+    """
+    A simple planning module that uses an LLM to generate action outputs.
+    """
+    
     def __init__(self, model):
         self.llm = model # Pass the initialized model instance
 
-    def generate_output(self, agent, static_world_context, memory_context):  # Renamed
+    def generate_output(self, agent, static_world_context, memory_context): 
         """Formats prompt and calls the Gemini API."""
+
+        # Prepare goals string (handle empty list)
+        goals_string = "Your current goals:\n" + "\n".join(f"- {g}" for g in agent.goals) if agent.goals else "You have no specific goals right now."
 
         prompt = f"""You are {agent.name}, a character in a simulated world.
 Your personality: {agent.personality}.
+Your gender: {getattr(agent, 'gender', 'Not specified')}.
+Your goals: {agent.goals}
 
-Your current static situation:
+Your current world situation:
 {static_world_context}
 
 Your recent memories and perceptions (most recent last):
 {memory_context}
 
-Based *only* on the above, what do you intend to think, say, or do next?
-Describe your intended action, thought, or utterance in a single, short, natural sentence.
-Focus on your intent. Be concise.
-Examples:
-- Try to walk towards the Forest Edge.
-- Ask Bob, "Did you hear that noise?"
-- Examine the ground near the shelter.
-- Think about how cold the weather is getting.
-- Decide to wait and see what happens.
+Based on your personality, goals, gender, situation, and memories, what do you intend to think, say, or do next?
+Choose and describe ONE single intended action, thought, or utterance. You can be descriptive but must focus on only one intent.
+If you intend to speak, use quotes. If you intend to think, describe the thought. If you intend to act, describe the action.
 
-Your intended output (one sentence):"""  # Changed 'response' to 'intended output'
+IMPORTANT: If someone has spoken to you directly in your recent perceptions, prioritize responding to them before pursuing your own goals. Being responsive to others is crucial for realistic social interaction.
+
+Consider how you might interact with other agents if they're present. You can:
+- Talk to them (e.g., "Intend to ask Bob, "Hello, can you help me?"")
+- Collaborate with them on tasks
+- Observe their behavior
+- Respond to their actions or questions
+- Form alliances or rivalries based on your goals
+
+Examples of valid single intents:
+- Intend to walk towards the Forest Edge to see if I can find any berries.
+- Intend to ask Bob, "Did you hear that strange noise coming from the shelter? It sounded like scratching."
+- Intend to carefully examine the ground near the shelter for any tracks or clues.
+- Intend to think: 'This weather is getting colder. I need to reinforce the shelter soon, especially if Bob plans on staying.'
+- Intend to wait silently and observe Bob's next move.
+- Intend to respond to Alice, "The forest does look interesting, but I'm more concerned about finding food and water first. What kind of potion are you making?"
+
+Important: Provide only ONE intended action, thought, or utterance. Do not combine multiple intents.
+Your intended output (one single intent):"""
 
         print(f"\n[{agent.name} is thinking...]")
         # print(f"--- DEBUG PROMPT for {agent.name} ---\n{prompt}\n--------------------")
-
+        response=None
         try:
             response = self.llm.generate_content(prompt)
-            utterance = response.text.strip().split('\n')[0]
+            # Use the full, stripped response text
+            utterance = response.text.strip()
 
-            if not utterance or len(utterance) < 5:
+            # Check if the response is empty or just whitespace
+            if not utterance:
                 print(
                     f"[{agent.name} Warning]: LLM gave short/empty response: '{utterance}'. Defaulting to wait intent.")
                 utterance = f"Intend to wait silently."
             else:
+                # Print the potentially multi-line intent
                 print(f"[{agent.name} intends]: {utterance}")
 
             return utterance

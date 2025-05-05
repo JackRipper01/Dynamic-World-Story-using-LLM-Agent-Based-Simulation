@@ -2,7 +2,7 @@
 from agent.memory import BaseMemory
 from agent.planning import BasePlanning
 # from world import WorldState
-
+import config
 class Agent:
     def __init__(self, name:str,gender:str, personality:str, memory_module:BaseMemory, planning_module:BasePlanning, initial_goals: list[str] = None):
         self.name = name
@@ -19,13 +19,15 @@ class Agent:
         # Simple formatting for now, could be more sophisticated
         perception_text = f"[Perception @ Step {event.step}] ({event.scope} at {event.location or 'Global'} by {event.triggered_by}): {event.description}"
         self.memory.add_observation(perception_text)
-        print(f"DEBUG {self.name} Perceived: {perception_text}") # Optional debug
+        if config.SIMULATION_MODE == 'debug':
+            print(f"DEBUG {self.name} Perceived: {perception_text}") # Optional debug
 
     def add_goal(self, goal_description: str):
         """Adds a new goal to the agent's list."""
         if goal_description not in self.goals:
             self.goals.append(goal_description)
-            print(f"DEBUG {self.name} added goal: {goal_description}")
+            if config.SIMULATION_MODE == 'debug':
+                print(f"DEBUG {self.name} added goal: {goal_description}")
             # Optionally, add this event to memory
             self.memory.add_observation(f"[Internal] Added new goal: {goal_description}")
 

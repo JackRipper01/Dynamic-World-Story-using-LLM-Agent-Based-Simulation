@@ -6,7 +6,8 @@ from agent.agent import Agent
 
 # Define a structure for events for clarity
 Event = namedtuple(
-    "Event", ["description", "location", "scope", "step", "triggered_by"])
+    "Event", ["description", "location", "scope", "step", "triggered_by"]
+)
 
 
 class WorldState:
@@ -16,14 +17,14 @@ class WorldState:
         self.location_connectivity = {  # Defines possible direct movements
             "Park": ["Shelter", "Forest Edge"],
             "Shelter": ["Park"],
-            "Forest Edge": ["Park"]
+            "Forest Edge": ["Park"],
             # Add more connections as locations are added
         }
         self.location_properties = {  # Defines states/features of locations
             "Park": {"ground": "grassy"},
             # Example: Shelter door starts unlocked
             "Shelter": {"door_locked": False, "contains": []},
-            "Forest Edge": {"terrain": "uneven"}
+            "Forest Edge": {"terrain": "uneven"},
         }
         self.global_context = {"weather": "Clear"}
         self.event_log = []  # Now stores Event tuples
@@ -31,13 +32,13 @@ class WorldState:
 
         self.registered_agents: Dict[str, Agent] = {}  # Added type hint
         # Store the passed dispatcher instance
-    def register_agent(self, agent:Agent):
+
+    def register_agent(self, agent: Agent):
         """Registers an agent to receive events."""
         if agent.name not in self.registered_agents:
             self.registered_agents[agent.name] = agent
-            print(
-                f"[World Event Update]: Registered {agent.name} for events.")
-    
+            print(f"[World Event Update]: Registered {agent.name} for events.")
+
     def unregister_agent(self, agent_name):
         """Unregisters an agent."""
         if agent_name in self.registered_agents:
@@ -60,24 +61,27 @@ class WorldState:
         """Sets a property, potentially logging an event via log_event."""
         if location not in self.location_properties:
             print(
-                f"[World State Warning]: Location '{location}' not found for setting property.")
+                f"[World State Warning]: Location '{location}' not found for setting property."
+            )
             return False
         if prop_name not in self.location_properties[location]:
             print(
-                f"[World State Warning]: Property '{prop_name}' doesn't exist for '{location}'. Adding it.")
+                f"[World State Warning]: Property '{prop_name}' doesn't exist for '{location}'. Adding it."
+            )
             # Decide if dynamic property creation is allowed or should error
 
-        old_value = self.location_properties[location].get(prop_name, 'None')
+        old_value = self.location_properties[location].get(prop_name, "None")
         if old_value != value:
             self.location_properties[location][prop_name] = value
             # Log the change as an event? Depends on granularity needed.
             # Example: log the *effect* rather than the state change itself.
             # e.g., if setting door_locked=False, the event might be "The shelter door unlocks"
             print(
-                f"[World State Update]: Property '{prop_name}' of '{location}' changed to '{value}' (Trigger: {triggered_by}).")
+                f"[World State Update]: Property '{prop_name}' of '{location}' changed to '{value}' (Trigger: {triggered_by})."
+            )
             return True
         return False
-    
+
     # --- End Helpers ---
 
     def add_agent_to_location(self, agent_name, location_name, triggered_by="Setup"):
@@ -89,95 +93,134 @@ class WorldState:
 
             # Update 'contains' property if location has it
             if old_location and old_location != location_name:
-                if 'contains' in self.location_properties.get(old_location, {}):
-                    if agent_name in self.location_properties[old_location]['contains']:
-                        self.location_properties[old_location]['contains'].remove(
-                            agent_name)
+                if "contains" in self.location_properties.get(old_location, {}):
+                    if agent_name in self.location_properties[old_location]["contains"]:
+                        self.location_properties[old_location]["contains"].remove(
+                            agent_name
+                        )
 
-            if 'contains' in self.location_properties.get(location_name, {}):
-                if agent_name not in self.location_properties[location_name]['contains']:
-                    self.location_properties[location_name]['contains'].append(
-                        agent_name)
+            if "contains" in self.location_properties.get(location_name, {}):
+                if (
+                    agent_name
+                    not in self.location_properties[location_name]["contains"]
+                ):
+                    self.location_properties[location_name]["contains"].append(
+                        agent_name
+                    )
 
             # Log the arrival event (could be refined based on triggered_by)
             if triggered_by != "Setup":  # Don't log redundant 'appears' if moving
-                self.log_event(f"{agent_name} arrives.", scope='local',
-                                location=location_name, triggered_by=triggered_by)
+                self.log_event(
+                    f"{agent_name} arrives.",
+                    scope="local",
+                    location=location_name,
+                    triggered_by=triggered_by,
+                )
             elif not old_location:  # Log initial appearance
-                self.log_event(f"{agent_name} appears in the {location_name}.",
-                                scope='local', location=location_name, triggered_by=triggered_by)
+                self.log_event(
+                    f"{agent_name} appears in the {location_name}.",
+                    scope="local",
+                    location=location_name,
+                    triggered_by=triggered_by,
+                )
         else:
             print(
-                f"Warning: Cannot move {agent_name} to unknown location '{location_name}'")
+                f"Warning: Cannot move {agent_name} to unknown location '{location_name}'"
+            )
 
     def get_agents_at(self, location_name):
         # Add simple check if location exists
         if location_name not in self.location_descriptions:
             return []
-        return [name for name, loc in self.agent_locations.items() if loc == location_name]
+        return [
+            name for name, loc in self.agent_locations.items() if loc == location_name
+        ]
 
-    def log_event(self, description, scope='local', location=None, triggered_by="Simulation", dispatch=True):
-        """Logs an event """
-        new_event = Event(description=description, location=location,
-                          scope=scope, step=self.current_step, triggered_by=triggered_by)
+    def log_event(
+        self,
+        description,
+        scope="local",
+        location=None,
+        triggered_by="Simulation",
+        dispatch=True,
+    ):
+        """Logs an event"""
+        new_event = Event(
+            description=description,
+            location=location,
+            scope=scope,
+            step=self.current_step,
+            triggered_by=triggered_by,
+        )
         self.event_log.append(new_event)
         log_prefix = f"[Event Log Step {self.current_step}][{triggered_by} @ {location or 'Global'}/{scope}]"
-        print(f"{log_prefix}: {description}")
+        if config.SIMULATION_MODE == "debug":
+            print(f"{log_prefix}: {description}")
 
         # Trim log if needed
-        if len(self.event_log) > config.MAX_RECENT_EVENTS * 2:  # Keep a longer internal log
+        if (
+            len(self.event_log) > config.MAX_RECENT_EVENTS * 2
+        ):  # Keep a longer internal log
             self.event_log.pop(0)
 
-        
     def set_weather(self, new_weather, triggered_by="Simulation"):
         """Changes the weather and logs the event."""
-        old_weather = self.global_context.get('weather', 'unknown')
+        old_weather = self.global_context.get("weather", "unknown")
         if old_weather != new_weather:
-            self.global_context['weather'] = new_weather
+            self.global_context["weather"] = new_weather
             # Log weather change as a GLOBAL event
-            self.log_event(f"The weather changes from {old_weather} to {new_weather}.",
-                           scope='global',
-                           location=None,  # Global event has no specific location
-                           triggered_by=triggered_by)
+            self.log_event(
+                f"The weather changes from {old_weather} to {new_weather}.",
+                scope="global",
+                location=None,  # Global event has no specific location
+                triggered_by=triggered_by,
+            )
             return True
         return False
 
     def get_static_context_for_agent(self, agent_name):
-         """Provides minimal, relatively static context."""
-         location = self.agent_locations.get(agent_name)
-         if not location: return "You are lost."
+        """Provides minimal, relatively static context."""
+        location = self.agent_locations.get(agent_name)
+        if not location:
+            return "You are lost."
 
-         context = f"Current Location: {location} ({self.location_descriptions.get(location, 'Unknown')}).\n"
-         context += f"Current Weather: {self.global_context.get('weather', 'Unknown')}.\n"
-         exits = self.get_reachable_locations(location)
-         context += f"Visible Exits: {exits if exits else 'None'}.\n"
-         
-         # Add location properties that are visible/relevant
-         location_props = self.location_properties.get(location, {})
-         visible_props = []
-         if 'ground' in location_props:
-             visible_props.append(f"The ground is {location_props['ground']}")
-         if 'terrain' in location_props:
-             visible_props.append(f"The terrain is {location_props['terrain']}")
-         if 'door_locked' in location_props:
-             visible_props.append(f"The door is {'locked' if location_props['door_locked'] else 'unlocked'}")
-         if visible_props:
-             context += f"Location Features: {'. '.join(visible_props)}.\n"
-         
-         # Add information about other agents in the location
-         other_agents = [name for name in self.get_agents_at(location) if name != agent_name]
-         if other_agents:
-             context += f"Other agents present: {', '.join(other_agents)}.\n"
-         else:
-             context += "You are alone here.\n"
-             
-         # Add information about items in the location
-         if 'contains' in location_props and location_props['contains']:
-             items = location_props['contains']
-             if isinstance(items, list) and items:
-                 context += f"You can see: {', '.join(items)}.\n"
-             
-         return context
+        context = f"Current Location: {location} ({self.location_descriptions.get(location, 'Unknown')}).\n"
+        context += (
+            f"Current Weather: {self.global_context.get('weather', 'Unknown')}.\n"
+        )
+        exits = self.get_reachable_locations(location)
+        context += f"Visible Exits: {exits if exits else 'None'}.\n"
+
+        # Add location properties that are visible/relevant
+        location_props = self.location_properties.get(location, {})
+        visible_props = []
+        if "ground" in location_props:
+            visible_props.append(f"The ground is {location_props['ground']}")
+        if "terrain" in location_props:
+            visible_props.append(f"The terrain is {location_props['terrain']}")
+        if "door_locked" in location_props:
+            visible_props.append(
+                f"The door is {'locked' if location_props['door_locked'] else 'unlocked'}"
+            )
+        if visible_props:
+            context += f"Location Features: {'. '.join(visible_props)}.\n"
+
+        # Add information about other agents in the location
+        other_agents = [
+            name for name in self.get_agents_at(location) if name != agent_name
+        ]
+        if other_agents:
+            context += f"Other agents present: {', '.join(other_agents)}.\n"
+        else:
+            context += "You are alone here.\n"
+
+        # Add information about items in the location
+        if "contains" in location_props and location_props["contains"]:
+            items = location_props["contains"]
+            if isinstance(items, list) and items:
+                context += f"You can see: {', '.join(items)}.\n"
+
+        return context
 
     def get_full_state_string(self):
         """For debugging - shows more structured log."""
@@ -188,7 +231,7 @@ class WorldState:
         # Show who listens
         state += f"Registered Agents: {list(self.registered_agents.keys())}\n"
         state += f"Event Log ({len(self.event_log)} total, showing last {config.MAX_RECENT_EVENTS}):\n"
-        display_events = self.event_log[-config.MAX_RECENT_EVENTS:]
+        display_events = self.event_log[-config.MAX_RECENT_EVENTS :]
         for event in display_events:
             state += f"  - St{event.step} [{event.triggered_by}@{event.location or 'Global'}/{event.scope}] {event.description}\n"
         return state + "-------------------"
@@ -199,7 +242,8 @@ class WorldState:
             return
 
         print(
-            f"[World State Apply]: Applying {len(updates)} updates triggered by {triggered_by}.")
+            f"[World State Apply]: Applying {len(updates)} updates triggered by {triggered_by}."
+        )
         for update in updates:
             try:
                 update_type = update[0]
@@ -209,25 +253,36 @@ class WorldState:
                 if update_type == "agent_location":
                     # Value is the new location name
                     self.add_agent_to_location(
-                        agent_name=target, location_name=value, triggered_by=triggered_by)
+                        agent_name=target,
+                        location_name=value,
+                        triggered_by=triggered_by,
+                    )
                 elif update_type == "location_property":
                     # Target is location name, value is prop_name, need 4th element for prop_value
                     if len(update) == 4:
                         prop_name = value
                         prop_value = update[3]
                         self.set_location_property(
-                            location=target, prop_name=prop_name, value=prop_value, triggered_by=triggered_by)
+                            location=target,
+                            prop_name=prop_name,
+                            value=prop_value,
+                            triggered_by=triggered_by,
+                        )
                     else:
                         print(
-                            f"[World State Apply Error]: Invalid format for location_property update: {update}")
+                            f"[World State Apply Error]: Invalid format for location_property update: {update}"
+                        )
                 # Add more update types here (e.g., global context, agent inventory)
                 else:
                     print(
-                        f"[World State Apply Warning]: Unknown update type '{update_type}'")
+                        f"[World State Apply Warning]: Unknown update type '{update_type}'"
+                    )
 
             except IndexError as e:
                 print(
-                    f"[World State Apply Error]: Malformed update tuple {update}: {e}")
+                    f"[World State Apply Error]: Malformed update tuple {update}: {e}"
+                )
             except Exception as e:
                 print(
-                    f"[World State Apply Error]: Failed to apply update {update}: {e}")
+                    f"[World State Apply Error]: Failed to apply update {update}: {e}"
+                )

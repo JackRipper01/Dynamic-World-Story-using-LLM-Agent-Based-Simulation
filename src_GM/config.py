@@ -86,3 +86,4 @@ agent_configs = [
      "initial_location": "Forest Edge",
     "initial_goals": ["Find a reliable source of food and water."]}
 ]
+SIMULATION_MODE = 'debug'
