@@ -4,7 +4,6 @@ from typing import List
 import google.generativeai as genai
 import argparse
 
-# Import our modules
 import config  # Import the whole config module
 
 from world import WorldState
