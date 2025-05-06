@@ -146,7 +146,7 @@ agent_configs = [
         "name": "Eve",
         "personality": "A highly empathetic and anxious person who reacts emotionally to the tense situation, seeking safety while trying to read others' feelings for clues.",
         "gender": "woman",
-        "initial_location": "Near Riverbank (seeking shelter)",
+        "initial_location": "Shelter",
         "initial_goals": [  # Goals AFTER discovering the body
             "Find out who the killer is immediately so I can feel safe.",
             "Try to understand how everyone is feeling; look for emotional tells.",
