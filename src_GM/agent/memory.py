@@ -151,7 +151,8 @@ class ShortLongTMemory(BaseMemory):
         # Basic agent context
         prompt_context = f"Agent Name: {self.agent.name}\n"
         prompt_context += f"Goals: {self.agent.goals}\n"
-        prompt_context += f"Personality: {self.agent.personality}\n\n"
+        prompt_context += f"Personality: {self.agent.personality}\n"
+        prompt_context += f"Background: {self.agent.background}\n\n"
         prompt_context += "Recent events and thoughts:\n"
 
         # Format the memories for the prompt
