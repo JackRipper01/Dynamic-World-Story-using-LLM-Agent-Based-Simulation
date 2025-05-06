@@ -17,6 +17,7 @@ class SimplePlanning(BasePlanning):
     
     def __init__(self, model):
         self.llm = model # Pass the initialized model instance
+        self.is_initial_prompt=False
 
     def generate_output(self, agent, static_world_context, memory_context): 
         """Formats prompt and calls the Gemini API."""
@@ -31,9 +32,11 @@ Your goals: {agent.goals}
 Your background: {agent.background}
 
 Your current world situation:
+
 {static_world_context}
 
 Your recent memories and perceptions (most recent last):
+
 {memory_context}
 
 Based on your personality, goals, gender, situation, and memories, what do you intend to think, say, or do next?
@@ -59,7 +62,9 @@ Examples of valid single intents:
 
 Important: Provide only ONE intended action, thought, or utterance. Do not combine multiple intents.
 Your intended output (one single intent):"""
-
+        if self.is_initial_prompt==False:
+            self.is_initial_prompt=True
+            print(f"[{agent.name} Prompt]: {prompt}")  #TEMPORAL ------------------------------------->
         if config.SIMULATION_MODE == 'debug':
             print(f"\n[{agent.name} is thinking...]")
         # print(f"--- DEBUG PROMPT for {agent.name} ---\n{prompt}\n--------------------")
@@ -76,9 +81,9 @@ Your intended output (one single intent):"""
                 utterance = f"Intend to wait silently."
             else:
                 if config.SIMULATION_MODE == 'debug':
-                    # Print the potentially multi-line intent
                     print(f"[{agent.name} intends]: {utterance}")
-
+            
+            print(f"[{agent.name} Response]: {utterance}")  #TEMPORAL ------------------------------------->
             return utterance
 
         except Exception as e:
