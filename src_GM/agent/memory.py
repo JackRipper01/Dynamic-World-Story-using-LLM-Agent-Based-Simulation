@@ -1,17 +1,20 @@
 # memory.py
 import config
 import google.generativeai as genai  # Add this import
-from abc import ABC, abstractmethod 
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Optional, List, Dict, Any
 if TYPE_CHECKING:
-   from agent import Agent 
+    from agent import Agent
 
 # --- Base Memory Class ---
+
+
 class BaseMemory(ABC):
     """Abstract base class for agent memory modules."""
+
     def __init__(self, agent: 'Agent'):
         """Initializes the memory module, linking it to its agent."""
-        self.agent = agent # Store the agent reference
+        self.agent = agent  # Store the agent reference
 
     @abstractmethod
     def add_observation(self, observation_text: str, step: Optional[int] = None, type: str = "Generic"):
@@ -36,38 +39,43 @@ class BaseMemory(ABC):
         """Clears the memory."""
         pass
 
+
 class SimpleMemory(BaseMemory):
     """A basic rolling string buffer memory."""
+
     def __init__(self, agent: 'Agent', max_length: int = config.MAX_MEMORY_TOKENS):
         """Initializes SimpleMemory."""
-        super().__init__(agent) 
+        super().__init__(agent)
         self.memory_buffer = ""
-        self.max_length = max_length # Approximate character length
+        self.max_length = max_length  # Approximate character length
 
     def add_observation(self, observation_text: str, step: Optional[int] = None, type: str = "Generic"):
         """Adds observation text to the buffer, prepending type/step if available."""
         # Format the entry with available metadata
-        prefix = f"[T:{type}" + (f" S:{step}" if step is not None else "") + "] "
+        prefix = f"[T:{type}" + \
+            (f" S:{step}" if step is not None else "") + "] "
         new_entry = prefix + observation_text.strip()
-        
+
         # Add new observation, ensuring separation
         # Don't overwrite new_entry here
         if self.memory_buffer:
             self.memory_buffer = f"{self.memory_buffer}\n{new_entry}"
         else:
             self.memory_buffer = new_entry
-            
+
         # Trim if exceeds max length (simple truncation from the beginning)
         if len(self.memory_buffer) > self.max_length:
             excess = len(self.memory_buffer) - self.max_length
             # Try to cut off at a newline to keep entries somewhat intact
             first_newline = self.memory_buffer.find('\n', excess)
             if first_newline != -1:
-                 self.memory_buffer = self.memory_buffer[first_newline+1:]
-            else: # If no newline found after excess, just truncate
-                 self.memory_buffer = self.memory_buffer[excess:]
+                self.memory_buffer = self.memory_buffer[first_newline+1:]
+            else:  # If no newline found after excess, just truncate
+                self.memory_buffer = self.memory_buffer[excess:]
         if config.SIMULATION_MODE == 'debug':
-            print(f"DEBUG Memory Add: Added '{new_entry[:50]}...'. Buffer size: {len(self.memory_buffer)}") # Debug
+            # Debug
+            print(
+                f"DEBUG Memory Add: Added '{new_entry[:50]}...'. Buffer size: {len(self.memory_buffer)}")
 
     def get_memory_context(self, **kwargs) -> str:
         """Returns the entire (potentially trimmed) memory buffer."""
@@ -79,9 +87,12 @@ class SimpleMemory(BaseMemory):
         self.memory_buffer = ""
 
 # --- Short-Long Term Memory with Reflection ---
+
+
 class ShortLongTMemory(BaseMemory):
     """Memory storing recent events (short-term) and LLM-generated
        reflections/summaries (long-term). Does NOT use embeddings."""
+
     def __init__(self, agent: 'Agent', reflection_threshold: int = 5):
         """
         Initializes ShortLongTermMemory.
@@ -91,31 +102,34 @@ class ShortLongTMemory(BaseMemory):
             reflection_threshold: Number of new short-term memories needed to trigger a reflection.
         """
         super().__init__(agent)
-        self.short_term_memory: List[Dict[str, Any]] = [] # Stores {'step': int, 'type': str, 'text': str}
-        self.long_term_memory: List[str] = [] # Stores reflection strings
+        # Stores {'step': int, 'type': str, 'text': str}
+        self.short_term_memory: List[Dict[str, Any]] = []
+        self.long_term_memory: List[str] = []  # Stores reflection strings
         self.reflection_threshold = reflection_threshold
-        self.unreflected_count = 0 # Counter for triggering reflection
+        self.unreflected_count = 0  # Counter for triggering reflection
+        self.is_initial_prompt = False  # Flag for initial prompt
 
         # Configure and instantiate the reflection model
         self.reflection_model = None  # Initialize to None
         try:
-            # Configure and instantiate a dedicated model 
+            # Configure and instantiate a dedicated model
             generation_config = {
-                    "temperature": 0.7, # Slightly less random for reflections
-                    "top_p": 0.9,
-                    "top_k": 40,
-                    "max_output_tokens": 256 # Limit reflection length if needed
-                }
-            
+                "temperature": 0.7,  # Slightly less random for reflections
+                "top_p": 0.9,
+                "top_k": 40,
+                "max_output_tokens": 256  # Limit reflection length if needed
+            }
+
             # Fix the variable name from reflection_mode to reflection_model
             self.reflection_model = genai.GenerativeModel(
-                model_name=config.MODEL_NAME, # Or a specific model if desired
+                model_name=config.MODEL_NAME,  # Or a specific model if desired
                 generation_config=generation_config,
             )
-            print(f"DEBUG {self.agent.name}: Reflection model '{config.MODEL_NAME}' initialized for ShortLongTermMemory.")
+            print(
+                f"DEBUG {self.agent.name}: Reflection model '{config.MODEL_NAME}' initialized for ShortLongTermMemory.")
         except Exception as e:
-            print(f"ERROR {self.agent.name}: Failed to initialize reflection model '{config.MODEL_NAME}': {e}. Reflections will be disabled.")
-        
+            print(
+                f"ERROR {self.agent.name}: Failed to initialize reflection model '{config.MODEL_NAME}': {e}. Reflections will be disabled.")
 
     def add_observation(self, observation_text: str, step: Optional[int] = None, type: str = "Generic"):
         """Adds observation to short-term memory and triggers reflection if threshold is met."""
@@ -126,17 +140,18 @@ class ShortLongTMemory(BaseMemory):
         }
         self.short_term_memory.append(memory_entry)
         self.unreflected_count += 1
-        # print(f"DEBUG {self.agent.name} Memory Add ShortTerm: Added '{memory_entry['text'][:50]}...'. Unreflected: {self.unreflected_count}")
-
+                                                                # TEMPORAL ------------------------------------->
+        print(f"DEBUG {self.agent.name} Memory Add ShortTerm: {memory_entry}")
         # --- Trigger Reflection ---
         if self.reflection_model and self.unreflected_count >= self.reflection_threshold:
             self._reflect()
-            self.unreflected_count = 0 # Reset counter after reflection
+            self.unreflected_count = 0  # Reset counter after reflection
 
     def _reflect(self):
         """Generates and stores a long-term reflection based on recent short-term memories."""
         if not self.reflection_model:
-            print(f"DEBUG {self.agent.name}: Skipping reflection, model not available.")
+            print(
+                f"DEBUG {self.agent.name}: Skipping reflection, model not available.")
             return
         if len(self.short_term_memory) < self.reflection_threshold:
             # Should not happen if called correctly, but safety check
@@ -157,7 +172,8 @@ class ShortLongTMemory(BaseMemory):
 
         # Format the memories for the prompt
         for mem in memories_to_reflect:
-            prefix = f"[T:{mem['type']}" + (f" S:{mem['step']}" if mem['step'] is not None else "") + "]"
+            prefix = f"[T:{mem['type']}" + \
+                (f" S:{mem['step']}" if mem['step'] is not None else "") + "]"
             prompt_context += f"{prefix} {mem['text']}\n"
 
         # Reflection Instruction
@@ -171,7 +187,14 @@ class ShortLongTMemory(BaseMemory):
         full_prompt = prompt_context + prompt_instruction
         if config.SIMULATION_MODE == 'debug':
             print(f"DEBUG {self.agent.name}: Generating reflection...")
-            print(f"--- Reflection Prompt ---\n{full_prompt}\n-----------------------") # Uncomment for deep debug
+            # Uncomment for deep debug
+            print(
+                f"--- Reflection Prompt ---\n{full_prompt}\n-----------------------")
+
+        # TEMPORAL ------------------------------------->
+        print(f"DEBUG {self.agent.name}: Generating reflection...")
+        print(
+            f"--- Reflection Prompt ---\n{full_prompt}\n-----------------------")
 
         # --- Call LLM for Reflection ---
         try:
@@ -180,13 +203,18 @@ class ShortLongTMemory(BaseMemory):
 
             if reflection_text:
                 self.long_term_memory.append(reflection_text)
+                print(f"DEBUG {self.agent.name} Reflection Added: {reflection_text}")# TEMPORAL ------------------------------------->
+                
                 if config.SIMULATION_MODE == 'debug':
-                    print(f"DEBUG {self.agent.name} Reflection Added: '{reflection_text[:80]}...'")
+                    print(
+                        f"DEBUG {self.agent.name} Reflection Added: '{reflection_text[:80]}...'")
             else:
-                print(f"WARN {self.agent.name}: Reflection generated empty text.")
+                print(
+                    f"WARN {self.agent.name}: Reflection generated empty text.")
 
         except Exception as e:
-            print(f"ERROR {self.agent.name}: Failed to generate reflection: {e}")
+            print(
+                f"ERROR {self.agent.name}: Failed to generate reflection: {e}")
             # Optionally add a placeholder LTM entry indicating failure?
 
     def get_memory_context(self, **kwargs) -> str:
@@ -203,34 +231,33 @@ class ShortLongTMemory(BaseMemory):
         context += "\n--- Recent Observations (most recent last) ---\n"
         if self.short_term_memory:
             # Limit the number of short-term memories shown in context?
-            max_short_term_in_context = kwargs.get('max_short_term_entries', 20) # Example limit
-            start_index = max(0, len(self.short_term_memory) - max_short_term_in_context)
+            max_short_term_in_context = kwargs.get(
+                'max_short_term_entries', 20)  # Example limit
+            start_index = max(0, len(self.short_term_memory) -
+                              max_short_term_in_context)
             if start_index > 0:
                 context += "[...older observations omitted...]\n"
 
             for mem in self.short_term_memory[start_index:]:
-                prefix = f"[T:{mem['type']}" + (f" S:{mem['step']}" if mem['step'] is not None else "") + "]"
+                prefix = f"[T:{mem['type']}" + \
+                    (f" S:{mem['step']}" if mem['step']
+                     is not None else "") + "]"
                 context += f"{prefix} {mem['text']}\n"
         else:
             context += "No recent observations recorded.\n"
 
         # Limit total context length if needed (crude truncation)
-        max_total_length = kwargs.get('max_context_length', 4000) # Example limit
+        max_total_length = kwargs.get(
+            'max_context_length', 4000)  # Example limit
         if len(context) > max_total_length:
             context = f"... (Memory Context Trimmed) ...\n{context[-max_total_length:]}"
 
         # print(f"DEBUG {self.agent.name} Memory Context Requested. Length: {len(context)}")
         return context.strip()
+
     def clear(self):
         """Clears both short-term and long-term memory."""
         self.short_term_memory = []
         self.long_term_memory = []
         self.unreflected_count = 0
         print(f"DEBUG {self.agent.name}: Memory cleared.")
-        
-
-    
-
-    
-
-    
