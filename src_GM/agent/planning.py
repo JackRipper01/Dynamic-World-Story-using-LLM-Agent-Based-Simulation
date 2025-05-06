@@ -28,6 +28,7 @@ class SimplePlanning(BasePlanning):
 Your personality: {agent.personality}.
 Your gender: {getattr(agent, 'gender', 'Not specified')}.
 Your goals: {agent.goals}
+Your background: {agent.background}
 
 Your current world situation:
 {static_world_context}

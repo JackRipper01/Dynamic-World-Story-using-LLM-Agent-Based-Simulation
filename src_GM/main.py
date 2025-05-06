@@ -137,6 +137,7 @@ def run_simulation():
             gender=agent_conf["gender"],
             personality=agent_conf["personality"],
             initial_goals=agent_conf["initial_goals"],
+            background=agent_conf["background"],
             memory_module=None,  # Memory will be assigned below
             planning_module=thinker
         )
@@ -289,7 +290,7 @@ def run_simulation():
                     # Log a system error event
                     all_outcome_events.append(
                         (error_msg, 'system_error', agent_loc,
-                        'System')  # Use 'System' as trigger
+                         'System')  # Use 'System' as trigger
                     )
             # --- Handle Missing Agent Location or Resolver ---
             else:
