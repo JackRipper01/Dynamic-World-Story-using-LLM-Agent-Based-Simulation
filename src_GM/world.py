@@ -14,18 +14,22 @@ class WorldState:
     def __init__(self, locations):
         self.agent_locations = {}  # agent_name -> location_name
         self.location_descriptions = locations
-        self.location_connectivity = {  # Defines possible direct movements
-            "Park": ["Shelter", "Forest Edge"],
-            "Shelter": ["Park"],
-            "Forest Edge": ["Park"],
-            # Add more connections as locations are added
-        }
-        self.location_properties = {  # Defines states/features of locations
-            "Park": {"ground": "grassy"},
-            # Example: Shelter door starts unlocked
-            "Shelter": {"door_locked": False, "contains": []},
-            "Forest Edge": {"terrain": "uneven"},
-        }
+        
+        # self.location_connectivity = {  # Defines possible direct movements
+        #     "Park": ["Shelter", "Forest Edge"],
+        #     "Shelter": ["Park"],
+        #     "Forest Edge": ["Park"],
+        #     # Add more connections as locations are added
+        # }
+        self.location_connectivity = {}
+        # self.location_properties = {  # Defines states/features of locations
+        #     "Park": {"ground": "grassy"},
+        #     # Example: Shelter door starts unlocked
+        #     "Shelter": {"door_locked": False, "contains": []},
+        #     "Forest Edge": {"terrain": "uneven"},
+        # }
+        self.location_properties = {}
+        
         self.global_context = {"weather": "Clear"}
         self.event_log = []  # Now stores Event tuples
         self.current_step = 0  # Track simulation step
