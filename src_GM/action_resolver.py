@@ -78,51 +78,86 @@ Relevant world state and rules:
 Weather: {world_state.global_context.get('weather', 'Clear')}
 
 Analyze the agent's intent. Is it possible? What is the most plausible outcome?
-Output a JSON object describing the outcome:
-{{
-    "success": true | false,
-    "action_type": "MOVE | SPEAK | INTERACT | OBSERVE | WAIT | FAIL | UNKNOWN",
-    "parameters": {{ // e.g., "destination": "X", "target": "Y", "message": "..." }},
-    "outcome_description": "Short sentence of what an observer sees.",
-    "world_state_updates": [ // OPTIONAL: List of ['attribute', 'target', 'new_value'] tuples
-        // e.g., ["agent_location", "{agent_name}", "Park"], ["location_property", "Shelter", "door_locked", false]
-    ]
-}}
+Your task is to determine if the action is successful, what type of action it is, any key parameters, and a brief description of what an observer would see.
 
-Example (Move success): {{"success": true, "action_type": "MOVE", "parameters": {{"destination": "Park"}}, "outcome_description": "{agent_name} walks towards the Park.", "world_state_updates": [["agent_location", "{agent_name}", "Park"]] }}
-Example (Move fail): {{"success": false, "action_type": "MOVE", "parameters": {{"destination": "Shelter"}}, "outcome_description": "{agent_name} tries the Shelter door, but it's locked.", "world_state_updates": [] }}
-Example (Speak): {{"success": true, "action_type": "SPEAK", "parameters": {{"target": "Bob", "message": "Hello"}}, "outcome_description": "{agent_name} says to Bob, 'Hello'.", "world_state_updates": [] }}
+Output your analysis as a single line of text with exactly four parts, separated by " | " (a pipe symbol with spaces around it):
+1.  Success Status: Either "SUCCESS" or "FAILURE".
+2.  Action Type: One of MOVE, SPEAK, INTERACT, OBSERVE, WAIT, FAIL, UNKNOWN.
+3.  Parameters: Key details for the action.
+    - For MOVE: "destination: <location_name>"
+    - For SPEAK: "target: <character_name>, message: <text_of_message>"
+    - For INTERACT: "object: <object_name>, details: <brief_description_of_interaction>"
+    - For OBSERVE: "target: <what_is_observed>"
+    - For WAIT: "duration: <e.g., a moment, briefly>"
+    - For FAIL or UNKNOWN: This part can be a brief reason for failure/unknown, or left empty if the reason is clear from the outcome description.
+4.  Outcome Description: A short sentence describing what an observer sees happen.
 
-Your JSON Output:
-```json
+Examples of the single-line output format:
+Intent: "go to the park" -> SUCCESS | MOVE | destination: Park | {agent_name} walks towards the Park.
+Intent: "try to open shelter door" (if door is locked) -> FAILURE | INTERACT | object: Shelter Door, details: attempt open | {agent_name} tries the Shelter door, but it's locked.
+Intent: "say hello to Bob" -> SUCCESS | SPEAK | target: Bob, message: Hello | {agent_name} says to Bob, 'Hello'.
+Intent: "look around" -> SUCCESS | OBSERVE | target: surroundings | {agent_name} looks around.
+Intent: "wait a moment" -> SUCCESS | WAIT | duration: a moment | {agent_name} waits.
+Intent: "fly to the moon" (if impossible) -> FAILURE | FAIL | reason: impossible action | {agent_name} attempts an impossible action.
+
+Ensure your output is a single line in this exact format:
+SUCCESS_STATUS | ACTION_TYPE | PARAMETERS | OUTCOME_DESCRIPTION
+Your single-line output:
 """
 
-    # 3. Call LLM & Parse (Similar parsing logic as before)
+        # 3. Call LLM & Parse
         try:
-            # Add JSON mode if available/needed
-            response = self.llm.generate_content(
-                prompt)  # Assuming self.llm is configured
-            raw_output = response.text
-            # Parse JSON (reuse robust parsing logic from your interpreter)
-            parsed_json = self._parse_llm_output(raw_output)
+            response = self.llm.generate_content(prompt)
+            raw_output = response.text.strip()
 
-            if parsed_json and 'success' in parsed_json and 'outcome_description' in parsed_json:
-                # Basic validation passed
-                # Ensure 'world_state_updates' is a list, default to empty if missing
-                parsed_json['world_state_updates'] = parsed_json.get(
-                    'world_state_updates', [])
-                return parsed_json
+            if config.SIMULATION_MODE == 'debug' or config.SIMULATION_MODE == 'only_resolver':
+                print(f"[LLM Resolver Raw Output]: '{raw_output}'")
+
+            parts = raw_output.split(" | ")
+            if len(parts) == 4:
+                success_str, action_type_str, params_str, outcome_desc_str = parts
+
+                # Initialize the result dictionary
+                resolved_action = {
+                    "success": success_str.upper() == "SUCCESS",
+                    "action_type": action_type_str.upper(),
+                    "parameters": {},  # We will populate this next
+                    "outcome_description": outcome_desc_str.strip(),
+                    "world_state_updates": []  # We will populate this later if possible
+                }
+
+                # --- Start: Parse Parameters String ---
+                action_params = {}
+                if params_str.strip():  # Only parse if params_str is not empty
+                    # General parsing for "key: value, key2: value2" format
+                    param_pairs = params_str.split(',')
+                    for pair in param_pairs:
+                        pair = pair.strip()
+                        if ':' in pair:
+                            key, value = pair.split(':', 1)
+                            action_params[key.strip()] = value.strip()
+                        elif resolved_action["action_type"] in ["FAIL", "UNKNOWN"] and not action_params.get("reason"):
+                            # For FAIL/UNKNOWN, if no key:value, assume the whole string is a reason
+                            action_params["reason"] = pair
+                        elif resolved_action["action_type"] == "OBSERVE" and not action_params.get("target"):
+                            # For OBSERVE, if it's just a value, assume it's the target
+                            action_params["target"] = pair
+
+                resolved_action["parameters"] = action_params
+                # --- End: Parse Parameters String ---
+
+                return resolved_action
             else:
                 print(
-                    f"[LLM Resolver Error]: Failed to parse or validate LLM output: {raw_output}")
-                    # Return a generic failure dictionary
+                    f"[LLM Resolver Error]: LLM output not in expected format (SUCCESS | TYPE | PARAMS | OUTCOME_DESC). Output: {raw_output}"
+                )
                 return {
-                        "success": False,
+                    "success": False,
                     "action_type": "FAIL",
-                    "parameters": {"raw_output": action_output},
-                    "outcome_description": f"{agent_name} does something unclear or fails ('{action_output}').",
+                    "parameters": {"raw_output": action_output, "llm_response": raw_output},
+                    "outcome_description": f"{agent_name} provides an unclear response ('{raw_output}').",
                     "world_state_updates": []
-                    }
+                }
 
         except Exception as e:
             print(f"[LLM Resolver Error]: LLM call or processing failed: {e}")
@@ -132,97 +167,3 @@ Your JSON Output:
                 "world_state_updates": []
             }
 
-    def _parse_llm_output(self, raw_output):
-        json_str = raw_output # Start with the raw output
-        try:
-            # Attempt to extract JSON from markdown code block first
-            json_match = re.search(r'```json\s*([\s\S]+?)\s*```', raw_output, re.IGNORECASE)
-            if json_match:
-                json_str = json_match.group(1).strip()
-            else:
-                # If no markdown block, assume the whole output might be JSON (or needs fixing)
-                # Find the first '{' and last '}' to potentially isolate JSON-like content
-                start_brace = raw_output.find('{')
-                end_brace = raw_output.rfind('}')
-                if start_brace != -1 and end_brace != -1 and end_brace > start_brace:
-                    json_str = raw_output[start_brace:end_brace+1].strip()
-                # else: keep raw_output as json_str if no braces found
-
-            # First attempt to parse the extracted/raw string
-            data = json.loads(json_str)
-            
-            # Ensure all required fields are present
-            if 'success' in data and 'action_type' in data:
-                # Add default outcome_description if missing
-                if 'outcome_description' not in data:
-                    agent_name = "the agent"  # Default fallback
-                    action_type = data.get('action_type', 'UNKNOWN')
-                    if action_type == "SPEAK" and 'parameters' in data and 'message' in data['parameters']:
-                        data['outcome_description'] = f"{agent_name} says, '{data['parameters']['message']}'"
-                    else:
-                        data['outcome_description'] = f"{agent_name} performs a {action_type.lower()} action."
-                
-                # Ensure world_state_updates is a list
-                if 'world_state_updates' not in data:
-                    data['world_state_updates'] = []
-                    
-            return data
-
-        except json.JSONDecodeError as e:
-            print(f"[LLM Resolver Warning]: Initial JSON Decode failed: {e}. Attempting LLM fix...")
-            print(f"--- Faulty JSON String ---\n{json_str}\n------------------------")
-
-            # --- LLM Fix Attempt using a specialized model ---
-            try:
-                # Configure and instantiate a dedicated model for JSON fixing
-                # Lower temperature for more deterministic output
-                fixer_generation_config = {
-                    "temperature": 0.1, # Low temperature for focused fixing
-                    "top_p": 0.95,
-                    "top_k": 50,
-                    "max_output_tokens": 1024, # Allow potentially larger fixed JSON
-                }
-                # Assuming config.MODEL_NAME and config.SAFETY_SETTINGS are accessible
-                # You might need to import 'config' if not already done in this file
-                fixer_model = genai.GenerativeModel(
-                    model_name=config.MODEL_NAME, # Or a specific model if desired
-                    generation_config=fixer_generation_config,
-                )
-
-                # Slightly relaxed prompt, still discouraging extra text
-                fix_prompt = f"""The following text is supposed to be a valid JSON object, but it failed parsing due to syntax errors. Please correct the syntax errors and output ONLY the corrected JSON object. Aim to output *only* the raw, valid JSON object itself. Do not include any explanations or apologies.
-
-Broken JSON string:
-{json_str}
-
-Corrected JSON object:""" # Removed the explicit "Do not include ... ```json ... ```"
-
-                # Use the specialized fixer_model
-                fix_response = fixer_model.generate_content(fix_prompt)
-                fixed_json_raw = fix_response.text.strip()
-
-                # Handle potential markdown block in the fixer's response
-                final_json_str = fixed_json_raw
-                fixed_json_match = re.search(r'```json\s*([\s\S]+?)\s*```', fixed_json_raw, re.IGNORECASE)
-                if fixed_json_match:
-                     final_json_str = fixed_json_match.group(1).strip()
-                # else: use the stripped raw response if no markdown block found
-                if config.SIMULATION_MODE == 'debug' or config.SIMULATION_MODE == 'only_resolver':
-                    print(f"--- LLM Fixer Model Suggestion ---\n{final_json_str}\n--------------------------------")
-                fixed_data = json.loads(final_json_str) # Parse the potentially extracted string
-                print("[LLM Resolver Info]: Successfully parsed LLM-fixed JSON.")
-                return fixed_data
-
-            except json.JSONDecodeError as fix_e:
-                print(f"[LLM Resolver Error]: LLM fix failed - JSON Decode failed again: {fix_e}. Fixed attempt: {final_json_str}")
-                return None
-            except Exception as fix_e:
-                # Catch errors during fixer model instantiation or generation
-                print(f"[LLM Resolver Error]: LLM fix attempt failed with exception: {fix_e}")
-                return None
-            # --- End LLM Fix Attempt ---
-
-        except Exception as e:
-            # Catch any other unexpected errors during initial processing
-            print(f"[LLM Resolver Error]: Unexpected parsing error before fix attempt: {e}. Raw output: {raw_output}")
-            return None

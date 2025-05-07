@@ -17,18 +17,6 @@ GENERATION_CONFIG = {
     "max_output_tokens": 200,  # Increased to allow for more detailed responses
 }
 
-# LLM Safety Settings
-# SAFETY_SETTINGS = [
-#     {"category": "HARM_CATEGORY_HARASSMENT",
-#         "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-#     {"category": "HARM_CATEGORY_HATE_SPEECH",
-#         "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-#     {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-#         "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-#     {"category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-#         "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-# ]
-
 
 # Model Name
 MODEL_NAME = "gemini-2.0-flash-lite"
@@ -43,35 +31,22 @@ KNOWN_LOCATIONS = {
     # "Park": "A wide open park area with some trees.",
     # "Shelter": "A simple wooden shelter.",
     # "Forest Edge": "The edge of a dark forest."
+    "City:": "A bustling city with tall buildings and busy streets.",
     "Lab": "A well-equipped laboratory filled with scientific equipment and research papers.",
 }
 
-# Agent Settings
-DEFAULT_PERSONALITIES = {
-    "Alice": "curious, slightly anxious, observant",
-    "Bob": "calm, pragmatic, speaks plainly"
-}
 # --- Component Selection ---
-# Choose the implementations for different parts of the simulation
-# (Allows easy switching for experiments)
 
-# Options: "SimpleMemory", "VectorMemory" (future)
 AGENT_MEMORY_TYPE = "ShortLongTMemory"
-# Options: "GeminiThinker", "RuleBasedThinker" (future)
 AGENT_PLANNING_TYPE = "GeminiThinker"
-
-# Action Resolution Strategy (Crucial for your experiments!)
-# Options: "LLMResolver", "StructuredValidator", "Passthrough", "HybridRefine" (future)
 ACTION_RESOLVER_TYPE = "LLMResolver"  # Start with the current LLM-based logic
-
-# Event Perception Model (How agents receive events)
-# Options: "DirectDispatch", "SummaryContext" (old way)
 EVENT_PERCEPTION_MODEL = "DirectEventDispatcher"
 
 NARRATIVE_GOAL = "Create a humorous story about two strangers with conflicting goals who must eventually cooperate."
 # DIRECTOR_COOLDOWN_MIN = 2 # Example: Could make cooldown configurable
 # DIRECTOR_COOLDOWN_MAX = 5
 
+#A short magic story about two strangers with conflicting goals who must eventually cooperate.
 # agent_configs = [
 #     {"name": "Alice",
 #      "personality": "creative, adventurous, slightly mischievous, believes in supernatural phenomena",
@@ -87,6 +62,8 @@ NARRATIVE_GOAL = "Create a humorous story about two strangers with conflicting g
 #      "initial_location": "Forest Edge",
 #     "initial_goals": ["Find a reliable source of food and water."]}
 # ]
+
+# A short story about four persons trapped in a shelter during a storm and one of them is a killer.
 # agent_configs = [
 #     # --- The Investigator/Observer ---
 #     {
