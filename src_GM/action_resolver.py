@@ -115,38 +115,178 @@ Your single-line output:
 
             parts = raw_output.split(" | ")
             if len(parts) == 4:
-                success_str, action_type_str, params_str, outcome_desc_str = parts
+                success_str, action_type_str, params_str, llm_outcome_desc_str = parts
 
+                current_action_type = action_type_str.strip().upper()
+                
                 # Initialize the result dictionary
                 resolved_action = {
                     "success": success_str.upper() == "SUCCESS",
                     "action_type": action_type_str.upper(),
                     "parameters": {},  # We will populate this next
-                    "outcome_description": outcome_desc_str.strip(),
+                    "outcome_description": llm_outcome_desc_str.strip(),
                     "world_state_updates": []  # We will populate this later if possible
                 }
 
-                # --- Start: Parse Parameters String ---
+                # --- Start: Simplified Targeted Parameter Parsing ---
                 action_params = {}
-                if params_str.strip():  # Only parse if params_str is not empty
-                    # General parsing for "key: value, key2: value2" format
-                    param_pairs = params_str.split(',')
-                    for pair in param_pairs:
-                        pair = pair.strip()
-                        if ':' in pair:
-                            key, value = pair.split(':', 1)
-                            action_params[key.strip()] = value.strip()
-                        elif resolved_action["action_type"] in ["FAIL", "UNKNOWN"] and not action_params.get("reason"):
-                            # For FAIL/UNKNOWN, if no key:value, assume the whole string is a reason
-                            action_params["reason"] = pair
-                        elif resolved_action["action_type"] == "OBSERVE" and not action_params.get("target"):
-                            # For OBSERVE, if it's just a value, assume it's the target
-                            action_params["target"] = pair
+                text_to_parse = params_str.strip()
+                action_type_upper = resolved_action["action_type"].upper()
+
+                if text_to_parse:
+                    if action_type_upper == "SPEAK":
+                        # Expect: "target: <value>, message: <actual message content>"
+                        # The message is everything after "message:"
+                        message_key = "message:"
+                        # Use find, not rfind if message is always last
+                        message_idx = text_to_parse.lower().find(message_key.lower())
+
+                        if message_idx != -1:
+                            action_params["message"] = text_to_parse[message_idx +
+                                                                     len(message_key):].strip()
+
+                            # The part before "message:" is the target part
+                            target_part_str = text_to_parse[:message_idx].strip(
+                            )
+                            target_key = "target:"
+                            if target_part_str.lower().startswith(target_key.lower()):
+                                # Remove the "target:" prefix and any trailing comma
+                                target_value = target_part_str[len(
+                                    target_key):].strip()
+                                if target_value.endswith(','):
+                                    target_value = target_value[:-1].strip()
+                                action_params["target"] = target_value
+                            # If target_part_str is not empty but doesn't start with "target:", it's unassigned.
+                            # Or if the LLM only provided "message: ..."
+                        else:
+                            # No "message:" found. LLM didn't follow format.
+                            # We could try to see if it's just a target, or just a message.
+                            # For now, if "message:" is missing for SPEAK, params might be incomplete.
+                            print(
+                                f"[LLM Resolver Warning] SPEAK action params missing 'message:': '{text_to_parse}'")
+
+                    elif action_type_upper == "INTERACT":
+                        # Expect: "object: <value>, details: <actual details content>" (if details can have commas)
+                        # Or simply "object: <value>" or "object: <value>, some_other_simple_param: <value>"
+                        details_key = "details:"
+                        details_idx = text_to_parse.lower().find(details_key.lower())
+
+                        if details_idx != -1:
+                            action_params["details"] = text_to_parse[details_idx +
+                                                                     len(details_key):].strip()
+                            object_part_str = text_to_parse[:details_idx].strip(
+                            )
+                            object_key = "object:"
+                            if object_part_str.lower().startswith(object_key.lower()):
+                                object_value = object_part_str[len(
+                                    object_key):].strip()
+                                if object_value.endswith(','):
+                                    object_value = object_value[:-1].strip()
+                                action_params["object"] = object_value
+                        elif text_to_parse.lower().startswith("object:"):  # No "details:", try to get "object:"
+                            # Handle cases like "object: Door" or "object: Lever, state: on"
+                            # This simple logic assumes "object:" is the first param if "details:" isn't present.
+                            # If there are other params after "object:" and before an unkeyed detail, this needs more.
+                            # For now, let's assume if no "details:", the first key:value pair is object,
+                            # or if multiple simple key:value pairs, split by comma.
+
+                            # If "object:" is present, and maybe other simple params:
+                            temp_object_params_str = text_to_parse  # Start with the full string
+                            if temp_object_params_str.lower().startswith("object:"):
+                                # Try to extract object first
+                                remaining_after_object_key = temp_object_params_str[len(
+                                    "object:"):]
+                                # Find where the object value ends (e.g., at a comma for the next param)
+                                comma_after_object_val = remaining_after_object_key.find(
+                                    ',')
+                                if comma_after_object_val != -1:
+                                    action_params["object"] = remaining_after_object_key[:comma_after_object_val].strip(
+                                    )
+                                    # Process other simple key:value pairs after the object
+                                    other_params_str = remaining_after_object_key[comma_after_object_val+1:].strip(
+                                    )
+                                    if other_params_str:
+                                        simple_pairs = other_params_str.split(
+                                            ',')
+                                        for pair_str in simple_pairs:
+                                            if ':' in pair_str:
+                                                k, v = pair_str.split(':', 1)
+                                                action_params[k.strip(
+                                                )] = v.strip()
+                                else:  # No comma, object value is the rest of the string
+                                    action_params["object"] = remaining_after_object_key.strip(
+                                    )
+                        else:  # No "details:" and no "object:", try a generic split
+                            if ':' in text_to_parse:
+                                kv_pairs = text_to_parse.split(',')
+                                for pair_str in kv_pairs:
+                                    if ':' in pair_str:
+                                        k, v = pair_str.split(':', 1)
+                                        action_params[k.strip()] = v.strip()
+
+                    # For simpler actions that expect a single key:value or just a value
+                    elif action_type_upper == "MOVE":
+                        if text_to_parse.lower().startswith("destination:"):
+                            action_params["destination"] = text_to_parse[len(
+                                "destination:"):].strip()
+                    elif action_type_upper == "OBSERVE":
+                        if text_to_parse.lower().startswith("target:"):
+                            action_params["target"] = text_to_parse[len(
+                                "target:"):].strip()
+                        else:
+                            # Assume whole string is target
+                            action_params["target"] = text_to_parse
+                    elif action_type_upper == "WAIT":
+                        if text_to_parse.lower().startswith("duration:"):
+                            action_params["duration"] = text_to_parse[len(
+                                "duration:"):].strip()
+                        else:
+                            # Assume whole string is duration
+                            action_params["duration"] = text_to_parse
+                    elif action_type_upper in ["FAIL", "UNKNOWN"]:
+                        if text_to_parse.lower().startswith("reason:"):
+                            action_params["reason"] = text_to_parse[len(
+                                "reason:"):].strip()
+                        else:
+                            # Assume whole string is reason
+                            action_params["reason"] = text_to_parse
+
+                    # If after all specific parsing attempts, action_params is still empty but text_to_parse is not,
+                    # and it's not one of the types that can take the whole string as a default param (OBSERVE, WAIT, FAIL, UNKNOWN)
+                    # it means the format was unexpected for the given action type.
+                    if not action_params and text_to_parse and \
+                       action_type_upper not in ["OBSERVE", "WAIT", "FAIL", "UNKNOWN", "SPEAK", "INTERACT", "MOVE"]:  # Only log if not handled by above
+                        print(
+                            f"[LLM Resolver Warning] Could not parse parameters for {action_type_upper}: '{text_to_parse}' using targeted logic. Trying generic split.")
+                        # Generic fallback if nothing specific matched (less robust for values with commas)
+                        if ':' in text_to_parse:
+                            try:
+                                kv_pairs = text_to_parse.split(',')
+                                for pair_str in kv_pairs:
+                                    if ':' in pair_str:
+                                        k, v = pair_str.split(':', 1)
+                                        action_params[k.strip()] = v.strip()
+                            except Exception as e:
+                                print(
+                                    f"[LLM Resolver Error] Generic param parsing failed: {e}")
 
                 resolved_action["parameters"] = action_params
-                # --- End: Parse Parameters String ---
+                # --- End: Simplified Targeted Parameter Parsing ---
 
+                # --- Refine outcome_description, especially for SPEAK actions ---
+                if resolved_action["action_type"] == "SPEAK" and resolved_action["success"]:
+                    # We have already parsed parameters into action_params
+                    # Get the message, default to empty string if not found
+                    msg = action_params.get("message", "")
+                    # Get the target, could be None
+                    target = action_params.get("target")
+
+                    if msg:  # Only construct if there's a message
+                        if target:
+                            resolved_action["outcome_description"] = f"{agent_name} says to {target}, \"{msg}\""
+                            
                 return resolved_action
+            
             else:
                 print(
                     f"[LLM Resolver Error]: LLM output not in expected format (SUCCESS | TYPE | PARAMS | OUTCOME_DESC). Output: {raw_output}"
