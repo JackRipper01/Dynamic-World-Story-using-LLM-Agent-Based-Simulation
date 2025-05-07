@@ -1,6 +1,4 @@
 
-Here is all the code in one txt file:
-
 ============================== START FILE: src_GM\action_resolver.py ==============================
  ```
 python
@@ -44,9 +42,7 @@ class BaseActionResolver(ABC):
         """
         pass
 
-
 # --- Concrete Implementation (Moves logic from LLMInterpreter) ---
-
 
 class LLMActionResolver(BaseActionResolver):
     """
@@ -63,8 +59,9 @@ class LLMActionResolver(BaseActionResolver):
         self.world_ref = world_state_ref_for_prompting_rules  # Use carefully
 
     def resolve(self, agent_name: str, agent_location: str, action_output: str, world_state:WorldState) -> dict:
-        print(
-            f"[LLM Resolver @ {agent_location}]: Resolving for {agent_name}: '{action_output}'")
+        if config.SIMULATION_MODE == 'debug' or config.SIMULATION_MODE == 'only_resolver':
+            print(
+                f"[LLM Resolver @ {agent_location}]: Resolving for {agent_name}: '{action_output}'")
 
         # 1. Gather Context (Simplified example - adapt as needed)
         # This part needs careful design - what *minimal* context does the resolver need?
@@ -215,8 +212,8 @@ Corrected JSON object:""" # Removed the explicit "Do not include ... ```json ...
                 if fixed_json_match:
                      final_json_str = fixed_json_match.group(1).strip()
                 # else: use the stripped raw response if no markdown block found
-
-                print(f"--- LLM Fixer Model Suggestion ---\n{final_json_str}\n--------------------------------")
+                if config.SIMULATION_MODE == 'debug' or config.SIMULATION_MODE == 'only_resolver':
+                    print(f"--- LLM Fixer Model Suggestion ---\n{final_json_str}\n--------------------------------")
                 fixed_data = json.loads(final_json_str) # Parse the potentially extracted string
                 print("[LLM Resolver Info]: Successfully parsed LLM-fixed JSON.")
                 return fixed_data
@@ -257,7 +254,7 @@ if not GEMINI_API_KEY:
 
 # LLM Generation Settings
 GENERATION_CONFIG = {
-    "temperature": 0.9,  # Director might benefit from slightly lower temp if too random
+    "temperature": 1.3,
     "top_p": 0.95,
     "top_k": 50,
     "max_output_tokens": 200,  # Increased to allow for more detailed responses
@@ -317,21 +314,94 @@ NARRATIVE_GOAL = "Create a humorous story about two strangers with conflicting g
 # DIRECTOR_COOLDOWN_MIN = 2 # Example: Could make cooldown configurable
 # DIRECTOR_COOLDOWN_MAX = 5
 
+# agent_configs = [
+#     {"name": "Alice",
+#      "personality": "creative, adventurous, slightly mischievous, believes in supernatural phenomena",
+#      "gender": "woman",
+#      "initial_location": "Forest Edge",
+#      "initial_goals": ["Find magical ingredients in the forest for a special potion",
+#                        "Convince someone to help explore the deeper parts of the forest",
+#                        "Establish a comfortable base camp"]},
+
+#     {"name": "Bob",
+#      "personality": "practical, skeptical, organized, values comfort and security above all",
+#      "gender": "man",
+#      "initial_location": "Forest Edge",
+#     "initial_goals": ["Find a reliable source of food and water."]}
+# ]
 agent_configs = [
-    {"name": "Alice", 
-     "personality": "creative, adventurous, slightly mischievous, believes in supernatural phenomena",
-     "gender": "woman",
-     "initial_location": "Forest Edge",
-     "initial_goals": ["Find magical ingredients in the forest for a special potion", 
-                       "Convince someone to help explore the deeper parts of the forest", 
-                       "Establish a comfortable base camp"]},
-    
-    {"name": "Bob",
-     "personality": "practical, skeptical, organized, values comfort and security above all",
-     "gender": "man",
-     "initial_location": "Forest Edge",
-    "initial_goals": ["Find a reliable source of food and water."]}
+    # --- The Investigator/Observer ---
+    {
+        "name": "Alice",
+        "personality": "An observant and creative individual fascinated by puzzles and hidden motives, driven by a mix of fear and morbid curiosity to uncover the truth.",
+        "gender": "woman",
+        "initial_location": "Shelter",
+        "initial_goals": [  # Goals AFTER discovering the body
+            "Figure out what *really* happened to David.",
+            "Observe everyone's reactions and inconsistencies closely.",
+            "Look for any unusual clues.",
+            "Ensure my own safety without appearing overly suspicious."
+        ],
+        "background": [
+            "You are Alice. A storm forced you into this shelter with Bob, Charlie, Eve, and David. ",
+            "David has been found murdered. You are trapped with the others, one of whom is the killer. Your goal is to figure out who, observing carefully.",
+        ],
+    },
+
+    # --- The Secret Murderer ---
+    {
+        "name": "Bob",
+        "personality": "Appears practical and safety-focused but is secretly ruthless and desperate, skillfully acting innocent to conceal his guilt as the murderer.",
+        "gender": "man",
+        "initial_location": "Shelter",
+        "initial_goals": [  # Goals AFTER the murder (HIS secret goals)
+            "Convincingly act shocked and scared about David's death.",
+            "Avoid suspicion at all costs; deflect questions smoothly.",
+            "Subtly steer suspicion towards someone else if possible.",
+            "Find any opportunity to destroy evidence or escape.",
+            "Feigned Goal: Cooperate to appear innocent."
+        ],
+        "background": [
+            "You are Bob. You killed David in this shelter shortly before he was discovered. No one saw you. ",
+            "You are trapped with Alice, Charlie, and Eve. You MUST appear innocent; act shocked and scared, but inwardly focus on deflecting suspicion and surviving."
+        ],
+    },
+
+    # --- The Logical Analyst ---
+    {
+        "name": "Charlie",
+        "personality": "A calm and analytical thinker who approaches the crisis with logical precision, focusing on systematically gathering evidence to identify the killer.",
+        "gender": "man",
+        "initial_location": "Shelter",
+        "initial_goals": [  # Goals AFTER discovering the body
+            "Establish the basic facts: time, cause, potential motives.",
+            "Question everyone systematically.",
+            "Secure the immediate area.",
+            "Identify the most logical suspect based on opportunity/motive."
+        ],
+        "background": [
+            "You are Charlie. A storm trapped you in this shelter with Alice, Bob, Eve, and David, who has just been found murdered. Rely on logic and observation to systematically investigate and find the killer before panic takes over."
+        ],
+    },
+
+    # --- The Empathetic/Nervous One ---
+    {
+        "name": "Eve",
+        "personality": "A highly empathetic and anxious person who reacts emotionally to the tense situation, seeking safety while trying to read others' feelings for clues.",
+        "gender": "woman",
+        "initial_location": "Shelter",
+        "initial_goals": [  # Goals AFTER discovering the body
+            "Find out who the killer is immediately so I can feel safe.",
+            "Try to understand how everyone is feeling; look for emotional tells.",
+            "Seek protection or ally with someone trustworthy.",
+            "Express fear and urge action."
+        ],
+        "background": [
+            "You are Eve. A storm trapped you in this shelter with Alice, Bob, Charlie, and David - but David has been murdered! You are terrified and trapped with the killer; focus on reading emotions, finding who seems suspicious, and staying safe."
+        ],
+    }
 ]
+SIMULATION_MODE = 'debug'
 
 
 ```
@@ -512,7 +582,7 @@ from typing import List, Dict
 
 from world import Event  # Import the Event namedtuple
 from agent.agent import Agent  # Import the Agent class
-
+import config
 
 class BaseEventDispatcher(ABC):
     """
@@ -548,7 +618,8 @@ class DirectEventDispatcher(BaseEventDispatcher):
     def dispatch_event(self, event: Event, registered_agents: Dict[str, Agent], agent_locations: Dict[str, str]) -> List[str]:
         dispatched_to = []
         # Log processing start
-        print(
+        if config.SIMULATION_MODE == 'debug':
+            print(
             f"[Dispatcher '{type(self).__name__}']: Processing event: {event.scope} @ {event.location or 'Global'} - '{event.description[:50]}...'")
 
         for agent_name, agent_obj in registered_agents.items():
@@ -584,7 +655,8 @@ class DirectEventDispatcher(BaseEventDispatcher):
                         f"[Dispatcher Error]: Failed during perceive call for {agent_name}: {e}")
 
         if dispatched_to:
-            print(
+            if config.SIMULATION_MODE == 'debug':
+                print(
                 f"[Dispatcher '{type(self).__name__}']: Event dispatched to: {dispatched_to}")
         # else:
             # print(f"[Dispatcher '{type(self).__name__}']: Event not dispatched to any agents based on rules.") # Can be verbose
@@ -600,243 +672,414 @@ class DirectEventDispatcher(BaseEventDispatcher):
  ```
 python
 
-# main.py
-from collections import namedtuple
-import time
-from typing import List
-import google.generativeai as genai
+# --- Imports ---
+from collections import namedtuple  # For creating simple Event objects
+import time  # For pausing execution (e.g., between agent actions)
+from typing import List  # For type hinting lists (e.g., list of Agents)
+import google.generativeai as genai  # Google's Generative AI library
+import argparse  # For parsing command-line arguments
 
-# Import our modules
-import config
+import config  # Import the whole config module to access global settings
 
+# Import custom modules for simulation components
 from world import WorldState
 from agent.agent import Agent
-from director import Director 
+from director import Director
 
+# --- Data Structures ---
+
+# Define a simple structure to represent events within the simulation
 Event = namedtuple(
     "Event", ["description", "location", "scope", "step", "triggered_by"])
 
-def get_memory_module(agent,memory_type):
+# --- Factory Functions for Components ---
+# These functions allow creating different implementations of simulation components
+# based on configuration strings, promoting modularity.
+
+
+def get_memory_module(agent, memory_type):
+    """Factory function to create an agent's memory module."""
     if memory_type == "SimpleMemory":
         from agent.memory import SimpleMemory
         return SimpleMemory()
     if memory_type == "ShortLongTMemory":
         from agent.memory import ShortLongTMemory
-        return ShortLongTMemory(agent,reflection_threshold=10)
+        # Example of passing configuration to a specific memory type
+        return ShortLongTMemory(agent, reflection_threshold=10)
     else:
+        # Handle unknown memory types specified in config
         raise ValueError(f"Unknown memory type: {memory_type}")
 
 
 def get_planning_module(planning_type, model):
+    """Factory function to create an agent's planning module (thinker)."""
     if planning_type == "GeminiThinker":
         from agent.planning import SimplePlanning
         return SimplePlanning(model)
-    
+    # Add other planning types here if needed
+    # elif planning_type == "AnotherThinker":
+    #     from agent.planning import AnotherThinker
+    #     return AnotherThinker(...)
     else:
+        # Handle unknown planning types specified in config
         raise ValueError(f"Unknown thinker type: {planning_type}")
 
 
-def get_action_resolver(resolver_type, model, world_ref=None):  
+def get_action_resolver(resolver_type, model, world_ref=None):
+    """Factory function to create the action resolver."""
     if resolver_type == "LLMResolver":
         from action_resolver import LLMActionResolver
+        # Pass the language model and a reference to the world state
         return LLMActionResolver(model, world_ref)
-    
+    # Add other resolver types here if needed
+    # elif resolver_type == "RuleBasedResolver":
+    #     from action_resolver import RuleBasedResolver
+    #     return RuleBasedResolver(...)
     else:
+        # Handle unknown resolver types specified in config
         raise ValueError(f"Unknown action resolver type: {resolver_type}")
-    
+
 
 def get_event_dispatcher(dispatcher_type: str):
+    """Factory function to create the event dispatcher."""
     if dispatcher_type == "DirectEventDispatcher":
         from event_dispatcher import DirectEventDispatcher
         return DirectEventDispatcher()
+    # Add other dispatcher types here if needed
+    # elif dispatcher_type == "FilteredEventDispatcher":
+    #     from event_dispatcher import FilteredEventDispatcher
+    #     return FilteredEventDispatcher(...)
     else:
+        # Handle unknown dispatcher types specified in config
         raise ValueError(f"Unknown event dispatcher type: {dispatcher_type}")
 
+# --- Main Simulation Function ---
+
+
 def run_simulation():
-    print("--- Starting Agent Simulation with Director ---")
-    print(f"Config: Memory={config.AGENT_MEMORY_TYPE}, Thinker={config.AGENT_PLANNING_TYPE}, Resolver={config.ACTION_RESOLVER_TYPE}, Perception={config.EVENT_PERCEPTION_MODEL}")
-    
+    """
+    Sets up and runs the agent simulation loop.
+    Initializes the world, agents, director, and other components based on the 'config' module.
+    Manages the main simulation steps, including agent thinking, action resolution,
+    world updates, event dispatching, and user interaction.
+    Output verbosity depends on the config.SIMULATION_MODE ('debug' or 'story').
+    """
+
+    # --- Initialization Phase ---
+    # Configure logging based on the simulation mode set in config
+    if config.SIMULATION_MODE == 'debug':
+        print("--- Starting Agent Simulation with Director (DEBUG MODE) ---")
+        print(f"Config: Memory={config.AGENT_MEMORY_TYPE}, Thinker={config.AGENT_PLANNING_TYPE}, Resolver={config.ACTION_RESOLVER_TYPE}, Perception={config.EVENT_PERCEPTION_MODEL}")
+    elif config.SIMULATION_MODE == 'story':
+        print("--- Starting Agent Simulation ---")
+
     # 1. Initialize LLM Model
-    print(f"Configuring Gemini model: {config.MODEL_NAME}")
+    if config.SIMULATION_MODE == 'debug':
+        print(f"Configuring Gemini model: {config.MODEL_NAME}")
+    # Configure the generative AI model using the API key from config
     genai.configure(api_key=config.GEMINI_API_KEY)
+    # Create the specific generative model instance
     model = genai.GenerativeModel(
         model_name=config.MODEL_NAME,
         generation_config=config.GENERATION_CONFIG,
-        # safety_settings=config.SAFETY_SETTINGS
     )
-    print("Model configured.")
+    if config.SIMULATION_MODE == 'debug':
+        print("Model configured.")
 
     # 2. Initialize World State and Event Dispatcher
-    event_dispatcher= get_event_dispatcher(config.EVENT_PERCEPTION_MODEL)
+    # Create the event dispatcher using the factory function based on config
+    event_dispatcher = get_event_dispatcher(config.EVENT_PERCEPTION_MODEL)
+    # Create the world state with known locations from config
     world = WorldState(locations=config.KNOWN_LOCATIONS)
-    world.global_context['weather'] = "Clear" # Initial weather
+    # Set initial global context (e.g., weather)
+    world.global_context['weather'] = "Clear"
+    if config.SIMULATION_MODE == 'debug':
+        print("World state and event dispatcher initialized.")
 
     # 3. Initialize Agents
-    agents: List[Agent] = []
-    
+    agents: List[Agent] = []  # Type hint for a list of Agent objects
+    if config.SIMULATION_MODE == 'debug':
+        print("Initializing agents...")
+    # Loop through agent configurations defined in the config module
     for agent_conf in config.agent_configs:
         agent_name = agent_conf["name"]
+        # Create the planning module (thinker) for the agent
         thinker = get_planning_module(config.AGENT_PLANNING_TYPE, model)
+        # Create the Agent instance
         agent = Agent(
             name=agent_name,
             gender=agent_conf["gender"],
             personality=agent_conf["personality"],
             initial_goals=agent_conf["initial_goals"],
-            memory_module=None,
+            background=agent_conf["background"],
+            memory_module=None,  # Memory will be assigned below
             planning_module=thinker
         )
-        agent.memory=get_memory_module(agent,config.AGENT_MEMORY_TYPE)
-        
+        # Create and assign the memory module using the factory function
+        agent.memory = get_memory_module(agent, config.AGENT_MEMORY_TYPE)
+
+        # Add the agent to the simulation's list of agents
         agents.append(agent)
+        # Set the agent's starting location in the world state
         start_location = agent_conf["initial_location"]
         world.add_agent_to_location(
-            agent_name, start_location, triggered_by="Setup")
+            agent_name, start_location, triggered_by="Setup")  # Log the setup action
+        # Register the agent instance with the world (for lookups, event dispatching)
         world.register_agent(agent)
+        if config.SIMULATION_MODE == 'debug':
+            print(f"- Agent '{agent_name}' created at '{start_location}'.")
 
-    # 4. Initialize Director (remains mostly the same, observes world state)
-    director_model = model  
+    if config.SIMULATION_MODE == 'debug':
+        print("Agents initialized.")
+
+    # 4. Initialize Director
+    director_model = model  # The director might use the same LLM or a different one
+    # Create the Director instance, passing the world, model, and narrative goal
     director = Director(world, director_model, config.NARRATIVE_GOAL)
+    if config.SIMULATION_MODE == 'debug':
+        print(f"Director initialized with goal: '{config.NARRATIVE_GOAL}'")
 
-    ## 5. Initialize Action Resolver
+    # 5. Initialize Action Resolver
+    # Create the action resolver using the factory function
     action_resolver = get_action_resolver(
-        config.ACTION_RESOLVER_TYPE, model, world_ref=world)
-    
-    # --- Simulation Steps ---------------------------------------------------------------------------------------------
-    step = 0
+        config.ACTION_RESOLVER_TYPE, model, world_ref=world)  # Pass world reference
+    if config.SIMULATION_MODE == 'debug':
+        print("Action resolver initialized.")
+
+    # ---------------------------------------- Simulation Steps ----------------------------------------
+    step = 0  # Initialize step counter
+    # Main simulation loop, continues until max steps are reached
     while step < config.SIMULATION_MAX_STEPS:
-        step += 1
-        world.advance_step() # Increment world step counter
-        print(f"\n{'='*15} Simulation Step {step}/{config.SIMULATION_MAX_STEPS} {'='*15}")
-        print(world.get_full_state_string())
+        step += 1  # Increment step counter
+        world.advance_step()  # Advance the world's internal clock/step counter
 
-        # --- Director Phase -------------------------------------------------------------------------------------------
-        # director.step()  # Let the director observe, think, and act
-        # time.sleep(1.0)  # Optional pause after director
-        
-        
-        # --- Agent Thinking Phase --------------------------------------------------------------------------------------
-        # Agents decide their *intended* actions based on perceived events & memory
-        agent_intentions = {}  # agent_name -> intended_action_output
-        agent_current_locations = {}  # Store locations for resolver
+        # Print step header based on simulation mode
+        if config.SIMULATION_MODE == 'debug':
+            print(
+                f"\n{'='*15} Simulation Step {step}/{config.SIMULATION_MAX_STEPS} {'='*15}")
+            # In debug mode, print the full world state at the start of the step
+            print(world.get_full_state_string())
+        elif config.SIMULATION_MODE == 'story':
+            print(f"\n--- TIME STEP {step} ---")
+
+        # ---------------------------------------- Agent Thinking Phase ----------------------------------------
+        # Each agent observes the world and decides on their next action/intention.
+        if config.SIMULATION_MODE == 'debug':
+            print("\n--- Agent Thinking Phase ---")
+        agent_intentions = {}  # Store planned action/intention for each agent
+        agent_current_locations = {}  # Store current location for action resolution context
         for agent in agents:
-            print(f"\n--- Processing {agent.name} ---")
-            # Get agent's location BEFORE they act (in case they move)
+            if config.SIMULATION_MODE == 'debug':
+                print(f"\n-- Processing {agent.name} --")
+            # Get the agent's current location from the world state
             current_loc = world.agent_locations.get(agent.name, None)
+            # Handle cases where an agent might not have a location (should ideally not happen)
             if not current_loc:
-                print(f"[Sim Warning]: Agent {agent.name} has no location! Skipping.")
-                continue
-            agent_current_locations[agent.name] = current_loc
+                if config.SIMULATION_MODE == 'debug':
+                    print(
+                        f"[Sim Warning]: Agent {agent.name} has no location! Skipping.")
+                continue  # Skip this agent for this step
+            agent_current_locations[agent.name] = current_loc  # Store location
 
-            # Agent plan based on memory (inc. perceptions) and static context
-            # Agent updates own memory with intent
+            # Ask the agent to plan its action based on the current world state
             intended_output = agent.plan(world)
+            # Store the intention
             agent_intentions[agent.name] = intended_output
-            time.sleep(1.0)  # LLM rate limiting/pause
 
+            # Optional pause to avoid hitting API rate limits or to slow down simulation
+            time.sleep(1.0)
 
-        # --- Action Resolution Phase --------------------------------------------------------------------------------
-        # The Action Resolver interprets intentions and determines outcomes
-        print("\n--- Action Resolution Phase ---")
-        resolution_results = {}  # agent_name -> resolution_dict
-        all_state_updates = []  # Collect updates from all agents first
-        all_outcome_events = []  # Collect outcome events
-        
+        # ---------------------------------------- Action Resolution Phase ----------------------------------------
+        # The Action Resolver interprets agent intentions and determines the outcomes
+        # and necessary world state changes.
+        if config.SIMULATION_MODE == 'debug':
+            print("\n--- Action Resolution Phase ---")
+
+        resolution_results = {}  # Store the outcome dict from the resolver for each agent
+        all_state_updates = []  # Collect ALL state update instructions before applying them
+        # Collect events resulting from actions (success or failure)
+        all_outcome_events = []
+
+        # Iterate through the intentions planned by each agent
         for agent_name, intent in agent_intentions.items():
             agent_loc = agent_current_locations.get(agent_name)
+            # Ensure the agent has a location and the action resolver is available
             if agent_loc and action_resolver:
-                print(f"-- Resolving for {agent_name} at {agent_loc} --")
+                if config.SIMULATION_MODE == 'debug':
+                    print(f"-- Resolving for {agent_name} at {agent_loc} --")
+                # Call the action resolver to determine the outcome of the intended action
                 result = action_resolver.resolve(
                     agent_name, agent_loc, intent, world
                 )
-                resolution_results[agent_name] = result
+                resolution_results[agent_name] = result  # Store the raw result
+
+                # --- Process Successful Action ---
                 if result and result.get("success"):
-                    print(
-                        f"[Resolver OK] {agent_name}: {result.get('action_type')} -> {result.get('outcome_description')}")
+                    outcome_desc = result.get(
+                        'outcome_description', f"{agent_name} acted.")  # Default description
+                    if config.SIMULATION_MODE == 'debug':
+                        # Detailed debug log for successful action
+                        print(
+                            f"[Resolver OK] {agent_name}: {result.get('action_type')} -> {outcome_desc}")
+                    if config.SIMULATION_MODE == 'story':
+                        # Narrative output for successful action
+                        # Add extra newline for story readability
+                        print(f"{outcome_desc}\n\n")
+
+                    # Collect world state updates if the action caused any
                     if result.get("world_state_updates"):
                         all_state_updates.extend(result["world_state_updates"])
-                    # Create the event tuple for logging *after* state updates
+                    # Collect the outcome event to be logged and potentially perceived
                     all_outcome_events.append(
-                        (result['outcome_description'],
-                        'action_outcome', agent_loc, agent_name)
+                        # description, scope, location, triggered_by
+                        (outcome_desc, 'action_outcome', agent_loc, agent_name)
                     )
-                elif result:  # Handled failure case
-                    print(
-                        f"[Resolver FAIL] {agent_name}: {result.get('reasoning', 'Unknown reason')}")
-                    # Log the failure outcome event
+                # --- Process Failed Action ---
+                elif result:  # If result exists but 'success' is not True
+                    reason = result.get('reasoning', 'Unknown reason')
+                    outcome_desc = result.get(
+                        'outcome_description', 'Action failed.')
+                    if config.SIMULATION_MODE == 'debug':
+                        # Detailed debug log for failed action
+                        print(f"[Resolver FAIL] {agent_name}: {reason}")
+                        print(f"   Outcome: {outcome_desc}")
+                    if config.SIMULATION_MODE == 'story':
+                        # Narrative output for failed action
+                        print(
+                            f"{agent_name} tried to act, but {outcome_desc.lower()}")  # Narrative phrasing
+
+                    # Collect the failure outcome event
                     all_outcome_events.append(
-                        (result['outcome_description'],
-                        'action_outcome', agent_loc, agent_name)
+                        (outcome_desc, 'action_outcome', agent_loc, agent_name)
                     )
-                else:  # Severe failure in resolver itself
-                    print(
-                        f"[Resolver ERROR] Critical failure resolving for {agent_name}")
-                    # Log a generic system failure event?
+                # --- Handle Resolver Errors ---
+                else:  # If the resolver returned None or an unexpected structure
+                    error_msg = f"System error resolving {agent_name}'s action."
+                    if config.SIMULATION_MODE == 'debug':
+                        print(
+                            f"[Resolver ERROR] Critical failure resolving for {agent_name}")
+                    if config.SIMULATION_MODE == 'story':
+                        print(
+                            f"[System Note] Issue resolving {agent_name}'s action.")
+                    # Log a system error event
                     all_outcome_events.append(
-                        (f"System error resolving {agent_name}'s action.",
-                        'system_error', agent_loc, 'System')
+                        (error_msg, 'system_error', agent_loc,
+                        'System')  # Use 'System' as trigger
                     )
+            # --- Handle Missing Agent Location or Resolver ---
             else:
-                print(
-                    f"[Sim Warning]: Cannot resolve action for {agent_name}, location or resolver unknown.")
+                if config.SIMULATION_MODE == 'debug':
+                    print(
+                        f"[Sim Warning]: Cannot resolve action for {agent_name}, location or resolver unknown.")
+            # Optional pause between resolving actions
             time.sleep(0.5)
 
-        
-        # --- World Update Phase --------------------------------------------------------------------------------------
-        # Apply all accumulated state changes atomically (conceptually)
-        print("\n--- World Update Phase ---")
+        # ---------------------------------------- World Update Phase ----------------------------------------
+        # Apply all collected state changes to the world simultaneously.
+        if config.SIMULATION_MODE == 'debug':
+            print("\n--- World Update Phase ---")
         if all_state_updates:
+            # Apply the list of update instructions to the world state
             world.apply_state_updates(
-                all_state_updates, triggered_by="AgentActions")
+                all_state_updates, triggered_by="AgentActions")  # Indicate the trigger
+            if config.SIMULATION_MODE == 'debug':
+                print("Applied world state updates.")
         else:
-            print("No world state updates required.")
+            # No updates were generated in this step
+            if config.SIMULATION_MODE == 'debug':
+                print("No world state updates required.")
 
-        
-        # --- Agents Perceiving and Event Logging Phase -------------------------------------------------------------------
-        #Agents perceive changes in world and action of other agents or ambient events by dispatching the new event to them
-        
-        # Log all outcome events AFTER state updates are done and dispatch events to agent
-        print("\n--- Logging Action Outcomes ---")
+        # ---------------------------------------- Agents Perceiving and Event Logging Phase ----------------------------------------
+        # Log the outcomes of actions as events and dispatch them so agents can perceive them.
+        if config.SIMULATION_MODE == 'debug':
+            print("\n--- Logging Action Outcomes & Dispatching Events ---")
+        # Iterate through the collected outcome events (successes, failures, errors)
         for desc, scope, loc, trig_by in all_outcome_events:
+            # 1. Log the event to the world's historical record
             world.log_event(desc, scope, loc, trig_by)
-            
-            # This will dispatch perceptions
-            new_event= Event(desc,scope,loc,world.current_step,trig_by)
-            event_dispatcher.dispatch_event(new_event,world.registered_agents,world.agent_locations)
-            
-        # --- Manual Control / End Step ---
-        
-        print("\n--- End of Step ---")
-        print(world.get_full_state_string()) # Show final state for the step
 
-        # Manual stepping and limited override
-        user_input = input("Enter for next step, 'goal <new goal>' to change director goal, 'q' to quit: ").lower().strip()
+            # 2. Create an Event object
+            new_event = Event(
+                description=desc,
+                location=loc,
+                scope=scope,
+                step=world.current_step,
+                triggered_by=trig_by
+            )
+            # 3. Dispatch the event using the configured dispatcher
+            # The dispatcher determines which agents should perceive this event
+            event_dispatcher.dispatch_event(
+                new_event, world.registered_agents, world.agent_locations)
+
+        # ---------------------------------------- End Step ----------------------------------------
+        if config.SIMULATION_MODE == 'debug':
+            print("\n--- End of Step ---")
+            # Print the final world state after all updates and events for the step
+            print(world.get_full_state_string())
+
+        # ---------------------------------------- User Input ----------------------------------------
+        # Allows pausing the simulation, quitting, or changing parameters mid-run.
+        user_input = input(
+            "Enter for next step, 'goal <new goal>' to change director goal, 'w <weather>' for weather, 'q' to quit: "
+        ).lower().strip()
 
         if user_input == 'q':
+            # Quit the simulation loop
             print("Quitting simulation by user request.")
             break
         elif user_input.startswith('goal '):
+            # Change the director's narrative goal dynamically
             new_goal = user_input[len('goal '):].strip()
             if new_goal:
                 print(f"Updating Director goal to: '{new_goal}'")
                 director.narrative_goal = new_goal
-                world.log_event(f"COMMAND: Director narrative goal updated to '{new_goal}'.", triggered_by="User")
+                # Log this user command as a world event
+                world.log_event(
+                    f"COMMAND: Director narrative goal updated to '{new_goal}'.",
+                    scope="global", location="world", triggered_by="User"
+                )
             else:
                 print("Invalid command. Use 'goal <description>'.")
-        elif user_input.startswith('w '): # Keep manual weather override? Optional.
-             new_weather = user_input[len('w '):].strip().title()
-             if new_weather:
-                 print(f"Manual weather override to: {new_weather}")
-                 world.set_weather(new_weather, triggered_by="User")
-             else:
-                 print("Invalid command. Use 'w <condition>'.")
+        elif user_input.startswith('w '):
+            # Manually override the weather
+            # Capitalize words
+            new_weather = user_input[len('w '):].strip().title()
+            if new_weather:
+                print(f"Manual weather override to: {new_weather}")
+                # Update world state and log event
+                world.set_weather(new_weather, triggered_by="User")
+            else:
+                print("Invalid command. Use 'w <condition>'.")
+        # Handle empty input (just press Enter) or unknown commands
         elif user_input:
-            print(f"Unknown command: '{user_input}'")
-        # Pressing Enter continues
+            if user_input:  # Only print error if it wasn't just Enter
+                print(
+                    f"Unknown command: '{user_input}'. Press Enter to continue.")
+            # Otherwise, pressing Enter just proceeds to the next step
 
+    # ---------------------------------------- Simulation End ----------------------------------------
     print(f"\n--- Simulation Ended after {step} steps ---")
 
-# --- Run ---
+
+# --- Main Execution Block ---
 if __name__ == "__main__":
+    # Set up command-line argument parsing
+    parser = argparse.ArgumentParser(description="Run Agent Simulation")
+    # Create a mutually exclusive group: user must choose --debug OR --story
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--debug', action='store_true',
+                       help='Enable detailed debug logging.')
+    group.add_argument('--story', action='store_true',
+                       help='Enable narrative story logging.')
+
+    # Parse the command-line arguments provided by the user
+    args = parser.parse_args()
+
+    # Set the global simulation mode in the config module based on the arguments.
+    # This allows other modules imported after this point to easily check the mode.
+    config.SIMULATION_MODE = 'debug' if args.debug else 'story'
+
+    # Call the main simulation function, which will now use the mode set in config
     run_simulation()
 
 
@@ -856,7 +1099,8 @@ from agent.agent import Agent
 
 # Define a structure for events for clarity
 Event = namedtuple(
-    "Event", ["description", "location", "scope", "step", "triggered_by"])
+    "Event", ["description", "location", "scope", "step", "triggered_by"]
+)
 
 
 class WorldState:
@@ -866,14 +1110,14 @@ class WorldState:
         self.location_connectivity = {  # Defines possible direct movements
             "Park": ["Shelter", "Forest Edge"],
             "Shelter": ["Park"],
-            "Forest Edge": ["Park"]
+            "Forest Edge": ["Park"],
             # Add more connections as locations are added
         }
         self.location_properties = {  # Defines states/features of locations
             "Park": {"ground": "grassy"},
             # Example: Shelter door starts unlocked
             "Shelter": {"door_locked": False, "contains": []},
-            "Forest Edge": {"terrain": "uneven"}
+            "Forest Edge": {"terrain": "uneven"},
         }
         self.global_context = {"weather": "Clear"}
         self.event_log = []  # Now stores Event tuples
@@ -881,13 +1125,13 @@ class WorldState:
 
         self.registered_agents: Dict[str, Agent] = {}  # Added type hint
         # Store the passed dispatcher instance
-    def register_agent(self, agent:Agent):
+
+    def register_agent(self, agent: Agent):
         """Registers an agent to receive events."""
         if agent.name not in self.registered_agents:
             self.registered_agents[agent.name] = agent
-            print(
-                f"[World Event Update]: Registered {agent.name} for events.")
-    
+            print(f"[World Event Update]: Registered {agent.name} for events.")
+
     def unregister_agent(self, agent_name):
         """Unregisters an agent."""
         if agent_name in self.registered_agents:
@@ -910,24 +1154,27 @@ class WorldState:
         """Sets a property, potentially logging an event via log_event."""
         if location not in self.location_properties:
             print(
-                f"[World State Warning]: Location '{location}' not found for setting property.")
+                f"[World State Warning]: Location '{location}' not found for setting property."
+            )
             return False
         if prop_name not in self.location_properties[location]:
             print(
-                f"[World State Warning]: Property '{prop_name}' doesn't exist for '{location}'. Adding it.")
+                f"[World State Warning]: Property '{prop_name}' doesn't exist for '{location}'. Adding it."
+            )
             # Decide if dynamic property creation is allowed or should error
 
-        old_value = self.location_properties[location].get(prop_name, 'None')
+        old_value = self.location_properties[location].get(prop_name, "None")
         if old_value != value:
             self.location_properties[location][prop_name] = value
             # Log the change as an event? Depends on granularity needed.
             # Example: log the *effect* rather than the state change itself.
             # e.g., if setting door_locked=False, the event might be "The shelter door unlocks"
             print(
-                f"[World State Update]: Property '{prop_name}' of '{location}' changed to '{value}' (Trigger: {triggered_by}).")
+                f"[World State Update]: Property '{prop_name}' of '{location}' changed to '{value}' (Trigger: {triggered_by})."
+            )
             return True
         return False
-    
+
     # --- End Helpers ---
 
     def add_agent_to_location(self, agent_name, location_name, triggered_by="Setup"):
@@ -939,95 +1186,134 @@ class WorldState:
 
             # Update 'contains' property if location has it
             if old_location and old_location != location_name:
-                if 'contains' in self.location_properties.get(old_location, {}):
-                    if agent_name in self.location_properties[old_location]['contains']:
-                        self.location_properties[old_location]['contains'].remove(
-                            agent_name)
+                if "contains" in self.location_properties.get(old_location, {}):
+                    if agent_name in self.location_properties[old_location]["contains"]:
+                        self.location_properties[old_location]["contains"].remove(
+                            agent_name
+                        )
 
-            if 'contains' in self.location_properties.get(location_name, {}):
-                if agent_name not in self.location_properties[location_name]['contains']:
-                    self.location_properties[location_name]['contains'].append(
-                        agent_name)
+            if "contains" in self.location_properties.get(location_name, {}):
+                if (
+                    agent_name
+                    not in self.location_properties[location_name]["contains"]
+                ):
+                    self.location_properties[location_name]["contains"].append(
+                        agent_name
+                    )
 
             # Log the arrival event (could be refined based on triggered_by)
             if triggered_by != "Setup":  # Don't log redundant 'appears' if moving
-                self.log_event(f"{agent_name} arrives.", scope='local',
-                                location=location_name, triggered_by=triggered_by)
+                self.log_event(
+                    f"{agent_name} arrives.",
+                    scope="local",
+                    location=location_name,
+                    triggered_by=triggered_by,
+                )
             elif not old_location:  # Log initial appearance
-                self.log_event(f"{agent_name} appears in the {location_name}.",
-                                scope='local', location=location_name, triggered_by=triggered_by)
+                self.log_event(
+                    f"{agent_name} appears in the {location_name}.",
+                    scope="local",
+                    location=location_name,
+                    triggered_by=triggered_by,
+                )
         else:
             print(
-                f"Warning: Cannot move {agent_name} to unknown location '{location_name}'")
+                f"Warning: Cannot move {agent_name} to unknown location '{location_name}'"
+            )
 
     def get_agents_at(self, location_name):
         # Add simple check if location exists
         if location_name not in self.location_descriptions:
             return []
-        return [name for name, loc in self.agent_locations.items() if loc == location_name]
+        return [
+            name for name, loc in self.agent_locations.items() if loc == location_name
+        ]
 
-    def log_event(self, description, scope='local', location=None, triggered_by="Simulation", dispatch=True):
-        """Logs an event """
-        new_event = Event(description=description, location=location,
-                          scope=scope, step=self.current_step, triggered_by=triggered_by)
+    def log_event(
+        self,
+        description,
+        scope="local",
+        location=None,
+        triggered_by="Simulation",
+        dispatch=True,
+    ):
+        """Logs an event"""
+        new_event = Event(
+            description=description,
+            location=location,
+            scope=scope,
+            step=self.current_step,
+            triggered_by=triggered_by,
+        )
         self.event_log.append(new_event)
         log_prefix = f"[Event Log Step {self.current_step}][{triggered_by} @ {location or 'Global'}/{scope}]"
-        print(f"{log_prefix}: {description}")
+        if config.SIMULATION_MODE == "debug":
+            print(f"{log_prefix}: {description}")
 
         # Trim log if needed
-        if len(self.event_log) > config.MAX_RECENT_EVENTS * 2:  # Keep a longer internal log
+        if (
+            len(self.event_log) > config.MAX_RECENT_EVENTS * 2
+        ):  # Keep a longer internal log
             self.event_log.pop(0)
 
-        
     def set_weather(self, new_weather, triggered_by="Simulation"):
         """Changes the weather and logs the event."""
-        old_weather = self.global_context.get('weather', 'unknown')
+        old_weather = self.global_context.get("weather", "unknown")
         if old_weather != new_weather:
-            self.global_context['weather'] = new_weather
+            self.global_context["weather"] = new_weather
             # Log weather change as a GLOBAL event
-            self.log_event(f"The weather changes from {old_weather} to {new_weather}.",
-                           scope='global',
-                           location=None,  # Global event has no specific location
-                           triggered_by=triggered_by)
+            self.log_event(
+                f"The weather changes from {old_weather} to {new_weather}.",
+                scope="global",
+                location=None,  # Global event has no specific location
+                triggered_by=triggered_by,
+            )
             return True
         return False
 
     def get_static_context_for_agent(self, agent_name):
-         """Provides minimal, relatively static context."""
-         location = self.agent_locations.get(agent_name)
-         if not location: return "You are lost."
+        """Provides minimal, relatively static context."""
+        location = self.agent_locations.get(agent_name)
+        if not location:
+            return "You are lost."
 
-         context = f"Current Location: {location} ({self.location_descriptions.get(location, 'Unknown')}).\n"
-         context += f"Current Weather: {self.global_context.get('weather', 'Unknown')}.\n"
-         exits = self.get_reachable_locations(location)
-         context += f"Visible Exits: {exits if exits else 'None'}.\n"
-         
-         # Add location properties that are visible/relevant
-         location_props = self.location_properties.get(location, {})
-         visible_props = []
-         if 'ground' in location_props:
-             visible_props.append(f"The ground is {location_props['ground']}")
-         if 'terrain' in location_props:
-             visible_props.append(f"The terrain is {location_props['terrain']}")
-         if 'door_locked' in location_props:
-             visible_props.append(f"The door is {'locked' if location_props['door_locked'] else 'unlocked'}")
-         if visible_props:
-             context += f"Location Features: {'. '.join(visible_props)}.\n"
-         
-         # Add information about other agents in the location
-         other_agents = [name for name in self.get_agents_at(location) if name != agent_name]
-         if other_agents:
-             context += f"Other agents present: {', '.join(other_agents)}.\n"
-         else:
-             context += "You are alone here.\n"
-             
-         # Add information about items in the location
-         if 'contains' in location_props and location_props['contains']:
-             items = location_props['contains']
-             if isinstance(items, list) and items:
-                 context += f"You can see: {', '.join(items)}.\n"
-             
-         return context
+        context = f"Current Location: {location} ({self.location_descriptions.get(location, 'Unknown')}).\n"
+        context += (
+            f"Current Weather: {self.global_context.get('weather', 'Unknown')}.\n"
+        )
+        exits = self.get_reachable_locations(location)
+        context += f"Visible Exits: {exits if exits else 'None'}.\n"
+
+        # Add location properties that are visible/relevant
+        location_props = self.location_properties.get(location, {})
+        visible_props = []
+        if "ground" in location_props:
+            visible_props.append(f"The ground is {location_props['ground']}")
+        if "terrain" in location_props:
+            visible_props.append(f"The terrain is {location_props['terrain']}")
+        if "door_locked" in location_props:
+            visible_props.append(
+                f"The door is {'locked' if location_props['door_locked'] else 'unlocked'}"
+            )
+        if visible_props:
+            context += f"Location Features: {'. '.join(visible_props)}.\n"
+
+        # Add information about other agents in the location
+        other_agents = [
+            name for name in self.get_agents_at(location) if name != agent_name
+        ]
+        if other_agents:
+            context += f"Other agents present: {', '.join(other_agents)}.\n"
+        else:
+            context += "You are alone here.\n"
+
+        # Add information about items in the location
+        if "contains" in location_props and location_props["contains"]:
+            items = location_props["contains"]
+            if isinstance(items, list) and items:
+                context += f"You can see: {', '.join(items)}.\n"
+
+        return context
 
     def get_full_state_string(self):
         """For debugging - shows more structured log."""
@@ -1038,7 +1324,7 @@ class WorldState:
         # Show who listens
         state += f"Registered Agents: {list(self.registered_agents.keys())}\n"
         state += f"Event Log ({len(self.event_log)} total, showing last {config.MAX_RECENT_EVENTS}):\n"
-        display_events = self.event_log[-config.MAX_RECENT_EVENTS:]
+        display_events = self.event_log[-config.MAX_RECENT_EVENTS :]
         for event in display_events:
             state += f"  - St{event.step} [{event.triggered_by}@{event.location or 'Global'}/{event.scope}] {event.description}\n"
         return state + "-------------------"
@@ -1049,7 +1335,8 @@ class WorldState:
             return
 
         print(
-            f"[World State Apply]: Applying {len(updates)} updates triggered by {triggered_by}.")
+            f"[World State Apply]: Applying {len(updates)} updates triggered by {triggered_by}."
+        )
         for update in updates:
             try:
                 update_type = update[0]
@@ -1059,28 +1346,39 @@ class WorldState:
                 if update_type == "agent_location":
                     # Value is the new location name
                     self.add_agent_to_location(
-                        agent_name=target, location_name=value, triggered_by=triggered_by)
+                        agent_name=target,
+                        location_name=value,
+                        triggered_by=triggered_by,
+                    )
                 elif update_type == "location_property":
                     # Target is location name, value is prop_name, need 4th element for prop_value
                     if len(update) == 4:
                         prop_name = value
                         prop_value = update[3]
                         self.set_location_property(
-                            location=target, prop_name=prop_name, value=prop_value, triggered_by=triggered_by)
+                            location=target,
+                            prop_name=prop_name,
+                            value=prop_value,
+                            triggered_by=triggered_by,
+                        )
                     else:
                         print(
-                            f"[World State Apply Error]: Invalid format for location_property update: {update}")
+                            f"[World State Apply Error]: Invalid format for location_property update: {update}"
+                        )
                 # Add more update types here (e.g., global context, agent inventory)
                 else:
                     print(
-                        f"[World State Apply Warning]: Unknown update type '{update_type}'")
+                        f"[World State Apply Warning]: Unknown update type '{update_type}'"
+                    )
 
             except IndexError as e:
                 print(
-                    f"[World State Apply Error]: Malformed update tuple {update}: {e}")
+                    f"[World State Apply Error]: Malformed update tuple {update}: {e}"
+                )
             except Exception as e:
                 print(
-                    f"[World State Apply Error]: Failed to apply update {update}: {e}")
+                    f"[World State Apply Error]: Failed to apply update {update}: {e}"
+                )
 
 
 ```
@@ -1095,15 +1393,16 @@ python
 from agent.memory import BaseMemory
 from agent.planning import BasePlanning
 # from world import WorldState
-
+import config
 class Agent:
-    def __init__(self, name:str,gender:str, personality:str, memory_module:BaseMemory, planning_module:BasePlanning, initial_goals: list[str] = None):
+    def __init__(self, name:str,gender:str, personality:str, memory_module:BaseMemory, planning_module:BasePlanning, initial_goals: list[str] = None,background:list[str] = None):
         self.name = name
         self.gender = gender
         self.personality = personality
         self.memory = memory_module # An instance of BaseMemory
         self.planning = planning_module # An instance of BasePlanning
         self.goals = initial_goals if initial_goals is not None else [] # List of goal descriptions
+        self.background = background if background is not None else []  # Placeholder for agent's background
         self.action_buffer = None  # Store the output of plan() before resolution
         print(f"Agent {name} initialized with {type(memory_module).__name__} and {type(planning_module).__name__}.")
 
@@ -1112,13 +1411,15 @@ class Agent:
         # Simple formatting for now, could be more sophisticated
         perception_text = f"[Perception @ Step {event.step}] ({event.scope} at {event.location or 'Global'} by {event.triggered_by}): {event.description}"
         self.memory.add_observation(perception_text)
-        print(f"DEBUG {self.name} Perceived: {perception_text}") # Optional debug
+        if config.SIMULATION_MODE == 'debug':
+            print(f"DEBUG {self.name} Perceived: {perception_text}") # Optional debug
 
     def add_goal(self, goal_description: str):
         """Adds a new goal to the agent's list."""
         if goal_description not in self.goals:
             self.goals.append(goal_description)
-            print(f"DEBUG {self.name} added goal: {goal_description}")
+            if config.SIMULATION_MODE == 'debug':
+                print(f"DEBUG {self.name} added goal: {goal_description}")
             # Optionally, add this event to memory
             self.memory.add_observation(f"[Internal] Added new goal: {goal_description}")
 
@@ -1227,7 +1528,8 @@ class SimpleMemory(BaseMemory):
                  self.memory_buffer = self.memory_buffer[first_newline+1:]
             else: # If no newline found after excess, just truncate
                  self.memory_buffer = self.memory_buffer[excess:]
-        print(f"DEBUG Memory Add: Added '{new_entry[:50]}...'. Buffer size: {len(self.memory_buffer)}") # Debug
+        if config.SIMULATION_MODE == 'debug':
+            print(f"DEBUG Memory Add: Added '{new_entry[:50]}...'. Buffer size: {len(self.memory_buffer)}") # Debug
 
     def get_memory_context(self, **kwargs) -> str:
         """Returns the entire (potentially trimmed) memory buffer."""
@@ -1311,7 +1613,8 @@ class ShortLongTMemory(BaseMemory):
         # Basic agent context
         prompt_context = f"Agent Name: {self.agent.name}\n"
         prompt_context += f"Goals: {self.agent.goals}\n"
-        prompt_context += f"Personality: {self.agent.personality}\n\n"
+        prompt_context += f"Personality: {self.agent.personality}\n"
+        prompt_context += f"Background: {self.agent.background}\n\n"
         prompt_context += "Recent events and thoughts:\n"
 
         # Format the memories for the prompt
@@ -1328,9 +1631,9 @@ class ShortLongTMemory(BaseMemory):
         )
 
         full_prompt = prompt_context + prompt_instruction
-
-        print(f"DEBUG {self.agent.name}: Generating reflection...")
-        print(f"--- Reflection Prompt ---\n{full_prompt}\n-----------------------") # Uncomment for deep debug
+        if config.SIMULATION_MODE == 'debug':
+            print(f"DEBUG {self.agent.name}: Generating reflection...")
+            print(f"--- Reflection Prompt ---\n{full_prompt}\n-----------------------") # Uncomment for deep debug
 
         # --- Call LLM for Reflection ---
         try:
@@ -1339,7 +1642,8 @@ class ShortLongTMemory(BaseMemory):
 
             if reflection_text:
                 self.long_term_memory.append(reflection_text)
-                print(f"DEBUG {self.agent.name} Reflection Added: '{reflection_text[:80]}...'")
+                if config.SIMULATION_MODE == 'debug':
+                    print(f"DEBUG {self.agent.name} Reflection Added: '{reflection_text[:80]}...'")
             else:
                 print(f"WARN {self.agent.name}: Reflection generated empty text.")
 
@@ -1431,6 +1735,7 @@ class SimplePlanning(BasePlanning):
 Your personality: {agent.personality}.
 Your gender: {getattr(agent, 'gender', 'Not specified')}.
 Your goals: {agent.goals}
+Your background: {agent.background}
 
 Your current world situation:
 {static_world_context}
@@ -1462,7 +1767,8 @@ Examples of valid single intents:
 Important: Provide only ONE intended action, thought, or utterance. Do not combine multiple intents.
 Your intended output (one single intent):"""
 
-        print(f"\n[{agent.name} is thinking...]")
+        if config.SIMULATION_MODE == 'debug':
+            print(f"\n[{agent.name} is thinking...]")
         # print(f"--- DEBUG PROMPT for {agent.name} ---\n{prompt}\n--------------------")
         response=None
         try:
@@ -1476,8 +1782,9 @@ Your intended output (one single intent):"""
                     f"[{agent.name} Warning]: LLM gave short/empty response: '{utterance}'. Defaulting to wait intent.")
                 utterance = f"Intend to wait silently."
             else:
-                # Print the potentially multi-line intent
-                print(f"[{agent.name} intends]: {utterance}")
+                if config.SIMULATION_MODE == 'debug':
+                    # Print the potentially multi-line intent
+                    print(f"[{agent.name} intends]: {utterance}")
 
             return utterance
 
