@@ -37,7 +37,6 @@ class BaseActionResolver(ABC):
         """
         pass
 
-# --- Concrete Implementation (Moves logic from LLMInterpreter) ---
 
 class LLMActionResolver(BaseActionResolver):
     """

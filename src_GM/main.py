@@ -1,7 +1,9 @@
 # --- Imports ---
 from collections import namedtuple  # For creating simple Event objects
+import random
 import time  # For pausing execution (e.g., between agent actions)
-from typing import List  # For type hinting lists (e.g., list of Agents)
+# For type hinting lists (e.g., list of Agents)
+from typing import List, Optional
 import google.generativeai as genai  # Google's Generative AI library
 import argparse  # For parsing command-line arguments
 
@@ -175,6 +177,10 @@ def run_simulation():
     # ---------------------------------------- Simulation Steps ----------------------------------------
     step = 0  # Initialize step counter
     # Main simulation loop, continues until max steps are reached
+
+    # Tracks agent from PREVIOUS step
+    last_agent_acted_in_previous_step: Optional[Agent] = None
+
     while step < config.SIMULATION_MAX_STEPS:
         step += 1  # Increment step counter
         world.advance_step()  # Advance the world's internal clock/step counter
@@ -188,154 +194,165 @@ def run_simulation():
         elif config.SIMULATION_MODE == 'story':
             print(f"\n--- TIME STEP {step} ---")
 
-        # ---------------------------------------- Agent Thinking Phase ----------------------------------------
-        # Each agent observes the world and decides on their next action/intention.
-        if config.SIMULATION_MODE == 'debug':
-            print("\n--- Agent Thinking Phase ---")
-        agent_intentions = {}  # Store planned action/intention for each agent
-        agent_current_locations = {}  # Store current location for action resolution context
-        for agent in agents:
+        # --- Determine Agent Turn Order for this Step ---
+        current_step_agents_list: List[Agent] = []  # Temp list for clarity
+        if not agents:
+            pass  # No agents to process, current_step_agents_list remains empty
+        elif len(agents) == 1:
+            # Only one agent, order is fixed
+            current_step_agents_list = list(agents)
+        else:
+            # Randomize order from the main 'agents' list
+            # Use list(agents) if 'agents' might not be a list
+            shuffled_agents = random.sample(list(agents), len(agents))
+
+            # Ensure the last agent from the previous round isn't first in this one
+            if last_agent_acted_in_previous_step and \
+               shuffled_agents[0].name == last_agent_acted_in_previous_step.name:  # Compare by a unique ID like name
+                # Simple fix: swap the first agent with the second agent.
+                # This assumes len(shuffled_agents) > 1, which is true due to len(agents) > 1 check
+                shuffled_agents[0], shuffled_agents[1] = shuffled_agents[1], shuffled_agents[0]
+            current_step_agents_list = shuffled_agents
+
+        # This is the list your loop will use
+        current_step_agents = current_step_agents_list
+
+        if config.SIMULATION_MODE == 'debug' and current_step_agents:
+            agent_order_names = [a.name for a in current_step_agents]
+            print(f"Agent turn order for step {step}: {agent_order_names}")
+            if last_agent_acted_in_previous_step:
+                print(
+                    f"(Last agent in step {step-1} was: {last_agent_acted_in_previous_step.name})")
+
+        # This variable will track the actual last agent who took a turn in THIS step
+        agent_who_took_last_turn_this_step: Optional[Agent] = None
+
+        # --- Sequential Agent Action, Resolution, and Perception Loop ---
+        for agent in current_step_agents:
             if config.SIMULATION_MODE == 'debug':
-                print(f"\n-- Processing {agent.name} --")
-            # Get the agent's current location from the world state
+                print(f"\n-- Processing {agent.name}'s Turn --")
+
             current_loc = world.agent_locations.get(agent.name, None)
-            # Handle cases where an agent might not have a location (should ideally not happen)
             if not current_loc:
                 if config.SIMULATION_MODE == 'debug':
                     print(
-                        f"[Sim Warning]: Agent {agent.name} has no location! Skipping.")
-                continue  # Skip this agent for this step
-            agent_current_locations[agent.name] = current_loc  # Store location
+                        f"[Sim Warning]: Agent {agent.name} has no location! Skipping turn.")
+                continue
 
-            # Ask the agent to plan its action based on the current world state
+            # 1. AGENT THINKING (Plan action)
+            # The agent's plan() method should use its memory, which now includes
+            # events from previous agents in THIS SAME STEP.
+            if config.SIMULATION_MODE == 'debug':
+                print(f"--- {agent.name} Thinking Phase ---")
+            # Agent plans based on current world state
             intended_output = agent.plan(world)
-            # Store the intention
-            agent_intentions[agent.name] = intended_output
 
-            # Optional pause to avoid hitting API rate limits or to slow down simulation
-            time.sleep(1.0)
+            # Optional pause
+            time.sleep(0.2)  # Reduced from 1.0 for faster sequential turns
 
-        # ---------------------------------------- Action Resolution Phase ----------------------------------------
-        # The Action Resolver interprets agent intentions and determines the outcomes
-        # and necessary world state changes.
-        if config.SIMULATION_MODE == 'debug':
-            print("\n--- Action Resolution Phase ---")
+            # 2. ACTION RESOLUTION
+            if config.SIMULATION_MODE == 'debug':
+                print(f"--- {agent.name} Action Resolution Phase ---")
 
-        resolution_results = {}  # Store the outcome dict from the resolver for each agent
-        all_state_updates = []  # Collect ALL state update instructions before applying them
-        # Collect events resulting from actions (success or failure)
-        all_outcome_events = []
-
-        # Iterate through the intentions planned by each agent
-        for agent_name, intent in agent_intentions.items():
-            agent_loc = agent_current_locations.get(agent_name)
-            # Ensure the agent has a location and the action resolver is available
-            if agent_loc and action_resolver:
-                if config.SIMULATION_MODE == 'debug':
-                    print(f"-- Resolving for {agent_name} at {agent_loc} --")
-                # Call the action resolver to determine the outcome of the intended action
-                result = action_resolver.resolve(
-                    agent_name, agent_loc, intent, world
-                )
-                resolution_results[agent_name] = result  # Store the raw result
-
-                # --- Process Successful Action ---
-                if result and result.get("success"):
-                    outcome_desc = result.get(
-                        'outcome_description', f"{agent_name} acted.")  # Default description
-                    if config.SIMULATION_MODE == 'debug':
-                        # Detailed debug log for successful action
-                        print(
-                            f"[Resolver OK] {agent_name}: {result.get('action_type')} -> {outcome_desc}")
-                    if config.SIMULATION_MODE == 'story':
-                        # Narrative output for successful action
-                        # Add extra newline for story readability
-                        print(f"{outcome_desc}\n\n")
-
-                    # Collect world state updates if the action caused any
-                    if result.get("world_state_updates"):
-                        all_state_updates.extend(result["world_state_updates"])
-                    # Collect the outcome event to be logged and potentially perceived
-                    all_outcome_events.append(
-                        # description, scope, location, triggered_by
-                        (outcome_desc, 'action_outcome', agent_loc, agent_name)
-                    )
-                # --- Process Failed Action ---
-                elif result:  # If result exists but 'success' is not True
-                    reason = result.get('reasoning', 'Unknown reason')
-                    outcome_desc = result.get(
-                        'outcome_description', 'Action failed.')
-                    if config.SIMULATION_MODE == 'debug':
-                        # Detailed debug log for failed action
-                        print(f"[Resolver FAIL] {agent_name}: {reason}")
-                        print(f"   Outcome: {outcome_desc}")
-                    if config.SIMULATION_MODE == 'story':
-                        # Narrative output for failed action
-                        print(
-                            f"{agent_name} tried to act, but {outcome_desc.lower()}")  # Narrative phrasing
-
-                    # Collect the failure outcome event
-                    all_outcome_events.append(
-                        (outcome_desc, 'action_outcome', agent_loc, agent_name)
-                    )
-                # --- Handle Resolver Errors ---
-                else:  # If the resolver returned None or an unexpected structure
-                    error_msg = f"System error resolving {agent_name}'s action."
-                    if config.SIMULATION_MODE == 'debug':
-                        print(
-                            f"[Resolver ERROR] Critical failure resolving for {agent_name}")
-                    if config.SIMULATION_MODE == 'story':
-                        print(
-                            f"[System Note] Issue resolving {agent_name}'s action.")
-                    # Log a system error event
-                    all_outcome_events.append(
-                        (error_msg, 'system_error', agent_loc,
-                         'System')  # Use 'System' as trigger
-                    )
-            # --- Handle Missing Agent Location or Resolver ---
-            else:
+            if not action_resolver:
                 if config.SIMULATION_MODE == 'debug':
                     print(
-                        f"[Sim Warning]: Cannot resolve action for {agent_name}, location or resolver unknown.")
-            # Optional pause between resolving actions
-            time.sleep(0.5)
+                        f"[Sim Error]: Action resolver not available for {agent.name}. Skipping resolution.")
+                continue
 
-        # ---------------------------------------- World Update Phase ----------------------------------------
-        # Apply all collected state changes to the world simultaneously.
-        if config.SIMULATION_MODE == 'debug':
-            print("\n--- World Update Phase ---")
-        if all_state_updates:
-            # Apply the list of update instructions to the world state
-            world.apply_state_updates(
-                all_state_updates, triggered_by="AgentActions")  # Indicate the trigger
-            if config.SIMULATION_MODE == 'debug':
-                print("Applied world state updates.")
-        else:
-            # No updates were generated in this step
-            if config.SIMULATION_MODE == 'debug':
-                print("No world state updates required.")
-
-        # ---------------------------------------- Agents Perceiving and Event Logging Phase ----------------------------------------
-        # Log the outcomes of actions as events and dispatch them so agents can perceive them.
-        if config.SIMULATION_MODE == 'debug':
-            print("\n--- Logging Action Outcomes & Dispatching Events ---")
-        # Iterate through the collected outcome events (successes, failures, errors)
-        for desc, scope, loc, trig_by in all_outcome_events:
-            # 1. Log the event to the world's historical record
-            world.log_event(desc, scope, loc, trig_by)
-
-            # 2. Create an Event object
-            new_event = Event(
-                description=desc,
-                location=loc,
-                scope=scope,
-                step=world.current_step,
-                triggered_by=trig_by
+            result = action_resolver.resolve(
+                agent.name, current_loc, intended_output, world
             )
-            # 3. Dispatch the event using the configured dispatcher
-            # The dispatcher determines which agents should perceive this event
-            event_dispatcher.dispatch_event(
-                new_event, world.registered_agents, world.agent_locations)
+
+            # 3. PROCESS RESULT, UPDATE WORLD, DISPATCH EVENT (IMMEDIATELY)
+            outcome_desc_for_event = ""
+
+            if result and result.get("success"):
+                outcome_desc = result.get(
+                    'outcome_description', f"{agent.name} acted.")
+                outcome_desc_for_event = outcome_desc  # Use this for the event
+
+                if config.SIMULATION_MODE == 'debug':
+                    print(
+                        f"[Resolver OK] {agent.name}: {result.get('action_type')} -> {outcome_desc}")
+                if config.SIMULATION_MODE == 'story':
+                    # Reduced newline for story flow with sequential actions
+                    print(f"{outcome_desc}\n")
+
+                # 3a. APPLY WORLD STATE UPDATES (if any) IMMEDIATELY
+                if result.get("world_state_updates"):
+                    if config.SIMULATION_MODE == 'debug':
+                        print(
+                            f"Applying world state updates for {agent.name}'s action...")
+                    world.apply_state_updates(
+                        result["world_state_updates"], triggered_by=agent.name)  # Mark who triggered
+                    if config.SIMULATION_MODE == 'debug':
+                        print("World state updates applied.")
+                        # If location changed, update current_loc for event logging
+                        # This is important if the event's location IS the new location
+                    if any(upd.get('type') == 'agent_location' and upd.get('agent_name') == agent.name for upd in result["world_state_updates"]):
+                        current_loc = world.agent_locations.get(
+                            agent.name, current_loc)
+
+            elif result:  # Failed Action
+                reason = result.get('reasoning', 'Unknown reason')
+                outcome_desc = result.get(
+                    'outcome_description', 'Action failed.')
+                outcome_desc_for_event = f"{agent.name} attempt to {intended_output.get('action_type','act')} failed: {outcome_desc}"
+
+                if config.SIMULATION_MODE == 'debug':
+                    print(f"[Resolver FAIL] {agent.name}: {reason}")
+                    print(f"   Outcome: {outcome_desc_for_event}")
+                if config.SIMULATION_MODE == 'story':
+                    print(f"{agent.name} tried to act, but {outcome_desc.lower()}")
+
+            else:  # Resolver Error
+                error_msg = f"System error resolving {agent.name}'s action for intent: {intended_output}."
+                outcome_desc_for_event = error_msg
+                if config.SIMULATION_MODE == 'debug':
+                    print(
+                        f"[Resolver ERROR] Critical failure resolving for {agent.name}")
+                if config.SIMULATION_MODE == 'story':
+                    print(
+                        f"[System Note] Issue resolving {agent.name}'s action.")
+
+            # 3b. CREATE, LOG, AND DISPATCH EVENT (for success, failure, or error)
+            if outcome_desc_for_event:  # Ensure there's something to log/dispatch
+                # Determine event scope (could be part of resolver's result)
+                event_scope = result.get(
+                    'event_scope', 'action_outcome') if result else 'system_error'
+
+                # Log to world's historical record
+                world.log_event(outcome_desc_for_event, event_scope,
+                                current_loc, agent.name if result else 'System')
+
+                # Create Event object
+                new_event = Event(
+                    description=outcome_desc_for_event,
+                    location=current_loc,  # Location at the time of action
+                    scope=event_scope,
+                    step=world.current_step,
+                    triggered_by=agent.name if result else 'System'
+                )
+
+                # Dispatch for immediate perception by OTHERS (and self, if memory model handles it)
+                if config.SIMULATION_MODE == 'debug':
+                    print(f"Dispatching event: {new_event}")
+                event_dispatcher.dispatch_event(
+                    new_event, world.registered_agents, world.agent_locations
+                )
+
+            # Optional pause between individual agent actions within a step
+            agent_who_took_last_turn_this_step = agent
+            time.sleep(0.1)  # Reduced from 0.5
+            
+         # Update the tracker for the *next* step's calculation
+        if agent_who_took_last_turn_this_step:
+            last_agent_acted_in_previous_step = agent_who_took_last_turn_this_step
+        elif not agents:  # If there are no agents at all in the simulation
+            last_agent_acted_in_previous_step = None
+        # If agents exist but no one took a turn (e.g., all skipped),
+        # last_agent_acted_in_previous_step retains its value, which is correct.
 
         # ---------------------------------------- End Step ----------------------------------------
         if config.SIMULATION_MODE == 'debug':
