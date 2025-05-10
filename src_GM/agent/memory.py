@@ -72,10 +72,10 @@ class SimpleMemory(BaseMemory):
                 self.memory_buffer = self.memory_buffer[first_newline+1:]
             else:  # If no newline found after excess, just truncate
                 self.memory_buffer = self.memory_buffer[excess:]
-        if config.SIMULATION_MODE == 'debug':
-            # Debug
-            print(
-                f"DEBUG Memory Add: Added '{new_entry[:50]}...'. Buffer size: {len(self.memory_buffer)}")
+        # if config.SIMULATION_MODE == 'debug':
+        #     # Debug
+        #     print(
+        #         f"DEBUG Memory Add: Added '{new_entry[:50]}...'. Buffer size: {len(self.memory_buffer)}")
 
     def get_memory_context(self, **kwargs) -> str:
         """Returns the entire (potentially trimmed) memory buffer."""
@@ -141,7 +141,7 @@ class ShortLongTMemory(BaseMemory):
         self.short_term_memory.append(memory_entry)
         self.unreflected_count += 1
                                                                 # TEMPORAL ------------------------------------->
-        print(f"DEBUG {self.agent.name} Memory Add ShortTerm: {memory_entry}")
+        # print(f"DEBUG {self.agent.name} Memory Add ShortTerm: {memory_entry}")
         # --- Trigger Reflection ---
         if self.reflection_model and self.unreflected_count >= self.reflection_threshold:
             self._reflect()

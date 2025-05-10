@@ -65,8 +65,8 @@ Your intended output (one single intent):"""
         if self.is_initial_prompt==False:
             self.is_initial_prompt=True
             print(f"[{agent.name} Prompt]: {prompt}")  #TEMPORAL ------------------------------------->
-        if config.SIMULATION_MODE == 'debug':
-            print(f"\n[{agent.name} is thinking...]")
+        # if config.SIMULATION_MODE == 'debug':
+        #     print(f"\n[{agent.name} is thinking...]")
         # print(f"--- DEBUG PROMPT for {agent.name} ---\n{prompt}\n--------------------")
         response=None
         try:
@@ -79,11 +79,11 @@ Your intended output (one single intent):"""
                 print(
                     f"[{agent.name} Warning]: LLM gave short/empty response: '{utterance}'. Defaulting to wait intent.")
                 utterance = f"Intend to wait silently."
-            else:
-                if config.SIMULATION_MODE == 'debug':
-                    print(f"[{agent.name} intends]: {utterance}")
+            # else:
+            #     if config.SIMULATION_MODE == 'debug':
+            #         print(f"[{agent.name} intends]: {utterance}")
             
-            print(f"[{agent.name} Response]: {utterance}")  #TEMPORAL ------------------------------------->
+            # print(f"[{agent.name} Response]: {utterance}")  #TEMPORAL ------------------------------------->
             return utterance
 
         except Exception as e:

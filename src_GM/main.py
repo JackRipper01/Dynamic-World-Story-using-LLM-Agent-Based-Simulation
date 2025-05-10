@@ -160,12 +160,12 @@ def run_simulation():
     if config.SIMULATION_MODE == 'debug':
         print("Agents initialized.")
 
-    # 4. Initialize Director
-    director_model = model  # The director might use the same LLM or a different one
-    # Create the Director instance, passing the world, model, and narrative goal
-    director = Director(world, director_model, config.NARRATIVE_GOAL)
-    if config.SIMULATION_MODE == 'debug':
-        print(f"Director initialized with goal: '{config.NARRATIVE_GOAL}'")
+    # # 4. Initialize Director
+    # director_model = model  # The director might use the same LLM or a different one
+    # # Create the Director instance, passing the world, model, and narrative goal
+    # director = Director(world, director_model, config.NARRATIVE_GOAL)
+    # if config.SIMULATION_MODE == 'debug':
+    #     print(f"Director initialized with goal: '{config.NARRATIVE_GOAL}'")
 
     # 5. Initialize Action Resolver
     # Create the action resolver using the factory function
@@ -187,12 +187,15 @@ def run_simulation():
 
         # Print step header based on simulation mode
         if config.SIMULATION_MODE == 'debug':
-            print(
-                f"\n{'='*15} Simulation Step {step}/{config.SIMULATION_MAX_STEPS} {'='*15}")
-            # In debug mode, print the full world state at the start of the step
+            print(f"\n\n")  # Add an extra blank line for better separation
+            header_text = f" SIMULATION STEP {step}/{config.SIMULATION_MAX_STEPS} "
+            print(header_text.center(70, '='))  # Centered header with '=' fill
+            print("\n--- WORLD STATE (Start of Step) ---")
             print(world.get_full_state_string())
+            print("--- END OF WORLD STATE ---\n")
         elif config.SIMULATION_MODE == 'story':
-            print(f"\n--- TIME STEP {step} ---")
+            # Add more vertical spacing for story mode time steps
+            print(f"\n\n--- TIME STEP {step} ---\n")
 
         # --- Determine Agent Turn Order for this Step ---
         current_step_agents_list: List[Agent] = []  # Temp list for clarity
@@ -230,34 +233,39 @@ def run_simulation():
         # --- Sequential Agent Action, Resolution, and Perception Loop ---
         for agent in current_step_agents:
             if config.SIMULATION_MODE == 'debug':
-                print(f"\n-- Processing {agent.name}'s Turn --")
+                # More prominent agent turn header
+                turn_header = f" AGENT: {agent.name}'s Turn "
+                # Centered with hyphens
+                print(f"\n{turn_header.center(60, '-')}")
+                print(
+                    f"Location: {world.agent_locations.get(agent.name, 'Unknown')}")
 
             current_loc = world.agent_locations.get(agent.name, None)
             if not current_loc:
                 if config.SIMULATION_MODE == 'debug':
                     print(
-                        f"[Sim Warning]: Agent {agent.name} has no location! Skipping turn.")
+                        f"  [Sim Warning]: Agent {agent.name} has no location! Skipping turn.")
+                print("-" * 60)  # End agent turn block
                 continue
 
             # 1. AGENT THINKING (Plan action)
-            # The agent's plan() method should use its memory, which now includes
-            # events from previous agents in THIS SAME STEP.
             if config.SIMULATION_MODE == 'debug':
-                print(f"--- {agent.name} Thinking Phase ---")
+                print(f"  [Phase 1] {agent.name} Thinking...")
             # Agent plans based on current world state
             intended_output = agent.plan(world)
 
             # Optional pause
-            time.sleep(0.2)  # Reduced from 1.0 for faster sequential turns
+            time.sleep(0.2)
 
             # 2. ACTION RESOLUTION
             if config.SIMULATION_MODE == 'debug':
-                print(f"--- {agent.name} Action Resolution Phase ---")
+                print(f"  [Phase 2] Action Resolution for {agent.name}...")
 
             if not action_resolver:
                 if config.SIMULATION_MODE == 'debug':
                     print(
-                        f"[Sim Error]: Action resolver not available for {agent.name}. Skipping resolution.")
+                        f"    [Sim Error]: Action resolver not available for {agent.name}. Skipping resolution.")
+                print("-" * 60)  # End agent turn block
                 continue
 
             result = action_resolver.resolve(
@@ -271,25 +279,22 @@ def run_simulation():
                 outcome_desc = result.get(
                     'outcome_description', f"{agent.name} acted.")
                 outcome_desc_for_event = outcome_desc  # Use this for the event
-
                 if config.SIMULATION_MODE == 'debug':
                     print(
-                        f"[Resolver OK] {agent.name}: {result.get('action_type')} -> {outcome_desc}")
+                        f"    [RESOLVER_SUCCESS] Action: {result.get('action_type', 'Unknown')}")
+                    print(f"      Outcome: {outcome_desc}")
                 if config.SIMULATION_MODE == 'story':
-                    # Reduced newline for story flow with sequential actions
-                    print(f"{outcome_desc}\n")
+                    # Slightly more spacing for story mode
+                    print(f"\n{outcome_desc}\n")
 
-                # 3a. APPLY WORLD STATE UPDATES (if any) IMMEDIATELY
                 if result.get("world_state_updates"):
                     if config.SIMULATION_MODE == 'debug':
                         print(
                             f"Applying world state updates for {agent.name}'s action...")
                     world.apply_state_updates(
-                        result["world_state_updates"], triggered_by=agent.name)  # Mark who triggered
+                        result["world_state_updates"], triggered_by=agent.name)
                     if config.SIMULATION_MODE == 'debug':
-                        print("World state updates applied.")
-                        # If location changed, update current_loc for event logging
-                        # This is important if the event's location IS the new location
+                        print(f"        Updates applied.")
                     if any(upd.get('type') == 'agent_location' and upd.get('agent_name') == agent.name for upd in result["world_state_updates"]):
                         current_loc = world.agent_locations.get(
                             agent.name, current_loc)
@@ -301,50 +306,51 @@ def run_simulation():
                 outcome_desc_for_event = f"{agent.name} attempt to {intended_output.get('action_type','act')} failed: {outcome_desc}"
 
                 if config.SIMULATION_MODE == 'debug':
-                    print(f"[Resolver FAIL] {agent.name}: {reason}")
-                    print(f"   Outcome: {outcome_desc_for_event}")
+                    print(f"    [RESOLVER_FAILURE] Reason: {reason}")
+                    print(f"      Outcome: {outcome_desc_for_event}")
                 if config.SIMULATION_MODE == 'story':
-                    print(f"{agent.name} tried to act, but {outcome_desc.lower()}")
+                    # Add a newline before for better separation
+                    print(
+                        f"\n{agent.name} tried to act, but {outcome_desc.lower()}")
 
             else:  # Resolver Error
                 error_msg = f"System error resolving {agent.name}'s action for intent: {intended_output}."
                 outcome_desc_for_event = error_msg
                 if config.SIMULATION_MODE == 'debug':
                     print(
-                        f"[Resolver ERROR] Critical failure resolving for {agent.name}")
+                        f"    [RESOLVER_ERROR] Critical failure for {agent.name}.")
+                    print(f"      Details: {error_msg}")
                 if config.SIMULATION_MODE == 'story':
+                    # Add a newline before for better separation
                     print(
-                        f"[System Note] Issue resolving {agent.name}'s action.")
+                        f"\n[System Note] Issue resolving {agent.name}'s action.")
 
             # 3b. CREATE, LOG, AND DISPATCH EVENT (for success, failure, or error)
-            if outcome_desc_for_event:  # Ensure there's something to log/dispatch
-                # Determine event scope (could be part of resolver's result)
+            if outcome_desc_for_event:
                 event_scope = result.get(
                     'event_scope', 'action_outcome') if result else 'system_error'
-
-                # Log to world's historical record
                 world.log_event(outcome_desc_for_event, event_scope,
                                 current_loc, agent.name if result else 'System')
-
-                # Create Event object
                 new_event = Event(
                     description=outcome_desc_for_event,
-                    location=current_loc,  # Location at the time of action
+                    location=current_loc,
                     scope=event_scope,
                     step=world.current_step,
                     triggered_by=agent.name if result else 'System'
                 )
-
-                # Dispatch for immediate perception by OTHERS (and self, if memory model handles it)
-                if config.SIMULATION_MODE == 'debug':
-                    print(f"Dispatching event: {new_event}")
+                # if config.SIMULATION_MODE == 'debug':
+                #     # Truncate long descriptions
+                #     print(
+                #         f"    [Event Dispatch] For: {new_event.triggered_by}, Desc: \"{new_event.description[:50]}...\"")
                 event_dispatcher.dispatch_event(
                     new_event, world.registered_agents, world.agent_locations
                 )
 
-            # Optional pause between individual agent actions within a step
+            if config.SIMULATION_MODE == 'debug':
+                print("-" * 60)  # End agent turn block
+
             agent_who_took_last_turn_this_step = agent
-            time.sleep(0.1)  # Reduced from 0.5
+            time.sleep(0.1)
             
          # Update the tracker for the *next* step's calculation
         if agent_who_took_last_turn_this_step:
@@ -356,9 +362,12 @@ def run_simulation():
 
         # ---------------------------------------- End Step ----------------------------------------
         if config.SIMULATION_MODE == 'debug':
-            print("\n--- End of Step ---")
-            # Print the final world state after all updates and events for the step
+            print(f"\n")  # Add a blank line
+            footer_text = f" END OF STEP {step} "
+            print(footer_text.center(70, '-'))  # Centered footer with '-' fill
+            print("\n--- WORLD STATE (End of Step) ---")
             print(world.get_full_state_string())
+            print("--- END OF WORLD STATE ---\n")
 
         # ---------------------------------------- User Input ----------------------------------------
         # Allows pausing the simulation, quitting, or changing parameters mid-run.

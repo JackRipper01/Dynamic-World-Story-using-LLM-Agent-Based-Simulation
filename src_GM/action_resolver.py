@@ -55,7 +55,7 @@ class LLMActionResolver(BaseActionResolver):
     def resolve(self, agent_name: str, agent_location: str, action_output: str, world_state:WorldState) -> dict:
         if config.SIMULATION_MODE == 'debug' or config.SIMULATION_MODE == 'only_resolver':
             print(
-                f"[LLM Resolver @ {agent_location}]: Resolving for {agent_name}: '{action_output}'")
+                f"[LLM Resolver @ {agent_location}]: Resolving for {agent_name}: '{action_output}'\n")
 
         # 1. Gather Context (Simplified example - adapt as needed)
         # This part needs careful design - what *minimal* context does the resolver need?
@@ -110,7 +110,7 @@ Your single-line output:
             raw_output = response.text.strip()
 
             if config.SIMULATION_MODE == 'debug' or config.SIMULATION_MODE == 'only_resolver':
-                print(f"[LLM Resolver Raw Output]: '{raw_output}'")
+                print(f"[LLM Resolver Raw Output]: '{raw_output}'\n")
 
             parts = raw_output.split(" | ")
             if len(parts) == 4:

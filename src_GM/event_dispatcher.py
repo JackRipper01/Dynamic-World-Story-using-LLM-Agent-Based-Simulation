@@ -40,9 +40,9 @@ class DirectEventDispatcher(BaseEventDispatcher):
     def dispatch_event(self, event: Event, registered_agents: Dict[str, Agent], agent_locations: Dict[str, str]) -> List[str]:
         dispatched_to = []
         # Log processing start
-        if config.SIMULATION_MODE == 'debug':
-            print(
-            f"[Dispatcher '{type(self).__name__}']: Processing event: {event.scope} @ {event.location or 'Global'} - '{event.description[:50]}...'")
+        # if config.SIMULATION_MODE == 'debug':
+        #     print(
+        #     f"[Dispatcher '{type(self).__name__}']: Processing event: {event.scope} @ {event.location or 'Global'} - '{event.description[:50]}...'")
 
         for agent_name, agent_obj in registered_agents.items():
             agent_current_loc = agent_locations.get(agent_name)
@@ -76,10 +76,10 @@ class DirectEventDispatcher(BaseEventDispatcher):
                     print(
                         f"[Dispatcher Error]: Failed during perceive call for {agent_name}: {e}")
 
-        if dispatched_to:
-            if config.SIMULATION_MODE == 'debug':
-                print(
-                f"[Dispatcher '{type(self).__name__}']: Event dispatched to: {dispatched_to}")
+        # if dispatched_to:
+        #     if config.SIMULATION_MODE == 'debug':
+        #         print(
+        #         f"[Dispatcher '{type(self).__name__}']: Event dispatched to: {dispatched_to}")
         # else:
             # print(f"[Dispatcher '{type(self).__name__}']: Event not dispatched to any agents based on rules.") # Can be verbose
 

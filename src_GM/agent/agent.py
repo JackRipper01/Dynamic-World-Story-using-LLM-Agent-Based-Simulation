@@ -20,8 +20,8 @@ class Agent:
         # Simple formatting for now, could be more sophisticated
         perception_text = f"[Perception @ Step {event.step}] ({event.scope} at {event.location or 'Global'} by {event.triggered_by}): {event.description}"
         self.memory.add_observation(perception_text)
-        if config.SIMULATION_MODE == 'debug':
-            print(f"DEBUG {self.name} Perceived: {perception_text}") # Optional debug
+        # if config.SIMULATION_MODE == 'debug':
+        #     print(f"DEBUG {self.name} Perceived: {perception_text}") # Optional debug
 
     def add_goal(self, goal_description: str):
         """Adds a new goal to the agent's list."""

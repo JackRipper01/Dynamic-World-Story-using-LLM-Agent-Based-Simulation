@@ -158,8 +158,8 @@ class WorldState:
         )
         self.event_log.append(new_event)
         log_prefix = f"[Event Log Step {self.current_step}][{triggered_by} @ {location or 'Global'}/{scope}]"
-        if config.SIMULATION_MODE == "debug":
-            print(f"{log_prefix}: {description}")
+        # if config.SIMULATION_MODE == "debug":
+        #     print(f"{log_prefix}: {description}")
 
         # Trim log if needed
         if (
