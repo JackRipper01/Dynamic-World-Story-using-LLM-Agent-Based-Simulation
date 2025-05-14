@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from world import WorldState
 import config
 
+
 class BaseActionResolver(ABC):
     """
     Abstract Base Class for interpreting an agent's intended action output
@@ -52,15 +53,12 @@ class LLMActionResolver(BaseActionResolver):
         # Maybe pass specific rule functions or data? For now, keep it simple.
         self.world_ref = world_state_ref_for_prompting_rules  # Use carefully
 
-    def resolve(self, agent_name: str, agent_location: str, action_output: str, world_state:WorldState) -> dict:
+    def resolve(self, agent_name: str, agent_location: str, action_output: str, world_state: WorldState) -> dict:
         if config.SIMULATION_MODE == 'debug' or config.SIMULATION_MODE == 'only_resolver':
             print(
                 f"[LLM Resolver @ {agent_location}]: Resolving for {agent_name}: '{action_output}'\n")
 
         # 1. Gather Context (Simplified example - adapt as needed)
-        # This part needs careful design - what *minimal* context does the resolver need?
-        # Avoid giving it the full dynamic event history if possible.
-        # rules = f"Rules: Shelter door currently {world_state.get_location_property('Shelter', 'door_locked')}."
         connectivity = f"From {agent_location}, exits lead to: {world_state.get_reachable_locations(agent_location)}."
         agents_present = world_state.get_agents_at(agent_location)
         others_present = [
@@ -71,12 +69,12 @@ class LLMActionResolver(BaseActionResolver):
         prompt = f"""You are the Action Resolver for a simulation.
 Agent '{agent_name}' at location '{agent_location}' intends to: "{action_output}"
 
-Relevant world state and rules:
-{connectivity}
-{state_summary}
-Weather: {world_state.global_context.get('weather', 'Clear')}
+This is what the agent '{agent_name}' senses about the world:
+{world_state.get_static_context_for_agent(agent_name)}
 
-Analyze the agent's intent. Is it possible? What is the most plausible outcome?
+Analyze the agent's intent. 
+Is it possible? (Does the object it interacts with exist?)
+What is the most plausible outcome?
 Your task is to determine if the action is successful, what type of action it is, any key parameters, and a brief description of what an observer would see.
 
 Output your analysis as a single line of text with exactly four parts, separated by " | " (a pipe symbol with spaces around it):
@@ -85,7 +83,7 @@ Output your analysis as a single line of text with exactly four parts, separated
 3.  Parameters: Key details for the action.
     - For MOVE: "destination: <location_name>"
     - For SPEAK: "target: <character_name>, message: <text_of_message>"
-    - For INTERACT: "object: <object_name>, details: <brief_description_of_interaction>"
+    - For INTERACT: "object: <object_name>, state: <new_state_of_object_after_interaction>" (If FAILURE, 'state' should reflect the current unchanged state that caused failure, e.g., 'state: locked')
     - For OBSERVE: "target: <what_is_observed>"
     - For WAIT: "duration: <e.g., a moment, briefly>"
     - For FAIL or UNKNOWN: This part can be a brief reason for failure/unknown, or left empty if the reason is clear from the outcome description.
@@ -93,7 +91,8 @@ Output your analysis as a single line of text with exactly four parts, separated
 
 Examples of the single-line output format:
 Intent: "go to the park" -> SUCCESS | MOVE | destination: Park | {agent_name} walks towards the Park.
-Intent: "try to open shelter door" (if door is locked) -> FAILURE | INTERACT | object: Shelter Door, details: attempt open | {agent_name} tries the Shelter door, but it's locked.
+Intent: "unlock the lab door with a key" (if key is present and door is lockable) -> SUCCESS | INTERACT | object: Lab Door, state: unlocked | {agent_name} unlocks the Lab Door.
+Intent: "try to open shelter door" (if door is locked) -> FAILURE | INTERACT | object: Shelter Door, state: locked | {agent_name} tries the Shelter door, but it's locked.
 Intent: "say hello to Bob" -> SUCCESS | SPEAK | target: Bob, message: Hello | {agent_name} says to Bob, 'Hello'.
 Intent: "look around" -> SUCCESS | OBSERVE | target: surroundings | {agent_name} looks around.
 Intent: "wait a moment" -> SUCCESS | WAIT | duration: a moment | {agent_name} waits.
@@ -116,64 +115,49 @@ Your single-line output:
             if len(parts) == 4:
                 success_str, action_type_str, params_str, llm_outcome_desc_str = parts
 
-                current_action_type = action_type_str.strip().upper()
-                
                 # Initialize the result dictionary
                 resolved_action = {
                     "success": success_str.upper() == "SUCCESS",
-                    "action_type": action_type_str.upper(),
-                    "parameters": {},  # We will populate this next
+                    "action_type": action_type_str.strip().upper(),  # Ensure stripped and upper
+                    "parameters": {},
                     "outcome_description": llm_outcome_desc_str.strip(),
-                    "world_state_updates": []  # We will populate this later if possible
+                    "world_state_updates": []
                 }
 
                 # --- Start: Simplified Targeted Parameter Parsing ---
                 action_params = {}
                 text_to_parse = params_str.strip()
-                action_type_upper = resolved_action["action_type"].upper()
+                # action_type_upper is already set in resolved_action["action_type"]
 
+                # (Existing parameter parsing logic - condensed for brevity)
                 if text_to_parse:
-                    if action_type_upper == "SPEAK":
-                        # Expect: "target: <value>, message: <actual message content>"
-                        # The message is everything after "message:"
+                    # Use the one from resolved_action
+                    current_action_type_for_param_parsing = resolved_action["action_type"]
+                    if current_action_type_for_param_parsing == "SPEAK":
                         message_key = "message:"
-                        # Use find, not rfind if message is always last
                         message_idx = text_to_parse.lower().find(message_key.lower())
-
                         if message_idx != -1:
                             action_params["message"] = text_to_parse[message_idx +
                                                                      len(message_key):].strip()
-
-                            # The part before "message:" is the target part
                             target_part_str = text_to_parse[:message_idx].strip(
                             )
                             target_key = "target:"
                             if target_part_str.lower().startswith(target_key.lower()):
-                                # Remove the "target:" prefix and any trailing comma
                                 target_value = target_part_str[len(
                                     target_key):].strip()
                                 if target_value.endswith(','):
                                     target_value = target_value[:-1].strip()
                                 action_params["target"] = target_value
-                            # If target_part_str is not empty but doesn't start with "target:", it's unassigned.
-                            # Or if the LLM only provided "message: ..."
                         else:
-                            # No "message:" found. LLM didn't follow format.
-                            # We could try to see if it's just a target, or just a message.
-                            # For now, if "message:" is missing for SPEAK, params might be incomplete.
                             print(
                                 f"[LLM Resolver Warning] SPEAK action params missing 'message:': '{text_to_parse}'")
-
-                    elif action_type_upper == "INTERACT":
-                        # Expect: "object: <value>, details: <actual details content>" (if details can have commas)
-                        # Or simply "object: <value>" or "object: <value>, some_other_simple_param: <value>"
-                        details_key = "details:"
-                        details_idx = text_to_parse.lower().find(details_key.lower())
-
-                        if details_idx != -1:
-                            action_params["details"] = text_to_parse[details_idx +
-                                                                     len(details_key):].strip()
-                            object_part_str = text_to_parse[:details_idx].strip(
+                    elif current_action_type_for_param_parsing == "INTERACT":
+                        state_key = "state:"
+                        state_idx = text_to_parse.lower().find(state_key.lower())
+                        if state_idx != -1:
+                            action_params["state"] = text_to_parse[state_idx +
+                                                                     len(state_key):].strip()
+                            object_part_str = text_to_parse[:state_idx].strip(
                             )
                             object_key = "object:"
                             if object_part_str.lower().startswith(object_key.lower()):
@@ -182,82 +166,59 @@ Your single-line output:
                                 if object_value.endswith(','):
                                     object_value = object_value[:-1].strip()
                                 action_params["object"] = object_value
-                        elif text_to_parse.lower().startswith("object:"):  # No "details:", try to get "object:"
-                            # Handle cases like "object: Door" or "object: Lever, state: on"
-                            # This simple logic assumes "object:" is the first param if "details:" isn't present.
-                            # If there are other params after "object:" and before an unkeyed detail, this needs more.
-                            # For now, let's assume if no "details:", the first key:value pair is object,
-                            # or if multiple simple key:value pairs, split by comma.
-
-                            # If "object:" is present, and maybe other simple params:
-                            temp_object_params_str = text_to_parse  # Start with the full string
-                            if temp_object_params_str.lower().startswith("object:"):
-                                # Try to extract object first
-                                remaining_after_object_key = temp_object_params_str[len(
-                                    "object:"):]
-                                # Find where the object value ends (e.g., at a comma for the next param)
-                                comma_after_object_val = remaining_after_object_key.find(
-                                    ',')
-                                if comma_after_object_val != -1:
-                                    action_params["object"] = remaining_after_object_key[:comma_after_object_val].strip(
-                                    )
-                                    # Process other simple key:value pairs after the object
-                                    other_params_str = remaining_after_object_key[comma_after_object_val+1:].strip(
-                                    )
-                                    if other_params_str:
-                                        simple_pairs = other_params_str.split(
-                                            ',')
-                                        for pair_str in simple_pairs:
-                                            if ':' in pair_str:
-                                                k, v = pair_str.split(':', 1)
-                                                action_params[k.strip(
-                                                )] = v.strip()
-                                else:  # No comma, object value is the rest of the string
-                                    action_params["object"] = remaining_after_object_key.strip(
-                                    )
-                        else:  # No "details:" and no "object:", try a generic split
-                            if ':' in text_to_parse:
-                                kv_pairs = text_to_parse.split(',')
-                                for pair_str in kv_pairs:
-                                    if ':' in pair_str:
-                                        k, v = pair_str.split(':', 1)
-                                        action_params[k.strip()] = v.strip()
-
-                    # For simpler actions that expect a single key:value or just a value
-                    elif action_type_upper == "MOVE":
+                        elif text_to_parse.lower().startswith("object:"):
+                            remaining_after_object_key = text_to_parse[len(
+                                "object:"):]
+                            comma_after_object_val = remaining_after_object_key.find(
+                                ',')
+                            if comma_after_object_val != -1:
+                                action_params["object"] = remaining_after_object_key[:comma_after_object_val].strip(
+                                )
+                                other_params_str = remaining_after_object_key[comma_after_object_val+1:].strip(
+                                )
+                                if other_params_str:
+                                    simple_pairs = other_params_str.split(',')
+                                    for pair_str in simple_pairs:
+                                        if ':' in pair_str:
+                                            k, v = pair_str.split(':', 1)
+                                            action_params[k.strip()
+                                                          ] = v.strip()
+                            else:
+                                action_params["object"] = remaining_after_object_key.strip(
+                                )
+                        elif ':' in text_to_parse:  # Generic split for INTERACT if no "details:" or "object:"
+                            kv_pairs = text_to_parse.split(',')
+                            for pair_str in kv_pairs:
+                                if ':' in pair_str:
+                                    k, v = pair_str.split(':', 1)
+                                    action_params[k.strip()] = v.strip()
+                    elif current_action_type_for_param_parsing == "MOVE":
                         if text_to_parse.lower().startswith("destination:"):
                             action_params["destination"] = text_to_parse[len(
                                 "destination:"):].strip()
-                    elif action_type_upper == "OBSERVE":
+                    elif current_action_type_for_param_parsing == "OBSERVE":
                         if text_to_parse.lower().startswith("target:"):
                             action_params["target"] = text_to_parse[len(
                                 "target:"):].strip()
                         else:
-                            # Assume whole string is target
                             action_params["target"] = text_to_parse
-                    elif action_type_upper == "WAIT":
+                    elif current_action_type_for_param_parsing == "WAIT":
                         if text_to_parse.lower().startswith("duration:"):
                             action_params["duration"] = text_to_parse[len(
                                 "duration:"):].strip()
                         else:
-                            # Assume whole string is duration
                             action_params["duration"] = text_to_parse
-                    elif action_type_upper in ["FAIL", "UNKNOWN"]:
+                    elif current_action_type_for_param_parsing in ["FAIL", "UNKNOWN"]:
                         if text_to_parse.lower().startswith("reason:"):
                             action_params["reason"] = text_to_parse[len(
                                 "reason:"):].strip()
                         else:
-                            # Assume whole string is reason
                             action_params["reason"] = text_to_parse
 
-                    # If after all specific parsing attempts, action_params is still empty but text_to_parse is not,
-                    # and it's not one of the types that can take the whole string as a default param (OBSERVE, WAIT, FAIL, UNKNOWN)
-                    # it means the format was unexpected for the given action type.
                     if not action_params and text_to_parse and \
-                       action_type_upper not in ["OBSERVE", "WAIT", "FAIL", "UNKNOWN", "SPEAK", "INTERACT", "MOVE"]:  # Only log if not handled by above
+                       current_action_type_for_param_parsing not in ["OBSERVE", "WAIT", "FAIL", "UNKNOWN", "SPEAK", "INTERACT", "MOVE"]:
                         print(
-                            f"[LLM Resolver Warning] Could not parse parameters for {action_type_upper}: '{text_to_parse}' using targeted logic. Trying generic split.")
-                        # Generic fallback if nothing specific matched (less robust for values with commas)
+                            f"[LLM Resolver Warning] Could not parse parameters for {current_action_type_for_param_parsing}: '{text_to_parse}' using targeted logic. Trying generic split.")
                         if ':' in text_to_parse:
                             try:
                                 kv_pairs = text_to_parse.split(',')
@@ -272,20 +233,110 @@ Your single-line output:
                 resolved_action["parameters"] = action_params
                 # --- End: Simplified Targeted Parameter Parsing ---
 
-                # --- Refine outcome_description, especially for SPEAK actions ---
-                if resolved_action["action_type"] == "SPEAK" and resolved_action["success"]:
-                    # We have already parsed parameters into action_params
-                    # Get the message, default to empty string if not found
-                    msg = action_params.get("message", "")
-                    # Get the target, could be None
-                    target = action_params.get("target")
+                # --- START: Specific Action Validation and World State Update Generation ---
+                action_type_upper = resolved_action["action_type"]
+                
+                # Cache LLM's initial assessment
+                llm_says_move_successful = resolved_action["success"]
+                
+                if action_type_upper == "MOVE":
+                    destination = action_params.get("destination")
+    
+                    if not destination:
+                        resolved_action["success"] = False
+                        resolved_action["outcome_description"] = f"{agent_name} intends to move, but no destination was specified in the parameters."
+                        # world_state_updates remains empty for the move
+                    elif destination == agent_location:
+                        if llm_says_move_successful:
+                            resolved_action["outcome_description"] = f"{agent_name} considers moving but decides to stay in {agent_location}."
+                        # Keep resolved_action["success"] as per LLM's original assessment for same-location "move"
+                        # No world_state_updates for agent_location change
+                    elif destination not in world_state.location_descriptions:
+                        resolved_action["success"] = False
+                        resolved_action["outcome_description"] = f"{agent_name} tries to move to '{destination}', but it is not a known location."
+                        # world_state_updates remains empty for the move
+                    elif destination not in world_state.get_reachable_locations(agent_location):
+                        resolved_action["success"] = False
+                        resolved_action["outcome_description"] = f"{agent_name} tries to move to '{destination}' from {agent_location}, but there is no direct path."
+                        # world_state_updates remains empty for the move
+                    else:
+                        # Destination is valid, known, and reachable.
+                        # Proceed with the move only if the LLM *also* considered it a success.
+                        if llm_says_move_successful:
+                            # Confirm/ensure success
+                            resolved_action["success"] = True
+                            resolved_action["world_state_updates"].append(
+                                ('agent_location', agent_name, destination)
+                            )
+                            # LLM's outcome_description (llm_outcome_desc_str) is generally used.
+                            # If it was too generic, one could override, e.g.:
+                            # resolved_action["outcome_description"] = f"{agent_name} successfully moves to {destination}."
+                        else:
+                            # LLM said FAILURE, even if rules would allow it. Respect LLM's interpretation.
+                            # resolved_action["success"] is already False.
+                            # resolved_action["outcome_description"] (from llm_outcome_desc_str) is LLM's failure reason.
+                            # No world_state_updates for the move.
+                            pass  # No changes needed, LLM's failure stands
 
-                    if msg:  # Only construct if there's a message
-                        if target:
-                            resolved_action["outcome_description"] = f"{agent_name} says to {target}, \"{msg}\""
-                            
+                elif action_type_upper == "INTERACT":
+                    if llm_says_move_successful:  # Only process if LLM thinks it's a success
+                        object_name = action_params.get("object")
+                        # LLM should provide the *new* state
+                        new_object_state = action_params.get("state")
+
+                        if not object_name:
+                            resolved_action["success"] = False
+                            resolved_action["outcome_description"] = f"{agent_name} intends to interact, but no object was specified in parameters."
+                        elif new_object_state is None:  # Check for None, empty string is a valid state
+                            resolved_action["success"] = False
+                            resolved_action[
+                                "outcome_description"] = f"{agent_name} interacts with {object_name}, but the resulting state is unclear (not provided by LLM)."
+                        else:
+                            # Verify the object exists in the agent's current location
+                            current_location_items = world_state.get_location_property(
+                                agent_location, "contains")
+                            item_found_in_location = False
+                            if isinstance(current_location_items, list):
+                                for item_data in current_location_items:
+                                    if isinstance(item_data, dict) and item_data.get("object") == object_name:
+                                        item_found_in_location = True
+                                        # Object found, create update for its state
+                                        resolved_action["world_state_updates"].append(
+                                            ('item_state', agent_location,
+                                             object_name, new_object_state)
+                                        )
+                                        # LLM's outcome_description is generally used.
+                                        # Optionally, refine if needed:
+                                        # resolved_action["outcome_description"] = f"{agent_name} interacts with {object_name}, changing its state to '{new_object_state}'."
+                                        break  # Item found and update added
+
+                            if not item_found_in_location:
+                                resolved_action["success"] = False
+                                resolved_action[
+                                    "outcome_description"] = f"{agent_name} tries to interact with '{object_name}', but it's not found at their current location ({agent_location})."
+                                # Clear any pending updates if item not found
+                                resolved_action["world_state_updates"] = []
+                    # If llm_says_action_successful was False, we keep it as False.
+                    # The outcome_description from the LLM should explain why (e.g., "object: Door, state: locked").
+                    # No world_state_updates for item_state if LLM initially said FAILURE
+                    
+                # --- END: Specific Action Validation ---
+
+                # --- Refine outcome_description, especially for SPEAK actions (AFTER MOVE validation) ---
+                if resolved_action["action_type"] == "SPEAK" and resolved_action["success"]:
+                    msg = action_params.get("message", "")
+                    target_agent = action_params.get(
+                        "target")  # Renamed to avoid conflict
+
+                    if msg:
+                        if target_agent:
+                            resolved_action["outcome_description"] = f"{agent_name} says to {target_agent}, \"{msg}\""
+                        else: # Optional: if LLM gives message but no target
+                            resolved_action["outcome_description"] = f"{agent_name} says, \"{msg}\""
+
+                print(f"[LLM Resolver Final Output]: {resolved_action}")
                 return resolved_action
-            
+
             else:
                 print(
                     f"[LLM Resolver Error]: LLM output not in expected format (SUCCESS | TYPE | PARAMS | OUTCOME_DESC). Output: {raw_output}"
@@ -300,9 +351,13 @@ Your single-line output:
 
         except Exception as e:
             print(f"[LLM Resolver Error]: LLM call or processing failed: {e}")
-            return {  # Generic failure dictionary
-                "success": False, "action_type": "FAIL", "parameters": {"raw_output": action_output},
-                "outcome_description": f"{agent_name}'s action ('{action_output}') causes confusion or fails.",
+            # Check for response object and prompt feedback if available
+            feedback_info = ""
+            if 'response' in locals() and hasattr(response, 'prompt_feedback') and response.prompt_feedback:
+                feedback_info = f" (Safety Feedback: {response.prompt_feedback})"
+
+            return {
+                "success": False, "action_type": "FAIL", "parameters": {"raw_output": action_output, "error": str(e)},
+                "outcome_description": f"{agent_name}'s action ('{action_output}') causes confusion or fails.{feedback_info}",
                 "world_state_updates": []
             }
-

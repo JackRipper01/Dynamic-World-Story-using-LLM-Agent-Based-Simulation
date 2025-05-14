@@ -17,32 +17,185 @@ GENERATION_CONFIG = {
     "max_output_tokens": 200,  # Increased to allow for more detailed responses
 }
 
-
 # Model Name
-MODEL_NAME = "gemini-2.0-flash-lite"
+MODEL_NAME = "gemini-1.5-flash-latest"  # "gemini-pro"
 
 # Simulation Settings
 MAX_RECENT_EVENTS = 15
-MAX_MEMORY_TOKENS = 600
+MAX_MEMORY_TOKENS = 1000  # Increased memory capacity
 SIMULATION_MAX_STEPS = 30
 
-# World Settings
-KNOWN_LOCATIONS = {
-    # "Park": "A wide open park area with some trees.",
-    # "Shelter": "A simple wooden shelter.",
-    # "Forest Edge": "The edge of a dark forest."
-    "City:": "A bustling city with tall buildings and busy streets.",
-    "Lab": "A well-equipped laboratory filled with scientific equipment and research papers.",
+# --- World Definition ---
+KNOWN_LOCATIONS_DATA = {
+    "EscapeRoom": {
+        "description": "A plain, windowless room. The walls are bare, and the only prominent feature is a single door.",
+        # The conceptual exit, requires the door to be open
+        "exits_to": ["Corridor"],
+        "properties": {
+            "contains": [
+                {"object": "Room Door", "state": "closed and unlocked",
+                    "optional_description": "A standard wooden door. It appears to be the only way out."},
+                {"object": "small table", "state": "empty",
+                    "optional_description": "A dusty small table in one corner."},
+                {"object": "flickering lightbulb", "state": "dimly illuminating the room",
+                    "optional_description": "An old lightbulb hanging from the ceiling, casting long shadows."}
+            ]
+        }
+    },
+    
+    "Corridor": {
+        "description": "A long, narrow corridor stretching into the distance. It feels a bit drafty here.",
+        "exits_to": ["EscapeRoom"],  # Allows returning to the room
+        "properties": {
+            "contains": [
+                {"object": "Corridor Access Door", "state": "ajar (from EscapeRoom side)",  # Reflects the state of the door from the other side
+                 "optional_description": "The door leading back into the room you (presumably) just exited."}
+            ]
+        }
+    }
 }
 
-# --- Component Selection ---
+# KNOWN_LOCATIONS_DATA = {
+#     "City": {  # Removed colon from "City:"
+#         "description": "A bustling city square with tall buildings and busy streets.",
+#         "exits_to": ["Lab", "Park"],  # Added Park connection
+#         "properties": {
+#             "contains": [
+#                 {"object": "fountain", "state": "splashing water gently",
+#                     "optional_description": "A large stone fountain"},
+#                 {"object": "bench", "state": "empty",
+#                     "optional_description": "A weathered park bench"},
+#                 {"object": "streetlamp", "state": "off (daytime)"}
+#             ]
+#         }
+#     },
+#     "Lab": {
+#         "description": "A well-equipped laboratory filled with scientific equipment.",
+#         "exits_to": ["City"],
+#         "properties": {
+#             "contains": [
+#                 {"object": "microscope", "state": "idle",
+#                     "optional_description": "A high-powered electron microscope"},
+#                 {"object": "workbench", "state": "covered in notes and wires"},
+#                 {"object": "beaker", "state": "bubbling gently",
+#                     "optional_description": "A glass beaker containing a glowing blue liquid"},
+#                 {"object": "computer terminal",
+#                     "state": "displaying complex equations"},
+#                 # Door defined as an item
+#                 {"object": "Lab Door", "state": "closed",
+#                     "optional_description": "A heavy steel door"}
+#             ]
+#         }
+#     },
+#     "Park": {  # Added a simple Park location
+#         "description": "A wide open park area with green grass and some trees.",
+#         "exits_to": ["City", "Forest Edge"],
+#         "properties": {
+#             "contains": [
+#                 {"object": "oak tree", "state": "rustling leaves",
+#                     "optional_description": "A large, ancient oak tree"},
+#                 {"object": "flowerbed", "state": "blooming with colorful flowers"},
+#                 {"object": "park gate", "state": "open"}
+#             ]
+#         }
+#     },
+#     "Forest Edge": {  # Added Forest Edge
+#         "description": "The shadowy edge of a dark, dense forest.",
+#         "exits_to": ["Park"],
+#         "properties": {
+#             "contains": [
+#                 {"object": "pathway", "state": "overgrown with weeds",
+#                     "optional_description": "A narrow dirt path leading into the trees"},
+#                 {"object": "warning sign", "state": "partially obscured by vines",
+#                     "optional_description": "A faded sign reading 'Beware'"},
+#                 {"object": "strange plant", "state": "glowing faintly"}
+#             ]
+#         }
+#     }
+# }
 
+# --- Component Selection ---
 AGENT_MEMORY_TYPE = "ShortLongTMemory"
 AGENT_PLANNING_TYPE = "GeminiThinker"
-ACTION_RESOLVER_TYPE = "LLMResolver"  # Start with the current LLM-based logic
+ACTION_RESOLVER_TYPE = "LLMResolver"
 EVENT_PERCEPTION_MODEL = "DirectEventDispatcher"
 
-NARRATIVE_GOAL = "Create a humorous story about two strangers with conflicting goals who must eventually cooperate."
+# --- Narrative / Scenario ---
+NARRATIVE_GOAL = "Franco seeks guidance from the cheerful Dr. Piad for his stressful thesis work in the lab."
+
+agent_configs = [
+    {
+        "name": "Alex",
+        "personality": "Pragmatic and observant.",
+        "gender": "woman", 
+        "initial_location": "EscapeRoom",
+        "initial_goals": [
+            "Find a way out of this room.",
+        ],
+        "background": [
+            "You suddenly find yourself in an unfamiliar, plain room with one other person.",
+            "You have no memory of arriving here.",
+        ],
+    },
+    {
+        "name": "Ben",
+        "personality": "Action-oriented and somewhat impatient.",
+        "gender": "man",
+        "initial_location": "EscapeRoom",
+        "initial_goals": [
+            "Get out of this room as quickly as possible.",
+        ],
+        "background": [
+            "You've woken up in a strange, featureless room. Another person is here with you.",
+        ],
+    },
+]
+# Example Agent Configuration (Matches KNOWN_LOCATIONS_DATA)
+# agent_configs = [
+#     {
+#         "name": "Piad",
+#         "personality": (
+#             "An incredibly cheerful and experienced senior scientist, brimming with infectious optimism and a genuine passion for discovery and mentoring. He finds joy in everything, especially science, and loves to share his good energy and knowledge. Always has a smile and an encouraging word."
+#         ),
+#         "gender": "man",
+#         "initial_location": "Lab",  # Correct location name
+#         "initial_goals": [
+#             "Spread positivity and enthusiasm for science to everyone I meet.",
+#             "Help Franco overcome his thesis struggles and rediscover his passion.",
+#             "Make progress on my latest exciting research project.",
+#             "Ensure the lab environment is welcoming and inspiring."
+#         ],
+#         "background": [
+#             "You are Dr. Piad, a highly respected and well-loved professor and researcher with decades of experience.",
+#             "You are known for your groundbreaking work but even more so for your sunny disposition and ability to motivate students.",
+#             "You believe science should be fun and a source of wonder.",
+#             "You've noticed young Franco looking particularly down lately and hope you can help."
+#         ],
+#     },
+#     {
+#         "name": "Franco",
+#         "personality": (
+#             "A doctoral student who is deeply sad, anxious, and overwhelmed by the immense pressure of his thesis. He feels stuck, uninspired, and is questioning his abilities. He often looks tired and despondent, but there's a flicker of hope that someone can guide him out of this slump."
+#         ),
+#         "gender": "man",
+#         "initial_location": "Lab",  # Correct location name
+#         "initial_goals": [
+#             "Find Professor Piad and summon the courage to ask for his help with my thesis.",
+#             "Understand what's wrong with my research approach.",
+#             "Find a way to get motivated and make progress on my thesis.",
+#             "Hopefully, feel a little less miserable and stressed."
+#         ],
+#         "background": [
+#             "You are Franco, a PhD candidate who once loved research but is now drowning in thesis-related stress.",
+#             "You've hit a massive roadblock, your experiments aren't working, and your writing feels directionless.",
+#             "You admire Professor Piad from afar, known for his brilliance and kindness, and see him as a last resort for guidance.",
+#             "You are currently feeling quite hopeless and are desperate for a breakthrough or some encouragement."
+#         ],
+#     },
+# ]
+
+SIMULATION_MODE = 'debug'  # Keep debug for testing
+
 # DIRECTOR_COOLDOWN_MIN = 2 # Example: Could make cooldown configurable
 # DIRECTOR_COOLDOWN_MAX = 5
 
@@ -174,49 +327,48 @@ NARRATIVE_GOAL = "Create a humorous story about two strangers with conflicting g
 # ]
 
 
-agent_configs = [
-    # --- The Experienced, Happy Scientist ---
-    {
-        "name": "Piad",
-        "personality": (
-            "An incredibly cheerful and experienced senior scientist, brimming with infectious optimism and a genuine passion for discovery and mentoring. He finds joy in everything, especially science, and loves to share his good energy and knowledge. Always has a smile and an encouraging word."
-        ),
-        "gender": "man",
-        "initial_location": "Lab",
-        "initial_goals": [
-            "Spread positivity and enthusiasm for science to everyone I meet.",
-            "Help Franco overcome his thesis struggles and rediscover his passion.",
-            "Make progress on my latest exciting research project.",
-            "Ensure the lab environment is welcoming and inspiring."
-        ],
-        "background": [
-            "You are Dr. Piad, a highly respected and well-loved professor and researcher with decades of experience.",
-            "You are known for your groundbreaking work but even more so for your sunny disposition and ability to motivate students.",
-            "You believe science should be fun and a source of wonder.",
-            "You've noticed young Franco looking particularly down lately and hope you can help."
-        ],
-    },
+# agent_configs = [
+#     # --- The Experienced, Happy Scientist ---
+#     {
+#         "name": "Piad",
+#         "personality": (
+#             "An incredibly cheerful and experienced senior scientist, brimming with infectious optimism and a genuine passion for discovery and mentoring. He finds joy in everything, especially science, and loves to share his good energy and knowledge. Always has a smile and an encouraging word."
+#         ),
+#         "gender": "man",
+#         "initial_location": "Lab",
+#         "initial_goals": [
+#             "Spread positivity and enthusiasm for science to everyone I meet.",
+#             "Help Franco overcome his thesis struggles and rediscover his passion.",
+#             "Make progress on my latest exciting research project.",
+#             "Ensure the lab environment is welcoming and inspiring."
+#         ],
+#         "background": [
+#             "You are Dr. Piad, a highly respected and well-loved professor and researcher with decades of experience.",
+#             "You are known for your groundbreaking work but even more so for your sunny disposition and ability to motivate students.",
+#             "You believe science should be fun and a source of wonder.",
+#             "You've noticed young Franco looking particularly down lately and hope you can help."
+#         ],
+#     },
 
-    # --- The Stressed Thesis Student ---
-    {
-        "name": "Franco",
-        "personality": (
-            "A doctoral student who is deeply sad, anxious, and overwhelmed by the immense pressure of his thesis. He feels stuck, uninspired, and is questioning his abilities. He often looks tired and despondent, but there's a flicker of hope that someone can guide him out of this slump."
-        ),
-        "gender": "man",
-        "initial_location": "Lab",
-        "initial_goals": [
-            "Find Professor Piad and summon the courage to ask for his help with my thesis.",
-            "Understand what's wrong with my research approach.",
-            "Find a way to get motivated and make progress on my thesis.",
-            "Hopefully, feel a little less miserable and stressed."
-        ],
-        "background": [
-            "You are Franco, a PhD candidate who once loved research but is now drowning in thesis-related stress.",
-            "You've hit a massive roadblock, your experiments aren't working, and your writing feels directionless.",
-            "You admire Professor Piad from afar, known for his brilliance and kindness, and see him as a last resort for guidance.",
-            "You are currently feeling quite hopeless and are desperate for a breakthrough or some encouragement."
-        ],
-    },
-]
-SIMULATION_MODE = 'debug'
+#     # --- The Stressed Thesis Student ---
+#     {
+#         "name": "Franco",
+#         "personality": (
+#             "A doctoral student who is deeply sad, anxious, and overwhelmed by the immense pressure of his thesis. He feels stuck, uninspired, and is questioning his abilities. He often looks tired and despondent, but there's a flicker of hope that someone can guide him out of this slump."
+#         ),
+#         "gender": "man",
+#         "initial_location": "Lab",
+#         "initial_goals": [
+#             "Find Professor Piad and summon the courage to ask for his help with my thesis.",
+#             "Understand what's wrong with my research approach.",
+#             "Find a way to get motivated and make progress on my thesis.",
+#             "Hopefully, feel a little less miserable and stressed."
+#         ],
+#         "background": [
+#             "You are Franco, a PhD candidate who once loved research but is now drowning in thesis-related stress.",
+#             "You've hit a massive roadblock, your experiments aren't working, and your writing feels directionless.",
+#             "You admire Professor Piad from afar, known for his brilliance and kindness, and see him as a last resort for guidance.",
+#             "You are currently feeling quite hopeless and are desperate for a breakthrough or some encouragement."
+#         ],
+#     },
+# ]

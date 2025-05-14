@@ -1,5 +1,5 @@
 # src/world.py
-from typing import Dict
+from typing import Dict, List, Any  # Added List and Any
 import config
 from collections import namedtuple
 from agent.agent import Agent
@@ -11,116 +11,128 @@ Event = namedtuple(
 
 
 class WorldState:
-    def __init__(self, locations):
-        self.agent_locations = {}  # agent_name -> location_name
-        self.location_descriptions = locations
-        
-        # self.location_connectivity = {  # Defines possible direct movements
-        #     "Park": ["Shelter", "Forest Edge"],
-        #     "Shelter": ["Park"],
-        #     "Forest Edge": ["Park"],
-        #     # Add more connections as locations are added
-        # }
-        self.location_connectivity = {}
-        # self.location_properties = {  # Defines states/features of locations
-        #     "Park": {"ground": "grassy"},
-        #     # Example: Shelter door starts unlocked
-        #     "Shelter": {"door_locked": False, "contains": []},
-        #     "Forest Edge": {"terrain": "uneven"},
-        # }
-        self.location_properties = {}
-        
-        self.global_context = {"weather": "Clear"}
-        self.event_log = []  # Now stores Event tuples
-        self.current_step = 0  # Track simulation step
+    # Modified signature
+    def __init__(self, known_locations_data: Dict[str, Dict[str, Any]]):
+        # agent_name -> location_name
+        self.agent_locations: Dict[str, str] = {}
 
-        self.registered_agents: Dict[str, Agent] = {}  # Added type hint
-        # Store the passed dispatcher instance
+        self.location_descriptions: Dict[str, str] = {}
+        self.location_connectivity: Dict[str, List[str]] = {}
+        self.location_properties: Dict[str, Dict[str, Any]] = {}
+
+        for loc_name, loc_data in known_locations_data.items():
+            self.location_descriptions[loc_name] = loc_data.get(
+                "description", "An undescribed location.")
+            self.location_connectivity[loc_name] = loc_data.get("exits_to", [])
+
+            # Initialize properties, ensuring "contains" (for items) exists
+            props = loc_data.get("properties", {})
+            if "contains" not in props:
+                # Ensure 'contains' for items is always a list
+                props["contains"] = []
+            self.location_properties[loc_name] = props
+
+        if config.SIMULATION_MODE == 'debug':
+            print(
+                f"[World Init] Locations initialized: {list(self.location_descriptions.keys())}")
+            print(f"[World Init] Connectivity: {self.location_connectivity}")
+            print(f"[World Init] Properties: {self.location_properties}")
+
+        self.global_context: Dict[str, Any] = {"weather": "Clear"}
+        self.event_log: List[Event] = []  # Now stores Event tuples
+        self.current_step: int = 0  # Track simulation step
+
+        self.registered_agents: Dict[str, Agent] = {}
 
     def register_agent(self, agent: Agent):
         """Registers an agent to receive events."""
         if agent.name not in self.registered_agents:
             self.registered_agents[agent.name] = agent
-            print(f"[World Event Update]: Registered {agent.name} for events.")
+            if config.SIMULATION_MODE == 'debug':  # Added debug print
+                print(
+                    f"[World Event Update]: Registered {agent.name} for events.")
 
-    def unregister_agent(self, agent_name):
+    def unregister_agent(self, agent_name: str):
         """Unregisters an agent."""
         if agent_name in self.registered_agents:
             del self.registered_agents[agent_name]
-            print(f"[World Event Update]: Unregistered {agent_name}.")
+            if config.SIMULATION_MODE == 'debug':  # Added debug print
+                print(f"[World Event Update]: Unregistered {agent_name}.")
 
     def advance_step(self):
         self.current_step += 1
 
-    # --- Helper methods to access rules ---
-    def get_reachable_locations(self, from_location):
+    def get_reachable_locations(self, from_location: str) -> List[str]:
         """Returns list of locations directly reachable from the given one."""
         return self.location_connectivity.get(from_location, [])
 
-    def get_location_property(self, location, prop_name):
+    def get_location_property(self, location: str, prop_name: str) -> Any:
         """Safely gets a property of a location."""
         return self.location_properties.get(location, {}).get(prop_name, None)
 
-    def set_location_property(self, location, prop_name, value, triggered_by="System"):
+    def set_location_property(self, location: str, prop_name: str, value: Any, triggered_by: str = "System") -> bool:
         """Sets a property, potentially logging an event via log_event."""
         if location not in self.location_properties:
+            # This should ideally not happen if locations are well-defined in config
+            # Create location properties if missing
+            self.location_properties[location] = {}
             print(
-                f"[World State Warning]: Location '{location}' not found for setting property."
+                f"[World State Warning]: Location '{location}' properties not found, created. Consider defining it in config."
             )
-            return False
+            # Ensure 'contains' is initialized if we are creating the location properties on the fly
+            if "contains" not in self.location_properties[location]:
+                self.location_properties[location]["contains"] = []
+
+        # Allow adding new properties dynamically if they don't exist
         if prop_name not in self.location_properties[location]:
             print(
-                f"[World State Warning]: Property '{prop_name}' doesn't exist for '{location}'. Adding it."
+                f"[World State Info]: Property '{prop_name}' doesn't exist for '{location}'. Adding it."
             )
-            # Decide if dynamic property creation is allowed or should error
 
-        old_value = self.location_properties[location].get(prop_name, "None")
+        old_value = self.location_properties[location].get(
+            prop_name)  # Simpler get
         if old_value != value:
             self.location_properties[location][prop_name] = value
-            # Log the change as an event? Depends on granularity needed.
-            # Example: log the *effect* rather than the state change itself.
-            # e.g., if setting door_locked=False, the event might be "The shelter door unlocks"
-            print(
-                f"[World State Update]: Property '{prop_name}' of '{location}' changed to '{value}' (Trigger: {triggered_by})."
-            )
+            if config.SIMULATION_MODE == 'debug':  # Added debug print
+                print(
+                    f"[World State Update]: Property '{prop_name}' of '{location}' changed from '{old_value}' to '{value}' (Trigger: {triggered_by})."
+                )
+            
             return True
         return False
 
-    # --- End Helpers ---
-
-    def add_agent_to_location(self, agent_name, location_name, triggered_by="Setup"):
-        """Adds agent and updates location state if needed."""
+    def add_agent_to_location(self, agent_name: str, location_name: str, triggered_by: str = "Setup"):
+        """Adds agent to a location. Agent presence is tracked in self.agent_locations."""
         if location_name in self.location_descriptions:
             old_location = self.agent_locations.get(agent_name)
             self.agent_locations[agent_name] = location_name
-            print(f"World: Agent {agent_name} now at {location_name}")
 
-            # Update 'contains' property if location has it
-            if old_location and old_location != location_name:
-                if "contains" in self.location_properties.get(old_location, {}):
-                    if agent_name in self.location_properties[old_location]["contains"]:
-                        self.location_properties[old_location]["contains"].remove(
-                            agent_name
-                        )
+            if config.SIMULATION_MODE == 'debug':  # Added debug print
+                print(
+                    f"[World State Update]: Agent {agent_name} moved from {old_location or 'None'} to {location_name} (Trigger: {triggered_by})")
 
-            if "contains" in self.location_properties.get(location_name, {}):
-                if (
-                    agent_name
-                    not in self.location_properties[location_name]["contains"]
-                ):
-                    self.location_properties[location_name]["contains"].append(
-                        agent_name
-                    )
+            # Agent presence is NOT tracked in location_properties["contains"] anymore.
+            # That key is for objects/items within the location.
 
-            # Log the arrival event (could be refined based on triggered_by)
-            if triggered_by != "Setup":  # Don't log redundant 'appears' if moving
+            # Log the arrival event
+            if triggered_by != "Setup":
+                # If moving, log arrival at new location
                 self.log_event(
-                    f"{agent_name} arrives.",
+                    # Made description more specific
+                    f"{agent_name} arrives at the {location_name}.",
                     scope="local",
                     location=location_name,
                     triggered_by=triggered_by,
                 )
-            elif not old_location:  # Log initial appearance
+                # Optionally, log departure from old location
+                if old_location and old_location != location_name:
+                    self.log_event(
+                        f"{agent_name} departs from the {old_location}.",
+                        scope="local",
+                        location=old_location,
+                        triggered_by=triggered_by
+                    )
+            elif not old_location:  # Log initial appearance only if no prior location
                 self.log_event(
                     f"{agent_name} appears in the {location_name}.",
                     scope="local",
@@ -129,12 +141,14 @@ class WorldState:
                 )
         else:
             print(
-                f"Warning: Cannot move {agent_name} to unknown location '{location_name}'"
+                f"[World State Error]: Cannot move {agent_name} to unknown location '{location_name}'"
             )
 
-    def get_agents_at(self, location_name):
-        # Add simple check if location exists
+    def get_agents_at(self, location_name: str) -> List[str]:
         if location_name not in self.location_descriptions:
+            if config.SIMULATION_MODE == 'debug':
+                print(
+                    f"[World State Warning]: Tried to get agents at unknown location '{location_name}'")
             return []
         return [
             name for name, loc in self.agent_locations.items() if loc == location_name
@@ -142,13 +156,13 @@ class WorldState:
 
     def log_event(
         self,
-        description,
-        scope="local",
-        location=None,
-        triggered_by="Simulation",
-        dispatch=True,
+        description: str,
+        scope: str = "local",
+        location: str = None,
+        triggered_by: str = "Simulation",
+        # dispatch parameter removed, dispatching is handled by main loop calling dispatcher
     ):
-        """Logs an event"""
+        """Logs an event to the world's event log."""
         new_event = Event(
             description=description,
             location=location,
@@ -157,136 +171,224 @@ class WorldState:
             triggered_by=triggered_by,
         )
         self.event_log.append(new_event)
-        log_prefix = f"[Event Log Step {self.current_step}][{triggered_by} @ {location or 'Global'}/{scope}]"
-        # if config.SIMULATION_MODE == "debug":
-        #     print(f"{log_prefix}: {description}")
 
-        # Trim log if needed
-        if (
-            len(self.event_log) > config.MAX_RECENT_EVENTS * 2
-        ):  # Keep a longer internal log
+        # Optional detailed logging for debug mode
+        if config.SIMULATION_MODE == "debug":
+            log_prefix = f"[Event Logged S{self.current_step}][{triggered_by} @ {location or 'Global'}/{scope}]"
+            print(f"{log_prefix}: {description}")
+
+        if len(self.event_log) > config.MAX_RECENT_EVENTS * 2:
             self.event_log.pop(0)
 
-    def set_weather(self, new_weather, triggered_by="Simulation"):
+    def set_weather(self, new_weather: str, triggered_by: str = "Simulation") -> bool:
         """Changes the weather and logs the event."""
         old_weather = self.global_context.get("weather", "unknown")
         if old_weather != new_weather:
             self.global_context["weather"] = new_weather
-            # Log weather change as a GLOBAL event
             self.log_event(
                 f"The weather changes from {old_weather} to {new_weather}.",
                 scope="global",
-                location=None,  # Global event has no specific location
+                location=None,
                 triggered_by=triggered_by,
             )
+            if config.SIMULATION_MODE == 'debug':  # Added debug print
+                print(
+                    f"[World State Update]: Weather changed to {new_weather} (Trigger: {triggered_by})")
             return True
         return False
 
-    def get_static_context_for_agent(self, agent_name):
-        """Provides minimal, relatively static context."""
+    def get_static_context_for_agent(self, agent_name: str) -> str:
+        """Provides minimal, relatively static context for an agent, focusing on items and their states."""
         location = self.agent_locations.get(agent_name)
         if not location:
-            return "You are lost."
+            return f"{agent_name} is lost and disoriented."
 
-        context = f"Current Location: {location} ({self.location_descriptions.get(location, 'Unknown')}).\n"
-        context += (
-            f"Current Weather: {self.global_context.get('weather', 'Unknown')}.\n"
-        )
+        # --- Basic Info & Main Description ---
+        # The core description comes directly from the location definition
+        location_description = self.location_descriptions.get(
+            location, 'An unknown place')
+        context = f"Current Location: {location} ({location_description}).\n"
+
+        # --- Environmental Context ---
+        context += f"Current Weather: {self.global_context.get('weather', 'Indeterminate')}.\n"
         exits = self.get_reachable_locations(location)
-        context += f"Visible Exits: {exits if exits else 'None'}.\n"
+        context += f"Visible Exits: {', '.join(exits) if exits else 'None apparent'}.\n"
 
-        # Add location properties that are visible/relevant
-        location_props = self.location_properties.get(location, {})
-        visible_props = []
-        if "ground" in location_props:
-            visible_props.append(f"The ground is {location_props['ground']}")
-        if "terrain" in location_props:
-            visible_props.append(f"The terrain is {location_props['terrain']}")
-        if "door_locked" in location_props:
-            visible_props.append(
-                f"The door is {'locked' if location_props['door_locked'] else 'unlocked'}"
-            )
-        if visible_props:
-            context += f"Location Features: {'. '.join(visible_props)}.\n"
-
-        # Add information about other agents in the location
+        # --- Other Agents ---
         other_agents = [
             name for name in self.get_agents_at(location) if name != agent_name
         ]
         if other_agents:
-            context += f"Other agents present: {', '.join(other_agents)}.\n"
+            context += f"Others present: {', '.join(other_agents)}.\n"
         else:
-            context += "You are alone here.\n"
+            context += f"{agent_name} is alone here.\n"
 
-        # Add information about items in the location
-        if "contains" in location_props and location_props["contains"]:
-            items = location_props["contains"]
-            if isinstance(items, list) and items:
-                context += f"You can see: {', '.join(items)}.\n"
+        # --- Items/Objects and their State (from location_properties["contains"]) ---
+        location_props = self.location_properties.get(location, {})
+        items_list = location_props.get("contains", [])
+        item_descriptions = []
 
-        return context
+        if isinstance(items_list, list):  # Ensure it's a list
+            for item_data in items_list:
+                if isinstance(item_data, dict):  # Ensure each item is a dict
+                    obj_name = item_data.get("object")
+                    obj_state = item_data.get("state")
+                    obj_desc = item_data.get(
+                        "optional_description")  # Optional
 
-    def get_full_state_string(self):
+                    if obj_name and obj_state is not None:  # Require object name and state
+                        desc_str = ""
+                        # Start with description + name or just name
+                        if obj_desc:
+                            # e.g., "a sturdy wooden door (Shelter Door)"
+                            desc_str += f"{obj_desc} ({obj_name})"
+                        else:
+                            # e.g., "chair"
+                            desc_str += f"{obj_name}"
+
+                        # Add the state clearly
+                        # e.g., " - currently locked", " - currently occupied by Alice"
+                        desc_str += f" - currently {obj_state}"
+                        item_descriptions.append(desc_str)
+                    else:
+                        if config.SIMULATION_MODE == 'debug':
+                            print(
+                                f"[World Context Warning] Item in '{location}' missing 'object' or 'state': {item_data}")
+                else:
+                    if config.SIMULATION_MODE == 'debug':
+                        print(
+                            f"[World Context Warning] Item in '{location}' is not a dictionary: {item_data}")
+
+        if item_descriptions:
+            context += "Items and features you observe:\n"
+            for item_desc in item_descriptions:
+                context += f"- {item_desc}\n"
+        else:
+            # Refined message when no specific items are listed
+            context += "There are no specific items demanding attention right now.\n"
+
+        return context.strip()
+
+    def get_full_state_string(self) -> str:
         """For debugging - shows more structured log."""
         state = f"--- World State (Step: {self.current_step}) ---\n"
         state += f"Global Context: {self.global_context}\n"
         state += f"Agent Locations: {self.agent_locations}\n"
-        state += f"Location Properties: {self.location_properties}\n"
-        # Show who listens
-        state += f"Registered Agents: {list(self.registered_agents.keys())}\n"
+        state += "Location Details:\n"
+        for loc_name in self.location_descriptions:
+            state += f"  - {loc_name}:\n"
+            state += f"    Description: {self.location_descriptions.get(loc_name, 'N/A')}\n"
+            state += f"    Exits: {self.location_connectivity.get(loc_name, [])}\n"
+            state += f"    Properties: {self.location_properties.get(loc_name, {})}\n"
+            state += f"    Agents Here: {self.get_agents_at(loc_name)}\n"
+
+        # Clarified
+        state += f"Registered Agents for Events: {list(self.registered_agents.keys())}\n"
         state += f"Event Log ({len(self.event_log)} total, showing last {config.MAX_RECENT_EVENTS}):\n"
-        display_events = self.event_log[-config.MAX_RECENT_EVENTS :]
-        for event in display_events:
+        display_events = self.event_log[-config.MAX_RECENT_EVENTS:]
+        for event in display_events:  # Corrected variable name
             state += f"  - St{event.step} [{event.triggered_by}@{event.location or 'Global'}/{event.scope}] {event.description}\n"
         return state + "-------------------"
 
-    def apply_state_updates(self, updates: list, triggered_by: str):
+    def apply_state_updates(self, updates: List[tuple], triggered_by: str):
         """Applies a list of state changes suggested by the Action Resolver."""
         if not updates:
             return
 
-        print(
-            f"[World State Apply]: Applying {len(updates)} updates triggered by {triggered_by}."
-        )
-        for update in updates:
+        if config.SIMULATION_MODE == 'debug':  # Added debug print
+            print(
+                f"[World State Apply]: Applying {len(updates)} updates triggered by {triggered_by}: {updates}"
+            )
+        for update_tuple in updates:  # Renamed for clarity
             try:
-                update_type = update[0]
-                target = update[1]
-                value = update[2]
+                update_type = update_tuple[0]
+                # e.g., agent_name or location_name
+                target_name = update_tuple[1]
 
                 if update_type == "agent_location":
-                    # Value is the new location name
+                    new_location = update_tuple[2]
                     self.add_agent_to_location(
-                        agent_name=target,
-                        location_name=value,
+                        agent_name=target_name,
+                        location_name=new_location,
                         triggered_by=triggered_by,
                     )
                 elif update_type == "location_property":
-                    # Target is location name, value is prop_name, need 4th element for prop_value
-                    if len(update) == 4:
-                        prop_name = value
-                        prop_value = update[3]
+                    if len(update_tuple) == 4:
+                        prop_name = update_tuple[2]
+                        prop_value = update_tuple[3]
                         self.set_location_property(
-                            location=target,
+                            location=target_name,
                             prop_name=prop_name,
                             value=prop_value,
                             triggered_by=triggered_by,
                         )
+                
                     else:
                         print(
-                            f"[World State Apply Error]: Invalid format for location_property update: {update}"
+                            f"[World State Apply Error]: Invalid format for location_property update: {update_tuple}"
                         )
-                # Add more update types here (e.g., global context, agent inventory)
+                # Add more update types here (e.g., add_item_to_location, remove_item_from_location)
+                
+                elif update_type == "item_state":
+                    # update_tuple: ('item_state', location_name, item_name, new_item_state)
+                    # target_name is location_name here
+                    if len(update_tuple) == 4:
+                        location_name = target_name
+                        item_name_to_update = update_tuple[2]
+                        new_item_state = update_tuple[3]
+
+                        items_in_location = self.get_location_property(
+                            location_name, "contains")
+                        item_actually_updated = False  # Flag to check if an update occurred
+                        original_item_found = False  # Flag to check if item was found at all
+
+                        if isinstance(items_in_location, list):
+                            for item_data in items_in_location:
+                                if isinstance(item_data, dict) and item_data.get("object") == item_name_to_update:
+                                    original_item_found = True
+                                    old_state = item_data.get("state")
+                                    if old_state != new_item_state:
+                                        # Directly update the state
+                                        item_data["state"] = new_item_state
+                                        item_actually_updated = True
+                                        if config.SIMULATION_MODE == 'debug':
+                                            print(
+                                                f"[World State Update]: Item '{item_name_to_update}' in '{location_name}' state changed from '{old_state}' to '{new_item_state}' (Trigger: {triggered_by})."
+                                            )
+                                        # Log a specific event for the item state change
+                                        self.log_event(
+                                            description=f"The state of {item_name_to_update} (in {location_name}) is now '{new_item_state}'.",
+                                            scope="local",
+                                            location=location_name,
+                                            triggered_by=triggered_by
+                                        )
+                                    else:
+                                        if config.SIMULATION_MODE == 'debug':
+                                            print(
+                                                f"[World State Info]: Item '{item_name_to_update}' in '{location_name}' state is already '{new_item_state}'. No change made.")
+                                    break  # Item found, processed.
+
+                            if not original_item_found:  # Check if the item was found in the list at all
+                                print(
+                                    f"[World State Apply Warning]: Could not update item '{item_name_to_update}' in '{location_name}'. Item not found in 'contains' list during update attempt.")
+
+                        else:
+                            print(
+                                f"[World State Apply Error]: 'contains' property for '{location_name}' is not a list or is missing when trying to update item state.")
+                    else:
+                        print(
+                            f"[World State Apply Error]: Invalid format for item_state update: {update_tuple}"
+                        )
                 else:
                     print(
-                        f"[World State Apply Warning]: Unknown update type '{update_type}'"
+                        f"[World State Apply Warning]: Unknown update type '{update_type}' in {update_tuple}"
                     )
 
             except IndexError as e:
                 print(
-                    f"[World State Apply Error]: Malformed update tuple {update}: {e}"
+                    f"[World State Apply Error]: Malformed update tuple {update_tuple}: {e}"
                 )
             except Exception as e:
                 print(
-                    f"[World State Apply Error]: Failed to apply update {update}: {e}"
+                    f"[World State Apply Error]: Failed to apply update {update_tuple}: {e}"
                 )

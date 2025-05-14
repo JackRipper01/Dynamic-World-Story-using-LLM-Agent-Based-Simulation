@@ -118,7 +118,7 @@ def run_simulation():
     # Create the event dispatcher using the factory function based on config
     event_dispatcher = get_event_dispatcher(config.EVENT_PERCEPTION_MODEL)
     # Create the world state with known locations from config
-    world = WorldState(locations=config.KNOWN_LOCATIONS)
+    world = WorldState(known_locations_data=config.KNOWN_LOCATIONS_DATA)
     # Set initial global context (e.g., weather)
     world.global_context['weather'] = "Clear"
     if config.SIMULATION_MODE == 'debug':
@@ -295,7 +295,7 @@ def run_simulation():
                         result["world_state_updates"], triggered_by=agent.name)
                     if config.SIMULATION_MODE == 'debug':
                         print(f"        Updates applied.")
-                    if any(upd.get('type') == 'agent_location' and upd.get('agent_name') == agent.name for upd in result["world_state_updates"]):
+                    if any(len(upd) >= 2 and upd[0] == 'agent_location' and upd[1] == agent.name for upd in result["world_state_updates"]):
                         current_loc = world.agent_locations.get(
                             agent.name, current_loc)
 
