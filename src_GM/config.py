@@ -18,7 +18,7 @@ GENERATION_CONFIG = {
 }
 
 # Model Name
-MODEL_NAME = "gemini-1.5-flash-latest"  # "gemini-pro"
+MODEL_NAME = "gemini-2.0-flash-lite"  # "gemini-pro"
 
 # Simulation Settings
 MAX_RECENT_EVENTS = 15
@@ -119,6 +119,7 @@ AGENT_MEMORY_TYPE = "ShortLongTMemory"
 AGENT_PLANNING_TYPE = "GeminiThinker"
 ACTION_RESOLVER_TYPE = "LLMResolver"
 EVENT_PERCEPTION_MODEL = "DirectEventDispatcher"
+STORY_GENERATOR_TYPE = "LLMLogStoryGenerator"
 
 # --- Narrative / Scenario ---
 NARRATIVE_GOAL = "Franco seeks guidance from the cheerful Dr. Piad for his stressful thesis work in the lab."

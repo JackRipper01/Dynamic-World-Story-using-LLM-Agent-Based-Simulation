@@ -81,6 +81,22 @@ def get_event_dispatcher(dispatcher_type: str):
         # Handle unknown dispatcher types specified in config
         raise ValueError(f"Unknown event dispatcher type: {dispatcher_type}")
 
+
+def get_story_generator(generator_type: str, model):
+    """Factory function to create the story generator."""
+    if generator_type == "LLMLogStoryGenerator":
+        # Import here to avoid circular if story_generator needs config
+        from story_generator import LLMLogStoryGenerator
+        return LLMLogStoryGenerator(model)
+    # Add other story generator types here
+    # elif generator_type == "AnotherStoryGenerator":
+    #     from story_generator import AnotherStoryGenerator
+    #     return AnotherStoryGenerator(...)
+    elif generator_type is None:
+        return None  # No story generator
+    else:
+        raise ValueError(f"Unknown story generator type: {generator_type}")
+    
 # --- Main Simulation Function ---
 
 
@@ -114,6 +130,13 @@ def run_simulation():
     if config.SIMULATION_MODE == 'debug':
         print("Model configured.")
 
+    # 1b. Initialize Story Generator (optional)
+    story_generator = None
+    if hasattr(config, 'STORY_GENERATOR_TYPE') and config.STORY_GENERATOR_TYPE:
+        story_generator = get_story_generator(config.STORY_GENERATOR_TYPE, model)
+        if config.SIMULATION_MODE == 'debug' and story_generator:
+            print(f"Story generator '{config.STORY_GENERATOR_TYPE}' initialized.")
+        
     # 2. Initialize World State and Event Dispatcher
     # Create the event dispatcher using the factory function based on config
     event_dispatcher = get_event_dispatcher(config.EVENT_PERCEPTION_MODEL)
@@ -411,6 +434,35 @@ def run_simulation():
 
     # ---------------------------------------- Simulation End ----------------------------------------
     print(f"\n--- Simulation Ended after {step} steps ---")
+
+
+    # --- Story Generation (if configured) ---
+    if story_generator:
+        # Pass necessary context to the story generator
+        # The world_state object contains the event_log
+        # Agent configurations and narrative goal are in config
+        generated_story = story_generator.generate_story(
+            world_state=world,  # world object is an instance of WorldState
+            agent_configs=config.agent_configs,
+            narrative_goal=config.NARRATIVE_GOAL if hasattr(
+                config, 'NARRATIVE_GOAL') else "An undescribed adventure."
+        )
+        print("\n\n--- THE STORY OF THE SIMULATION ---")
+        print(generated_story)
+
+        # Optionally save to a file
+        try:
+            with open("simulation_story.txt", "w", encoding="utf-8") as f:
+                f.write(
+                    f"Simulation Goal: {config.NARRATIVE_GOAL if hasattr(config, 'NARRATIVE_GOAL') else 'N/A'}\n")
+                f.write("Characters:\n")
+                for ac in config.agent_configs:
+                    f.write(f"  - {ac['name']}: {ac['personality']}\n")
+                f.write("\n--- STORY ---\n")
+                f.write(generated_story)
+            print("\n(Story also saved to simulation_story.txt)")
+        except Exception as e:
+            print(f"\n[Error] Could not save story to file: {e}")
 
 
 # --- Main Execution Block ---
