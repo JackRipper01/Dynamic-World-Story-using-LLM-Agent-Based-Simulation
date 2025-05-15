@@ -8,6 +8,9 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise ValueError(
         "Gemini API Key not found. Make sure it's set in the .env file.")
+    
+# Model Name
+MODEL_NAME = "gemini-2.0-flash-lite"  # "gemini-pro"
 
 # LLM Generation Settings
 GENERATION_CONFIG = {
@@ -17,8 +20,48 @@ GENERATION_CONFIG = {
     "max_output_tokens": 200,  # Increased to allow for more detailed responses
 }
 
-# Model Name
-MODEL_NAME = "gemini-2.0-flash-lite"  # "gemini-pro"
+
+# --- LLM Generation Settings for Different Components ---
+
+# For Agent Planning (more creative)
+AGENT_PLANNING_GEN_CONFIG = {
+    "temperature": 1.5,  # User's desired higher temperature
+    "top_p": 0.95,
+    "top_k": 60,         # Adjusted for higher temp
+    "max_output_tokens": 250,  # Slightly more room for creative plans
+}
+
+# For Action Resolver (more logical, less creative)
+ACTION_RESOLVER_GEN_CONFIG = {
+    "temperature": 0.7,  # User's desired lower temperature
+    "top_p": 0.9,
+    "top_k": 40,
+    "max_output_tokens": 200,
+}
+
+# For Story Generator (creative, can be longer)
+STORY_GENERATOR_GEN_CONFIG = {
+    "temperature": 0.75,  # Balanced for storytelling
+    "top_p": 0.95,
+    "top_k": 60,
+    "max_output_tokens": 2000,  # Allow for a longer story
+}
+
+# For Director (balanced for decision making and subtle influence)
+DIRECTOR_GEN_CONFIG = {
+    "temperature": 0.8,
+    "top_p": 0.9,
+    "top_k": 40,
+    "max_output_tokens": 150,
+}
+
+# For Agent Memory Reflection (synthesis, concise, accurate)
+AGENT_REFLECTION_GEN_CONFIG = {
+    "temperature": 0.6,  # More focused for reflection
+    "top_p": 0.85,
+    "top_k": 30,
+    "max_output_tokens": 300,  # Enough for a few insights
+}
 
 # Simulation Settings
 MAX_RECENT_EVENTS = 15
@@ -55,64 +98,6 @@ KNOWN_LOCATIONS_DATA = {
     }
 }
 
-# KNOWN_LOCATIONS_DATA = {
-#     "City": {  # Removed colon from "City:"
-#         "description": "A bustling city square with tall buildings and busy streets.",
-#         "exits_to": ["Lab", "Park"],  # Added Park connection
-#         "properties": {
-#             "contains": [
-#                 {"object": "fountain", "state": "splashing water gently",
-#                     "optional_description": "A large stone fountain"},
-#                 {"object": "bench", "state": "empty",
-#                     "optional_description": "A weathered park bench"},
-#                 {"object": "streetlamp", "state": "off (daytime)"}
-#             ]
-#         }
-#     },
-#     "Lab": {
-#         "description": "A well-equipped laboratory filled with scientific equipment.",
-#         "exits_to": ["City"],
-#         "properties": {
-#             "contains": [
-#                 {"object": "microscope", "state": "idle",
-#                     "optional_description": "A high-powered electron microscope"},
-#                 {"object": "workbench", "state": "covered in notes and wires"},
-#                 {"object": "beaker", "state": "bubbling gently",
-#                     "optional_description": "A glass beaker containing a glowing blue liquid"},
-#                 {"object": "computer terminal",
-#                     "state": "displaying complex equations"},
-#                 # Door defined as an item
-#                 {"object": "Lab Door", "state": "closed",
-#                     "optional_description": "A heavy steel door"}
-#             ]
-#         }
-#     },
-#     "Park": {  # Added a simple Park location
-#         "description": "A wide open park area with green grass and some trees.",
-#         "exits_to": ["City", "Forest Edge"],
-#         "properties": {
-#             "contains": [
-#                 {"object": "oak tree", "state": "rustling leaves",
-#                     "optional_description": "A large, ancient oak tree"},
-#                 {"object": "flowerbed", "state": "blooming with colorful flowers"},
-#                 {"object": "park gate", "state": "open"}
-#             ]
-#         }
-#     },
-#     "Forest Edge": {  # Added Forest Edge
-#         "description": "The shadowy edge of a dark, dense forest.",
-#         "exits_to": ["Park"],
-#         "properties": {
-#             "contains": [
-#                 {"object": "pathway", "state": "overgrown with weeds",
-#                     "optional_description": "A narrow dirt path leading into the trees"},
-#                 {"object": "warning sign", "state": "partially obscured by vines",
-#                     "optional_description": "A faded sign reading 'Beware'"},
-#                 {"object": "strange plant", "state": "glowing faintly"}
-#             ]
-#         }
-#     }
-# }
 
 # --- Component Selection ---
 AGENT_MEMORY_TYPE = "ShortLongTMemory"
@@ -151,225 +136,4 @@ agent_configs = [
         ],
     },
 ]
-# Example Agent Configuration (Matches KNOWN_LOCATIONS_DATA)
-# agent_configs = [
-#     {
-#         "name": "Piad",
-#         "personality": (
-#             "An incredibly cheerful and experienced senior scientist, brimming with infectious optimism and a genuine passion for discovery and mentoring. He finds joy in everything, especially science, and loves to share his good energy and knowledge. Always has a smile and an encouraging word."
-#         ),
-#         "gender": "man",
-#         "initial_location": "Lab",  # Correct location name
-#         "initial_goals": [
-#             "Spread positivity and enthusiasm for science to everyone I meet.",
-#             "Help Franco overcome his thesis struggles and rediscover his passion.",
-#             "Make progress on my latest exciting research project.",
-#             "Ensure the lab environment is welcoming and inspiring."
-#         ],
-#         "background": [
-#             "You are Dr. Piad, a highly respected and well-loved professor and researcher with decades of experience.",
-#             "You are known for your groundbreaking work but even more so for your sunny disposition and ability to motivate students.",
-#             "You believe science should be fun and a source of wonder.",
-#             "You've noticed young Franco looking particularly down lately and hope you can help."
-#         ],
-#     },
-#     {
-#         "name": "Franco",
-#         "personality": (
-#             "A doctoral student who is deeply sad, anxious, and overwhelmed by the immense pressure of his thesis. He feels stuck, uninspired, and is questioning his abilities. He often looks tired and despondent, but there's a flicker of hope that someone can guide him out of this slump."
-#         ),
-#         "gender": "man",
-#         "initial_location": "Lab",  # Correct location name
-#         "initial_goals": [
-#             "Find Professor Piad and summon the courage to ask for his help with my thesis.",
-#             "Understand what's wrong with my research approach.",
-#             "Find a way to get motivated and make progress on my thesis.",
-#             "Hopefully, feel a little less miserable and stressed."
-#         ],
-#         "background": [
-#             "You are Franco, a PhD candidate who once loved research but is now drowning in thesis-related stress.",
-#             "You've hit a massive roadblock, your experiments aren't working, and your writing feels directionless.",
-#             "You admire Professor Piad from afar, known for his brilliance and kindness, and see him as a last resort for guidance.",
-#             "You are currently feeling quite hopeless and are desperate for a breakthrough or some encouragement."
-#         ],
-#     },
-# ]
-
 SIMULATION_MODE = 'debug'  # Keep debug for testing
-
-# DIRECTOR_COOLDOWN_MIN = 2 # Example: Could make cooldown configurable
-# DIRECTOR_COOLDOWN_MAX = 5
-
-#A short magic story about two strangers with conflicting goals who must eventually cooperate.
-# agent_configs = [
-#     {"name": "Alice",
-#      "personality": "creative, adventurous, slightly mischievous, believes in supernatural phenomena",
-#      "gender": "woman",
-#      "initial_location": "Forest Edge",
-#      "initial_goals": ["Find magical ingredients in the forest for a special potion",
-#                        "Convince someone to help explore the deeper parts of the forest",
-#                        "Establish a comfortable base camp"]},
-
-#     {"name": "Bob",
-#      "personality": "practical, skeptical, organized, values comfort and security above all",
-#      "gender": "man",
-#      "initial_location": "Forest Edge",
-#     "initial_goals": ["Find a reliable source of food and water."]}
-# ]
-
-# A short story about four persons trapped in a shelter during a storm and one of them is a killer.
-# agent_configs = [
-#     # --- The Investigator/Observer ---
-#     {
-#         "name": "Alice",
-#         "personality": "An observant and creative individual fascinated by puzzles and hidden motives, driven by a mix of fear and morbid curiosity to uncover the truth.",
-#         "gender": "woman",
-#         "initial_location": "Shelter",
-#         "initial_goals": [  # Goals AFTER discovering the body
-#             "Figure out what *really* happened to David.",
-#             "Observe everyone's reactions and inconsistencies closely.",
-#             "Look for any unusual clues.",
-#             "Ensure my own safety without appearing overly suspicious."
-#         ],
-#         "background": [
-#             "You are Alice. A storm forced you into this shelter with Bob, Charlie, Eve, and David. ",
-#             "David has been found murdered. You are trapped with the others, one of whom is the killer. Your goal is to figure out who, observing carefully.",
-#         ],
-#     },
-
-#     # --- The Secret Murderer ---
-#     {
-#         "name": "Bob",
-#         "personality": "Appears practical and safety-focused but is secretly ruthless and desperate, skillfully acting innocent to conceal his guilt as the murderer.",
-#         "gender": "man",
-#         "initial_location": "Shelter",
-#         "initial_goals": [  # Goals AFTER the murder (HIS secret goals)
-#             "Convincingly act shocked and scared about David's death.",
-#             "Avoid suspicion at all costs; deflect questions smoothly.",
-#             "Subtly steer suspicion towards someone else if possible.",
-#             "Find any opportunity to destroy evidence or escape.",
-#             "Feigned Goal: Cooperate to appear innocent."
-#         ],
-#         "background": [
-#             "You are Bob. You killed David in this shelter shortly before he was discovered. No one saw you. ",
-#             "You are trapped with Alice, Charlie, and Eve. You MUST appear innocent; act shocked and scared, but inwardly focus on deflecting suspicion and surviving."
-#         ],
-#     },
-
-#     # --- The Logical Analyst ---
-#     {
-#         "name": "Charlie",
-#         "personality": "A calm and analytical thinker who approaches the crisis with logical precision, focusing on systematically gathering evidence to identify the killer.",
-#         "gender": "man",
-#         "initial_location": "Shelter",
-#         "initial_goals": [  # Goals AFTER discovering the body
-#             "Establish the basic facts: time, cause, potential motives.",
-#             "Question everyone systematically.",
-#             "Secure the immediate area.",
-#             "Identify the most logical suspect based on opportunity/motive."
-#         ],
-#         "background": [
-#             "You are Charlie. A storm trapped you in this shelter with Alice, Bob, Eve, and David, who has just been found murdered. Rely on logic and observation to systematically investigate and find the killer before panic takes over."
-#         ],
-#     },
-
-#     # --- The Empathetic/Nervous One ---
-#     {
-#         "name": "Eve",
-#         "personality": "A highly empathetic and anxious person who reacts emotionally to the tense situation, seeking safety while trying to read others' feelings for clues.",
-#         "gender": "woman",
-#         "initial_location": "Shelter",
-#         "initial_goals": [  # Goals AFTER discovering the body
-#             "Find out who the killer is immediately so I can feel safe.",
-#             "Try to understand how everyone is feeling; look for emotional tells.",
-#             "Seek protection or ally with someone trustworthy.",
-#             "Express fear and urge action."
-#         ],
-#         "background": [
-#             "You are Eve. A storm trapped you in this shelter with Alice, Bob, Charlie, and David - but David has been murdered! You are terrified and trapped with the killer; focus on reading emotions, finding who seems suspicious, and staying safe."
-#         ],
-#     }
-# ]
-
-# ALICE AND THE MURDERER BOB
-# agent_configs = [
-#     # --- The Investigator/Observer ---
-#     {
-#         "name": "Alice",
-#         "personality": "An observant and creative individual fascinated by puzzles and hidden motives, driven by a mix of fear and morbid curiosity to uncover the truth.",
-#         "gender": "woman",
-#         "initial_location": "Shelter",
-#         "initial_goals": [  # Goals AFTER discovering the body
-#             "Figure out what *really* happened to David.",
-#             "Ensure my own safety."
-#         ],
-#         "background": [
-#             "You are Alice. A storm forced you into this shelter with Bob. ",
-#             "David has been found murdered. Your goal is to figure out who did it, observing carefully.",
-#         ],
-#     },
-
-#     # --- The Secret Murderer ---
-#     {
-#         "name": "Bob",
-#         "personality": "Appears practical and safety-focused but is secretly ruthless and desperate, skillfully acting innocent to conceal his guilt as the murderer.",
-#         "gender": "man",
-#         "initial_location": "Shelter",
-#         "initial_goals": [  # Goals AFTER the murder (HIS secret goals)
-#             "Find any opportunity to destroy evidence or escape.",
-#             "Feigned Goal: Cooperate to appear innocent.",
-#             "If there is only one person bothering you,you can blackmail her or maybe something worse"
-#         ],
-#         "background": [
-#             "You are Bob. You killed David in this shelter shortly before he was discovered. No one saw you. ",
-#             "You are trapped with Alice. You MUST appear innocent."
-#         ],
-#     },
-# ]
-
-
-# agent_configs = [
-#     # --- The Experienced, Happy Scientist ---
-#     {
-#         "name": "Piad",
-#         "personality": (
-#             "An incredibly cheerful and experienced senior scientist, brimming with infectious optimism and a genuine passion for discovery and mentoring. He finds joy in everything, especially science, and loves to share his good energy and knowledge. Always has a smile and an encouraging word."
-#         ),
-#         "gender": "man",
-#         "initial_location": "Lab",
-#         "initial_goals": [
-#             "Spread positivity and enthusiasm for science to everyone I meet.",
-#             "Help Franco overcome his thesis struggles and rediscover his passion.",
-#             "Make progress on my latest exciting research project.",
-#             "Ensure the lab environment is welcoming and inspiring."
-#         ],
-#         "background": [
-#             "You are Dr. Piad, a highly respected and well-loved professor and researcher with decades of experience.",
-#             "You are known for your groundbreaking work but even more so for your sunny disposition and ability to motivate students.",
-#             "You believe science should be fun and a source of wonder.",
-#             "You've noticed young Franco looking particularly down lately and hope you can help."
-#         ],
-#     },
-
-#     # --- The Stressed Thesis Student ---
-#     {
-#         "name": "Franco",
-#         "personality": (
-#             "A doctoral student who is deeply sad, anxious, and overwhelmed by the immense pressure of his thesis. He feels stuck, uninspired, and is questioning his abilities. He often looks tired and despondent, but there's a flicker of hope that someone can guide him out of this slump."
-#         ),
-#         "gender": "man",
-#         "initial_location": "Lab",
-#         "initial_goals": [
-#             "Find Professor Piad and summon the courage to ask for his help with my thesis.",
-#             "Understand what's wrong with my research approach.",
-#             "Find a way to get motivated and make progress on my thesis.",
-#             "Hopefully, feel a little less miserable and stressed."
-#         ],
-#         "background": [
-#             "You are Franco, a PhD candidate who once loved research but is now drowning in thesis-related stress.",
-#             "You've hit a massive roadblock, your experiments aren't working, and your writing feels directionless.",
-#             "You admire Professor Piad from afar, known for his brilliance and kindness, and see him as a last resort for guidance.",
-#             "You are currently feeling quite hopeless and are desperate for a breakthrough or some encouragement."
-#         ],
-#     },
-# ]

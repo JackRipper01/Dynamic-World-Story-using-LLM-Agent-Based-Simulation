@@ -20,6 +20,35 @@ from director import Director
 Event = namedtuple(
     "Event", ["description", "location", "scope", "step", "triggered_by"])
 
+# --- LLM Creation Helper ---
+
+
+def create_llm_instance(model_name: str, generation_config: dict, purpose: str = "general"):
+    """
+    Helper function to create a configured Gemini model instance.
+    Ensures API key is configured before each model creation.
+    """
+    try:
+        # It's good practice to ensure the API key is configured before creating a model.
+        # genai.configure() can be called multiple times; it's idempotent.
+        genai.configure(api_key=config.GEMINI_API_KEY)
+
+        model = genai.GenerativeModel(
+            model_name=model_name,
+            generation_config=generation_config,
+        )
+        if config.SIMULATION_MODE == 'debug':
+            print(
+                f"LLM instance created for {purpose}: {model_name} with config: {generation_config}")
+        return model
+    except Exception as e:
+        # Log a more specific error if model creation fails
+        print(
+            f"FATAL ERROR: Could not create LLM instance for {purpose} ({model_name}). Error: {e}")
+        print(f"Generation Config used: {generation_config}")
+        raise  # Re-raise the exception to halt simulation if a critical LLM cannot be created
+    
+    
 # --- Factory Functions for Components ---
 # These functions allow creating different implementations of simulation components
 # based on configuration strings, promoting modularity.
@@ -32,39 +61,51 @@ def get_memory_module(agent, memory_type):
         return SimpleMemory()
     if memory_type == "ShortLongTMemory":
         from agent.memory import ShortLongTMemory
-        # Example of passing configuration to a specific memory type
-        return ShortLongTMemory(agent, reflection_threshold=10)
+        reflection_llm = None
+        if hasattr(config, 'AGENT_REFLECTION_GEN_CONFIG'):
+            reflection_llm = create_llm_instance(
+                config.MODEL_NAME,  # Or a specific model name from config if you add it
+                config.AGENT_REFLECTION_GEN_CONFIG,
+                purpose=f"Agent {agent.name} Reflection"
+            )
+        return ShortLongTMemory(
+            agent,
+            reflection_model_instance=reflection_llm,
+            # Example: reflect every ~7 events
+            reflection_threshold=10
+        )
     else:
         # Handle unknown memory types specified in config
         raise ValueError(f"Unknown memory type: {memory_type}")
 
 
-def get_planning_module(planning_type, model):
+def get_planning_module(planning_type):  # Removed 'model' argument
     """Factory function to create an agent's planning module (thinker)."""
     if planning_type == "GeminiThinker":
         from agent.planning import SimplePlanning
-        return SimplePlanning(model)
-    # Add other planning types here if needed
-    # elif planning_type == "AnotherThinker":
-    #     from agent.planning import AnotherThinker
-    #     return AnotherThinker(...)
+        planning_llm = create_llm_instance(
+            config.MODEL_NAME,
+            config.AGENT_PLANNING_GEN_CONFIG,
+            purpose="Agent Planning"
+        )
+        # Pass the specifically configured LLM
+        return SimplePlanning(planning_llm)
     else:
-        # Handle unknown planning types specified in config
         raise ValueError(f"Unknown thinker type: {planning_type}")
 
 
-def get_action_resolver(resolver_type, model, world_ref=None):
+def get_action_resolver(resolver_type, world_ref=None):  # Removed 'model' argument
     """Factory function to create the action resolver."""
     if resolver_type == "LLMResolver":
         from action_resolver import LLMActionResolver
-        # Pass the language model and a reference to the world state
-        return LLMActionResolver(model, world_ref)
-    # Add other resolver types here if needed
-    # elif resolver_type == "RuleBasedResolver":
-    #     from action_resolver import RuleBasedResolver
-    #     return RuleBasedResolver(...)
+        resolver_llm = create_llm_instance(
+            config.MODEL_NAME,
+            config.ACTION_RESOLVER_GEN_CONFIG,
+            purpose="Action Resolver"
+        )
+        # Pass the specific LLM
+        return LLMActionResolver(resolver_llm, world_ref)
     else:
-        # Handle unknown resolver types specified in config
         raise ValueError(f"Unknown action resolver type: {resolver_type}")
 
 
@@ -73,27 +114,23 @@ def get_event_dispatcher(dispatcher_type: str):
     if dispatcher_type == "DirectEventDispatcher":
         from event_dispatcher import DirectEventDispatcher
         return DirectEventDispatcher()
-    # Add other dispatcher types here if needed
-    # elif dispatcher_type == "FilteredEventDispatcher":
-    #     from event_dispatcher import FilteredEventDispatcher
-    #     return FilteredEventDispatcher(...)
     else:
         # Handle unknown dispatcher types specified in config
         raise ValueError(f"Unknown event dispatcher type: {dispatcher_type}")
 
 
-def get_story_generator(generator_type: str, model):
+def get_story_generator(generator_type: str):  # Removed 'model' argument
     """Factory function to create the story generator."""
     if generator_type == "LLMLogStoryGenerator":
-        # Import here to avoid circular if story_generator needs config
-        from story_generator import LLMLogStoryGenerator
-        return LLMLogStoryGenerator(model)
-    # Add other story generator types here
-    # elif generator_type == "AnotherStoryGenerator":
-    #     from story_generator import AnotherStoryGenerator
-    #     return AnotherStoryGenerator(...)
+        from story_generator import LLMLogStoryGenerator  # Ensure this import works
+        story_llm = create_llm_instance(
+            config.MODEL_NAME,
+            config.STORY_GENERATOR_GEN_CONFIG,
+            purpose="Story Generator"
+        )
+        return LLMLogStoryGenerator(story_llm)  # Pass the specific LLM
     elif generator_type is None:
-        return None  # No story generator
+        return None
     else:
         raise ValueError(f"Unknown story generator type: {generator_type}")
     
@@ -117,32 +154,17 @@ def run_simulation():
     elif config.SIMULATION_MODE == 'story':
         print("--- Starting Agent Simulation ---")
 
-    # 1. Initialize LLM Model
-    if config.SIMULATION_MODE == 'debug':
-        print(f"Configuring Gemini model: {config.MODEL_NAME}")
-    # Configure the generative AI model using the API key from config
-    genai.configure(api_key=config.GEMINI_API_KEY)
-    # Create the specific generative model instance
-    model = genai.GenerativeModel(
-        model_name=config.MODEL_NAME,
-        generation_config=config.GENERATION_CONFIG,
-    )
-    if config.SIMULATION_MODE == 'debug':
-        print("Model configured.")
 
-    # 1b. Initialize Story Generator (optional)
+    # 1. Initialize Story Generator 
     story_generator = None
     if hasattr(config, 'STORY_GENERATOR_TYPE') and config.STORY_GENERATOR_TYPE:
-        story_generator = get_story_generator(config.STORY_GENERATOR_TYPE, model)
+        story_generator = get_story_generator(config.STORY_GENERATOR_TYPE)
         if config.SIMULATION_MODE == 'debug' and story_generator:
             print(f"Story generator '{config.STORY_GENERATOR_TYPE}' initialized.")
         
     # 2. Initialize World State and Event Dispatcher
-    # Create the event dispatcher using the factory function based on config
     event_dispatcher = get_event_dispatcher(config.EVENT_PERCEPTION_MODEL)
-    # Create the world state with known locations from config
     world = WorldState(known_locations_data=config.KNOWN_LOCATIONS_DATA)
-    # Set initial global context (e.g., weather)
     world.global_context['weather'] = "Clear"
     if config.SIMULATION_MODE == 'debug':
         print("World state and event dispatcher initialized.")
@@ -155,7 +177,7 @@ def run_simulation():
     for agent_conf in config.agent_configs:
         agent_name = agent_conf["name"]
         # Create the planning module (thinker) for the agent
-        thinker = get_planning_module(config.AGENT_PLANNING_TYPE, model)
+        thinker = get_planning_module(config.AGENT_PLANNING_TYPE)
         # Create the Agent instance
         agent = Agent(
             name=agent_name,
@@ -183,19 +205,23 @@ def run_simulation():
     if config.SIMULATION_MODE == 'debug':
         print("Agents initialized.")
 
-    # # 4. Initialize Director
-    # director_model = model  # The director might use the same LLM or a different one
-    # # Create the Director instance, passing the world, model, and narrative goal
-    # director = Director(world, director_model, config.NARRATIVE_GOAL)
-    # if config.SIMULATION_MODE == 'debug':
-    #     print(f"Director initialized with goal: '{config.NARRATIVE_GOAL}'")
+    # 4. Initialize Director
+    director_llm = create_llm_instance(  # Create LLM for the Director
+        config.MODEL_NAME,
+        config.DIRECTOR_GEN_CONFIG,
+        purpose="Director"
+    )
+    director = Director(world, director_llm, config.NARRATIVE_GOAL if hasattr(
+        config, 'NARRATIVE_GOAL') else "An emergent story.")
+    if config.SIMULATION_MODE == 'debug':
+        print(
+            f"Director initialized with its own LLM and goal: '{director.narrative_goal}'")
 
     # 5. Initialize Action Resolver
-    # Create the action resolver using the factory function
-    action_resolver = get_action_resolver(
-        config.ACTION_RESOLVER_TYPE, model, world_ref=world)  # Pass world reference
+    action_resolver = get_action_resolver(  # LLM for resolver created here
+        config.ACTION_RESOLVER_TYPE, world_ref=world)
     if config.SIMULATION_MODE == 'debug':
-        print("Action resolver initialized.")
+        print("Action resolver initialized with its own LLM.")
 
     # ---------------------------------------- Simulation Steps ----------------------------------------
     step = 0  # Initialize step counter

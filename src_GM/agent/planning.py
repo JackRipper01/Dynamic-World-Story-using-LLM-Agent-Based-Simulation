@@ -40,8 +40,8 @@ Your recent memories and perceptions (most recent last):
 {memory_context}
 
 Based on your personality, goals, gender, situation, and memories, what do you intend to think, say, or do next?
-Choose and describe ONE single intended action, thought, or utterance. You can be descriptive but must focus on only one intent.
-If you intend to speak, use quotes. If you intend to think, describe the thought. If you intend to act, describe the action.
+Choose and describe ONE single intended action, or utterance. You can be descriptive but must focus on only one intent.
+If you intend to speak, use quotes. If you intend to act, describe the action.
 
 IMPORTANT: If someone has spoken to you directly in your recent perceptions, prioritize responding to them before pursuing your own goals. Being responsive to others is crucial for realistic social interaction.
 

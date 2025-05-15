@@ -93,12 +93,13 @@ class ShortLongTMemory(BaseMemory):
     """Memory storing recent events (short-term) and LLM-generated
        reflections/summaries (long-term). Does NOT use embeddings."""
 
-    def __init__(self, agent: 'Agent', reflection_threshold: int = 5):
+    def __init__(self, agent: 'Agent', reflection_model_instance: Optional[genai.GenerativeModel] = None, reflection_threshold: int = 5):
         """
         Initializes ShortLongTermMemory.
 
         Args:
             agent: The agent this memory belongs to.
+            reflection_model_instance: An initialized GenerativeModel for reflections.
             reflection_threshold: Number of new short-term memories needed to trigger a reflection.
         """
         super().__init__(agent)
@@ -109,24 +110,20 @@ class ShortLongTMemory(BaseMemory):
         self.unreflected_count = 0  # Counter for triggering reflection
         self.is_initial_prompt = False  # Flag for initial prompt
 
+        self.reflection_model = reflection_model_instance
+        
         # Configure and instantiate the reflection model
-        self.reflection_model = None  # Initialize to None
         try:
-            # Configure and instantiate a dedicated model
-            generation_config = {
-                "temperature": 0.7,  # Slightly less random for reflections
-                "top_p": 0.9,
-                "top_k": 40,
-                "max_output_tokens": 256  # Limit reflection length if needed
-            }
-
-            # Fix the variable name from reflection_mode to reflection_model
-            self.reflection_model = genai.GenerativeModel(
-                model_name=config.MODEL_NAME,  # Or a specific model if desired
-                generation_config=generation_config,
-            )
-            print(
-                f"DEBUG {self.agent.name}: Reflection model '{config.MODEL_NAME}' initialized for ShortLongTermMemory.")
+            if self.reflection_model:
+                if config.SIMULATION_MODE == 'debug':
+                    print(
+                        f"DEBUG {self.agent.name}: Reflection model '{self.reflection_model.model_name}' "
+                        f"received for ShortLongTermMemory.")
+            else:
+                if config.SIMULATION_MODE == 'debug':
+                    print(
+                        f"WARN {self.agent.name}: No reflection model provided to ShortLongTermMemory. "
+                        "Reflections will be disabled.")
         except Exception as e:
             print(
                 f"ERROR {self.agent.name}: Failed to initialize reflection model '{config.MODEL_NAME}': {e}. Reflections will be disabled.")
