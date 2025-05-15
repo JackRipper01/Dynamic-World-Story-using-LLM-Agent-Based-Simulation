@@ -77,7 +77,10 @@ KNOWN_LOCATIONS_DATA = {
         "properties": {
             "contains": [
                 {"object": "Room Door", "state": "closed and unlocked",
-                    "optional_description": "A standard wooden door. It appears to be the only way out."},
+                    "optional_description": "A standard wooden door. It appears to be the only way out.",
+                    # Link to the corresponding door object in the Corridor
+                    "linked_to": {"location": "Corridor", "object_key": "Corridor Access Door"}
+                 },
                 {"object": "small table", "state": "empty",
                     "optional_description": "A dusty small table in one corner."},
                 {"object": "flickering lightbulb", "state": "dimly illuminating the room",
@@ -85,14 +88,17 @@ KNOWN_LOCATIONS_DATA = {
             ]
         }
     },
-    
+
     "Corridor": {
         "description": "A long, narrow corridor stretching into the distance. It feels a bit drafty here.",
         "exits_to": ["EscapeRoom"],  # Allows returning to the room
         "properties": {
             "contains": [
-                {"object": "Corridor Access Door", "state": "ajar (from EscapeRoom side)",  # Reflects the state of the door from the other side
-                 "optional_description": "The door leading back into the room you (presumably) just exited."}
+                {"object": "Corridor Access Door", "state": "closed and unlocked",  # Initial state matches Room Door
+                 "optional_description": "The door leading back into the room you (presumably) just exited.",
+                 # Link back to the corresponding door object in the EscapeRoom
+                 "linked_to": {"location": "EscapeRoom", "object_key": "Room Door"}
+                 }
             ]
         }
     }

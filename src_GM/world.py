@@ -330,56 +330,102 @@ class WorldState:
                 # Add more update types here (e.g., add_item_to_location, remove_item_from_location)
                 
                 elif update_type == "item_state":
-                    # update_tuple: ('item_state', location_name, item_name, new_item_state)
+                    # update_tuple: ('item_state', location_name, item_name_to_update, new_item_state)
                     # target_name is location_name here
                     if len(update_tuple) == 4:
-                        location_name = target_name
+                        location_name = target_name  # Location of the primary item
+                        # Name of the primary item
                         item_name_to_update = update_tuple[2]
+                        # New state for the primary item (and linked item)
                         new_item_state = update_tuple[3]
 
                         items_in_location = self.get_location_property(
                             location_name, "contains")
-                        item_actually_updated = False  # Flag to check if an update occurred
-                        original_item_found = False  # Flag to check if item was found at all
+                        # item_actually_updated flag removed as linked logic is now inside the state change block
+                        original_item_found = False
 
                         if isinstance(items_in_location, list):
-                            for item_data in items_in_location:
+                            for item_data in items_in_location:  # item_data is for the primary item
                                 if isinstance(item_data, dict) and item_data.get("object") == item_name_to_update:
                                     original_item_found = True
                                     old_state = item_data.get("state")
                                     if old_state != new_item_state:
-                                        # Directly update the state
+                                        # Directly update the primary item's state
                                         item_data["state"] = new_item_state
-                                        item_actually_updated = True
+
                                         if config.SIMULATION_MODE == 'debug':
                                             print(
                                                 f"[World State Update]: Item '{item_name_to_update}' in '{location_name}' state changed from '{old_state}' to '{new_item_state}' (Trigger: {triggered_by})."
                                             )
-                                        # Log a specific event for the item state change
+                                        # Log a specific event for the primary item state change
                                         self.log_event(
                                             description=f"The state of {item_name_to_update} (in {location_name}) is now '{new_item_state}'.",
                                             scope="local",
                                             location=location_name,
                                             triggered_by=triggered_by
                                         )
-                                    else:
+
+                                        # --- START: Handle Linked Objects ---
+                                        linked_to_info = item_data.get(
+                                            "linked_to")
+                                        if isinstance(linked_to_info, dict) and "location" in linked_to_info and "object_key" in linked_to_info:
+                                            linked_loc_name = linked_to_info["location"]
+                                            # Key of the item in the other location
+                                            linked_obj_key = linked_to_info["object_key"]
+
+                                            linked_location_items = self.get_location_property(
+                                                linked_loc_name, "contains")
+                                            if isinstance(linked_location_items, list):
+                                                for linked_item_data in linked_location_items:
+                                                    if isinstance(linked_item_data, dict) and linked_item_data.get("object") == linked_obj_key:
+                                                        old_linked_state = linked_item_data.get(
+                                                            "state")
+                                                        if old_linked_state != new_item_state:  # Propagate the new state
+                                                            linked_item_data["state"] = new_item_state
+                                                            if config.SIMULATION_MODE == 'debug':
+                                                                print(
+                                                                    f"[World State Update - Linked]: Item '{linked_obj_key}' in '{linked_loc_name}' state "
+                                                                    f"changed from '{old_linked_state}' to '{new_item_state}' "
+                                                                    f"(due to link from '{item_name_to_update}' in '{location_name}' by {triggered_by})."
+                                                                )
+                                                            # Log an event for the linked item's change so agents there can perceive it
+                                                            self.log_event(
+                                                                description=f"The {linked_obj_key} is now '{new_item_state}', as it's linked to an item affected by {triggered_by}'s action.",
+                                                                scope="local",
+                                                                location=linked_loc_name,
+                                                                triggered_by="SystemLink"  # Special trigger for system-driven linked changes
+                                                            )
+                                                        break  # Found and processed the linked item
+                                                else:  # Inner loop's else: if linked item not found in linked_location_items
+                                                    if config.SIMULATION_MODE == 'debug':
+                                                        print(
+                                                            f"[World State Apply Warning]: Linked item '{linked_obj_key}' in '{linked_loc_name}' "
+                                                            f"(linked from '{item_name_to_update}' in '{location_name}') not found in 'contains' list."
+                                                        )
+                                            else:  # linked_location_items is not a list
+                                                if config.SIMULATION_MODE == 'debug':
+                                                    print(
+                                                        f"[World State Apply Error]: 'contains' property for linked location '{linked_loc_name}' "
+                                                        "is not a list or is missing when trying to update linked item state."
+                                                    )
+                                        # --- END: Handle Linked Objects ---
+                                    else:  # old_state == new_item_state
                                         if config.SIMULATION_MODE == 'debug':
                                             print(
                                                 f"[World State Info]: Item '{item_name_to_update}' in '{location_name}' state is already '{new_item_state}'. No change made.")
-                                    break  # Item found, processed.
+                                    break  # Primary item found and processed.
 
-                            if not original_item_found:  # Check if the item was found in the list at all
+                            if not original_item_found:
                                 print(
                                     f"[World State Apply Warning]: Could not update item '{item_name_to_update}' in '{location_name}'. Item not found in 'contains' list during update attempt.")
-
-                        else:
+                        else:  # items_in_location is not a list
                             print(
                                 f"[World State Apply Error]: 'contains' property for '{location_name}' is not a list or is missing when trying to update item state.")
-                    else:
+                    else:  # len(update_tuple) != 4
                         print(
                             f"[World State Apply Error]: Invalid format for item_state update: {update_tuple}"
                         )
-                else:
+                else:  # Unknown update_type
                     print(
                         f"[World State Apply Warning]: Unknown update type '{update_type}' in {update_tuple}"
                     )
