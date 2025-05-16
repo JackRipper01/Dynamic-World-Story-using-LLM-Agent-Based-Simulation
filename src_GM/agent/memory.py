@@ -138,7 +138,7 @@ class ShortLongTMemory(BaseMemory):
         self.short_term_memory.append(memory_entry)
         self.unreflected_count += 1
                                                                 # TEMPORAL ------------------------------------->
-        # print(f"DEBUG {self.agent.name} Memory Add ShortTerm: {memory_entry}")
+        print(f"DEBUG {self.agent.name} Memory Add ShortTerm: {memory_entry}")
         # --- Trigger Reflection ---
         if self.reflection_model and self.unreflected_count >= self.reflection_threshold:
             self._reflect()
@@ -229,7 +229,7 @@ class ShortLongTMemory(BaseMemory):
         if self.short_term_memory:
             # Limit the number of short-term memories shown in context?
             max_short_term_in_context = kwargs.get(
-                'max_short_term_entries', 20)  # Example limit
+                'max_short_term_entries', 40)  # Example limit
             start_index = max(0, len(self.short_term_memory) -
                               max_short_term_in_context)
             if start_index > 0:
@@ -245,7 +245,7 @@ class ShortLongTMemory(BaseMemory):
 
         # Limit total context length if needed (crude truncation)
         max_total_length = kwargs.get(
-            'max_context_length', 4000)  # Example limit
+            'max_context_length', 8000)  # Example limit
         if len(context) > max_total_length:
             context = f"... (Memory Context Trimmed) ...\n{context[-max_total_length:]}"
 
