@@ -52,15 +52,16 @@ class DirectEventDispatcher(BaseEventDispatcher):
             if event.scope == 'global':
                 should_perceive = True
             elif event.location == agent_current_loc:  # Check if agent is at the event location
-                if event.scope == 'local':
-                    should_perceive = True
-                elif event.scope == 'action_outcome':
-                    # Original logic: Dispatch action outcome even to the agent who performed it.
-                    # The agent's memory/processing can decide how to handle it (e.g., ignore if redundant).
-                    # If filtering is desired *here*, uncomment the check below:
-                    # if event.triggered_by != agent_name:
-                    #    should_perceive = True
-                    should_perceive = True  # Current: Dispatch action outcome to all at location
+                if event.triggered_by != agent_name:
+                   should_perceive = True
+                # if event.triggered_by == agent_name and event.description.split()[1] == "says":
+                #     should_perceive = False  # Current: Dispatch action outcome to all at location
+                #     print(
+                #         f"[Dispatcher]: {agent_name} triggered the event, but it is not perceiving it cause is SPEAK type.")
+                # else:
+                #     should_perceive = True
+                    
+            # print(f"[Dispatcher]: {agent_name} should perceive: {should_perceive}")  # Debug
 
             # If perception criteria met, attempt to call agent's perceive method
             if should_perceive:

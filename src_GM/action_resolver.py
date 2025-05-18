@@ -58,14 +58,7 @@ class LLMActionResolver(BaseActionResolver):
             print(
                 f"[LLM Resolver @ {agent_location}]: Resolving for {agent_name}: '{action_output}'\n")
 
-        # 1. Gather Context (Simplified example - adapt as needed)
-        connectivity = f"From {agent_location}, exits lead to: {world_state.get_reachable_locations(agent_location)}."
-        agents_present = world_state.get_agents_at(agent_location)
-        others_present = [
-            name for name in agents_present if name != agent_name]
-        state_summary = f"Others present: {others_present if others_present else 'None'}."
-
-        # 2. Craft Prompt (Similar to old Interpreter prompt, but focused on resolution)
+        # 1. Craft Prompt (Similar to old Interpreter prompt, but focused on resolution)
         prompt = f"""You are the Action Resolver for a simulation.
 Agent '{agent_name}' at location '{agent_location}' intends to: "{action_output}"
 
@@ -75,7 +68,7 @@ This is what the agent '{agent_name}' senses about the world:
 Analyze the agent's intent. 
 Is it possible? (Does the object it interacts with exist?)
 What is the most plausible outcome?
-Your task is to determine if the action is successful, what type of action it is, any key parameters, and a brief description of what an observer would see.
+Your task is to determine if the action is successful, what type of action it is, any key parameters, and a description of what a close observer would see or hear or both.
 
 Output your analysis as a single line of text with exactly four parts, separated by " | " (a pipe symbol with spaces around it):
 1.  Success Status: Either "SUCCESS" or "FAILURE".
@@ -87,7 +80,7 @@ Output your analysis as a single line of text with exactly four parts, separated
     - For OBSERVE: "target: <what_is_observed>"
     - For WAIT: "duration: <e.g., a moment, briefly>"
     - For FAIL or UNKNOWN: This part can be a brief reason for failure/unknown, or left empty if the reason is clear from the outcome description.
-4.  Outcome Description: A short sentence describing what an observer sees happen.
+4.  Outcome Description: A sentence describing what an observer sees happen.
 
 Examples of the single-line output format:
 Intent: "go to the park" -> SUCCESS | MOVE | destination: Park | {agent_name} walks towards the Park.
@@ -103,7 +96,7 @@ SUCCESS_STATUS | ACTION_TYPE | PARAMETERS | OUTCOME_DESCRIPTION
 Your single-line output:
 """
 
-        # 3. Call LLM & Parse
+        # 2. Call LLM & Parse
         try:
             response = self.llm.generate_content(prompt)
             raw_output = response.text.strip()
@@ -247,10 +240,7 @@ Your single-line output:
                         resolved_action["outcome_description"] = f"{agent_name} intends to move, but no destination was specified in the parameters."
                         # world_state_updates remains empty for the move
                     elif destination == agent_location:
-                        if llm_says_move_successful:
-                            resolved_action["outcome_description"] = f"{agent_name} considers moving but decides to stay in {agent_location}."
-                        # Keep resolved_action["success"] as per LLM's original assessment for same-location "move"
-                        # No world_state_updates for agent_location change
+                        resolved_action["success"] = True
                     elif destination not in world_state.location_descriptions:
                         resolved_action["success"] = False
                         resolved_action["outcome_description"] = f"{agent_name} tries to move to '{destination}', but it is not a known location."
@@ -268,14 +258,7 @@ Your single-line output:
                             resolved_action["world_state_updates"].append(
                                 ('agent_location', agent_name, destination)
                             )
-                            # LLM's outcome_description (llm_outcome_desc_str) is generally used.
-                            # If it was too generic, one could override, e.g.:
-                            # resolved_action["outcome_description"] = f"{agent_name} successfully moves to {destination}."
                         else:
-                            # LLM said FAILURE, even if rules would allow it. Respect LLM's interpretation.
-                            # resolved_action["success"] is already False.
-                            # resolved_action["outcome_description"] (from llm_outcome_desc_str) is LLM's failure reason.
-                            # No world_state_updates for the move.
                             pass  # No changes needed, LLM's failure stands
 
                 elif action_type_upper == "INTERACT":
@@ -323,16 +306,16 @@ Your single-line output:
                 # --- END: Specific Action Validation ---
 
                 # --- Refine outcome_description, especially for SPEAK actions (AFTER MOVE validation) ---
-                if resolved_action["action_type"] == "SPEAK" and resolved_action["success"]:
-                    msg = action_params.get("message", "")
-                    target_agent = action_params.get(
-                        "target")  # Renamed to avoid conflict
+                # if resolved_action["action_type"] == "SPEAK" and resolved_action["success"]:
+                #     msg = action_params.get("message", "")
+                #     target_agent = action_params.get(
+                #         "target")  # Renamed to avoid conflict
 
-                    if msg:
-                        if target_agent:
-                            resolved_action["outcome_description"] = f"{agent_name} says to {target_agent}, \"{msg}\""
-                        else: # Optional: if LLM gives message but no target
-                            resolved_action["outcome_description"] = f"{agent_name} says, \"{msg}\""
+                #     if msg:
+                #         if target_agent:
+                #             resolved_action["outcome_description"] = f"{agent_name} says to {target_agent}, \"{msg}\""
+                #         else: # Optional: if LLM gives message but no target
+                #             resolved_action["outcome_description"] = f"{agent_name} says, \"{msg}\""
 
                 print(f"[LLM Resolver Final Output]: {resolved_action}")
                 return resolved_action
