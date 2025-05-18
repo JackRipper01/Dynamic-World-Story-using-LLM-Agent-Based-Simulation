@@ -88,7 +88,6 @@ class SimpleMemory(BaseMemory):
 
 # --- Short-Long Term Memory with Reflection ---
 
-
 class ShortLongTMemory(BaseMemory):
     """Memory storing recent events (short-term) and LLM-generated
        reflections/summaries (long-term). Does NOT use embeddings."""
@@ -131,8 +130,6 @@ class ShortLongTMemory(BaseMemory):
     def add_observation(self, observation_text: str, step: Optional[int] = None, type: str = "Generic"):
         """Adds observation to short-term memory and triggers reflection if threshold is met."""
         memory_entry = {
-            "step": step,
-            "type": type,
             "text": observation_text.strip()
         }
         self.short_term_memory.append(memory_entry)
@@ -169,9 +166,9 @@ class ShortLongTMemory(BaseMemory):
 
         # Format the memories for the prompt
         for mem in memories_to_reflect:
-            prefix = f"[T:{mem['type']}" + \
-                (f" S:{mem['step']}" if mem['step'] is not None else "") + "]"
-            prompt_context += f"{prefix} {mem['text']}\n"
+            # prefix = f"[T:{mem['type']}" + \
+            #     (f" S:{mem['step']}" if mem['step'] is not None else "") + "]"
+            prompt_context += f"{mem['text']}\n"
 
         # Reflection Instruction
         prompt_instruction = (
@@ -236,10 +233,10 @@ class ShortLongTMemory(BaseMemory):
                 context += "[...older observations omitted...]\n"
 
             for mem in self.short_term_memory[start_index:]:
-                prefix = f"[T:{mem['type']}" + \
-                    (f" S:{mem['step']}" if mem['step']
-                     is not None else "") + "]"
-                context += f"{prefix} {mem['text']}\n"
+                # prefix = f"[T:{mem['type']}" + \
+                #     (f" S:{mem['step']}" if mem['step']
+                #      is not None else "") + "]"
+                context += f"{mem['text']}\n"
         else:
             context += "No recent observations recorded.\n"
 
