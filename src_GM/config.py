@@ -121,25 +121,22 @@ agent_configs = [
         "personality": "Pragmatic and observant.",
         "gender": "woman", 
         "initial_location": "EscapeRoom",
-        "initial_goals": [
+        "initial_goals":
             "Find a way out of this room.",
-        ],
-        "background": [
-            "You suddenly find yourself in an unfamiliar, plain room with one other person.",
-            "You have no memory of arriving here.",
-        ],
+        "background":
+            """You suddenly find yourself in an unfamiliar, plain room with one other person.
+You have no memory of arriving here."""
+        ,
     },
     {
         "name": "Ben",
         "personality": "Action-oriented and somewhat impatient.",
         "gender": "man",
         "initial_location": "EscapeRoom",
-        "initial_goals": [
+        "initial_goals": 
             "Get out of this room as quickly as possible.",
-        ],
-        "background": [
+        "background":
             "You've woken up in a strange, featureless room. Another person is here with you.",
-        ],
     },
 ]
 SIMULATION_MODE = 'debug'  # Keep debug for testing
