@@ -113,7 +113,7 @@ EVENT_PERCEPTION_MODEL = "DirectEventDispatcher"
 STORY_GENERATOR_TYPE = "LLMLogStoryGenerator"
 
 # --- Narrative / Scenario ---
-NARRATIVE_GOAL = "Franco seeks guidance from the cheerful Dr. Piad for his stressful thesis work in the lab."
+NARRATIVE_GOAL = "Make a interesting emergent narrative."
 
 agent_configs = [
     {

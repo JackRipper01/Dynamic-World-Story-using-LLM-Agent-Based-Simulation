@@ -129,9 +129,7 @@ class ShortLongTMemory(BaseMemory):
 
     def add_observation(self, observation_text: str, step: Optional[int] = None, type: str = "Generic"):
         """Adds observation to short-term memory and triggers reflection if threshold is met."""
-        memory_entry = {
-            "text": observation_text.strip()
-        }
+        memory_entry = observation_text.strip()
         self.short_term_memory.append(memory_entry)
         self.unreflected_count += 1
                                                                 # TEMPORAL ------------------------------------->
@@ -168,7 +166,7 @@ class ShortLongTMemory(BaseMemory):
         for mem in memories_to_reflect:
             # prefix = f"[T:{mem['type']}" + \
             #     (f" S:{mem['step']}" if mem['step'] is not None else "") + "]"
-            prompt_context += f"{mem['text']}\n"
+            prompt_context += f"{mem}\n"
 
         # Reflection Instruction
         prompt_instruction = (
@@ -215,14 +213,14 @@ class ShortLongTMemory(BaseMemory):
         """Returns a formatted string containing both long-term reflections
            and recent short-term observations."""
 
-        context = "--- Core Reflections & Summaries ---\n"
+        context = "Core Reflections and Summaries:\n"
         if self.long_term_memory:
             # Maybe limit the number of reflections shown? For now, show all.
             context += "\n".join(f"- {ltm}" for ltm in self.long_term_memory) + "\n"
         else:
             context += "No long-term reflections generated yet.\n"
 
-        context += "\n--- Recent Observations (most recent last) ---\n"
+        context += "\nRecent Observations (most recent last):\n"
         if self.short_term_memory:
             # Limit the number of short-term memories shown in context?
             max_short_term_in_context = kwargs.get(
@@ -236,7 +234,7 @@ class ShortLongTMemory(BaseMemory):
                 # prefix = f"[T:{mem['type']}" + \
                 #     (f" S:{mem['step']}" if mem['step']
                 #      is not None else "") + "]"
-                context += f"{mem['text']}\n"
+                context += f"{mem}\n"
         else:
             context += "No recent observations recorded.\n"
 

@@ -18,7 +18,7 @@ class Agent:
     def perceive(self, event):
         """Processes a perceived event from the world and stores it in memory."""
         # Simple formatting for now, could be more sophisticated
-        perception_text = f"You just perceived in step {event.step} of the simulation the following event at {event.location} by {event.triggered_by}: {event.description}"
+        perception_text = f"You just perceived in step {event.step} of the simulation the following event at {event.location}{f' by {event.triggered_by}' if event.triggered_by else ''}: {event.description}"
         self.memory.add_observation(perception_text)
         if config.SIMULATION_MODE == 'debug':
             print(f"DEBUG {self.name} Perceived: {perception_text}") # Optional debug
