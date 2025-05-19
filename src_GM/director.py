@@ -63,24 +63,23 @@ class Director:
         # --- PROMPT ENGINEERING FOR DIRECTOR (same as before, ensures consistency) ---
         prompt = f"""You are '{self.name}', the Director of this simulated world.
 Your primary narrative goal is: '{self.narrative_goal}'.
-Your role is to subtly guide the narrative by making changes to the environment or introducing external events.
-You CANNOT directly control other agents, read their minds, or change their internal states.
-
-Your Past Interventions and Reflections (from your memory):
-{director_memory_context}
+Your role is to very subtly guide the narrative by making changes to the environment or introducing external events if necessary.
 
 Current World State Summary (as of Step {current_step}):
 {world_summary_for_prompt}
 
-Based on your narrative goal, your past actions (and their outcomes from memory), and the current world state, what single environmental intervention will you enact next?
+Your Past Interventions and Reflections (from your memory):
+{director_memory_context}
+
+Based on your narrative goal, the current world state and  your past actions (and their outcomes from memory), what single environmental intervention will you enact next?
 Your actions are powerful but should be used judiciously to nudge the story.
 Choose ONE action from the list below. Be precise with parameters.
 
 Allowed Environmental Actions & Format:
 1.  CHANGE_WEATHER: <new_weather_condition>
-2.  CREATE_AMBIENT_EVENT: description: <description_of_sensory_event> , location: <target_location_name> 
-3.  ADD_OBJECT: object: <object_name> , state: <initial_state> , description: <text_desc> , location: <target_location_name> 
-4.  DO_NOTHING: No intervention is needed right now.
+2.  ADD_OBJECT: object: <object_name>(leave details to description field) , state: <initial_state> , description: <text_desc> , location: <object_location_name>(ONLY ONE of the Existing Locations listed above)
+(e.g ADD_OBJECT: object: Ancient Key , state: rusty , description: An old, rusty key with intricate engravings inside under the table. , location: Library) 
+3.  DO_NOTHING: No intervention is needed right now.
 
 Output your chosen action in the format: ACTION_TYPE: parameters
 
@@ -130,7 +129,12 @@ Your chosen environmental intervention (single line):"""
     def _get_world_summary_for_planning(self) -> str:
         """Helper to create a concise summary of the world for the Director's planning prompt."""
         summary = f"Weather: {self.world.global_context.get('weather', 'unknown')}\n"
-        summary += f"Agent Locations: {self.world.agent_locations}\n"
+        summary += f"Agent Locations:\n"
+        for agent_name in self.world.agent_locations:
+            summary += f"  - {agent_name} is in {self.world.agent_locations.get(agent_name,'Unknown')}\n"
+        summary += f"Existing Locations:\n"
+        for loc_name in self.world.location_descriptions:
+            summary += f"  - {loc_name}\n"
         summary += "Location Details:\n"
         for loc_name in self.world.location_descriptions:
             summary += f"  - {loc_name}:\n"
@@ -227,12 +231,12 @@ Your chosen environmental intervention (single line):"""
 
                 if obj_name and obj_state and obj_desc and obj_location:
                     item_added_to_world = self.world.add_item_to_location(
-                        obj_location, obj_name, obj_state, obj_desc, triggered_by=self.name, _log_event_internally=False)
+                        obj_location, obj_name, obj_state, obj_desc, triggered_by=self.name)
                     if item_added_to_world:
                         action_succeeded = True
                         event_description = f"'{obj_name}' (described as: {obj_desc}, state: {obj_state}) appears in {obj_location}."
                         event_to_dispatch = Event(
-                            event_description, obj_location, "local", current_step, self.name)
+                            event_description, obj_location, "local", current_step, None)
                         if config.SIMULATION_MODE == 'debug':
                             print(
                                 f"  Object '{obj_name}' added to '{obj_location}'.")
@@ -262,8 +266,9 @@ Your chosen environmental intervention (single line):"""
                     if config.SIMULATION_MODE == 'debug':
                         print(
                             f"[{self.name} Dispatching Event]: {event_to_dispatch.description[:70]}...")
-                    self.event_dispatcher.dispatch_event(
-                        event_to_dispatch, self.world.registered_agents, self.world.agent_locations)
+                    if action_type != "ADD_OBJECT":
+                        self.event_dispatcher.dispatch_event(
+                            event_to_dispatch, self.world.registered_agents, self.world.agent_locations)
             elif action_type != "DO_NOTHING":
                 self.memory.add_observation(
                     f"Action Failed: Attempted '{intervention_action_string}', but it could not be applied."
@@ -281,8 +286,8 @@ Your chosen environmental intervention (single line):"""
     def _parse_params(self, params_str: str) -> dict:
         """
         Parses a comma-separated string of "key: value" pairs into a dictionary.
-        Handles cases where values themselves might contain commas by splitting
-        only on commas that are followed by a 'key:' pattern.
+        - Splits pairs by commas that are followed by a 'key:' pattern.
+        - For each value, if it's enclosed in double quotes, the quotes are stripped.
         """
         parsed_params = {}
         if not params_str:
@@ -290,26 +295,40 @@ Your chosen environmental intervention (single line):"""
 
         # Regex to split by: a comma (\s*,\s*)
         # IF AND ONLY IF it's followed by a key pattern (\w+\s*:)
-        # The lookahead `(?=...)` ensures the following pattern exists but isn't consumed by the split.
         # Keys are assumed to be word characters (\w+).
         param_pairs = re.split(r'\s*,\s*(?=\w+\s*:)', params_str)
 
         for pair_str in param_pairs:
-            # Each `pair_str` should now be a "key: value" string,
-            # where 'value' can contain commas that were not delimiters.
-            if not pair_str.strip():  # Skip empty parts (e.g., from a trailing comma)
+            pair_str_cleaned = pair_str.strip()
+            if not pair_str_cleaned:
                 continue
 
-            parts = pair_str.split(":", 1)  # Split only on the first colon
+            parts = pair_str_cleaned.split(":", 1)
             if len(parts) == 2:
                 key = parts[0].strip()
-                value = parts[1].strip()
+                # raw_value_component is the string part after the first colon, stripped of its own leading/trailing whitespace.
+                raw_value_component = parts[1].strip()
+
+                # Check if the raw_value_component is entirely enclosed in double quotes
+                if len(raw_value_component) >= 2 and \
+                   raw_value_component.startswith('"') and \
+                   raw_value_component.endswith('"'):
+                    # If quoted, strip the outer quotes.
+                    # The content inside the quotes is the actual value.
+                    value = raw_value_component[1:-1]
+                    # If unescaping of characters like \" or \\ within the quoted string is needed,
+                    # it would be done here. E.g.:
+                    # value = value.replace('\\"', '"').replace('\\\\', '\\')
+                else:
+                    # If not quoted (or not properly fully quoted), use the stripped string as is.
+                    value = raw_value_component
+
                 parsed_params[key] = value
             else:
-                # This part of the string was not a "key: value" pair
-                if config.SIMULATION_MODE == 'debug':
+                # This branch is hit if a segment (after splitting by comma-key pattern) doesn't contain a colon.
+                if hasattr(self, 'config') and self.config.SIMULATION_MODE == 'debug':
                     print(
-                        f"[{self.name} Parsing Warning]: Malformed parameter segment: '{pair_str.strip()}' in '{params_str}'. Expected 'key: value' format.")
+                        f"[{self.name} Parsing Warning]: Malformed parameter segment: '{pair_str_cleaned}' in '{params_str}'. Expected 'key: value' format.")
         return parsed_params
     
     def _parse_key_value_params(self, params_str: str) -> dict:
