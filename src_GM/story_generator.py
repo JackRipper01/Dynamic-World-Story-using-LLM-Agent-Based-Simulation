@@ -79,6 +79,8 @@ Narrative Premise/Goal:
 
 Please weave these elements into a flowing narrative. Describe the setting, character actions, interactions, and the overall progression of events. Try to infer thoughts or motivations if consistent with personalities and events, but clearly distinguish between observed events and inferred internal states if necessary. Make it readable and interesting.
 
+If the simulation ended without a clear conclusion, feel free to create a fitting ending or cliffhanger.
+
 Your Story:
 """
         if config.SIMULATION_MODE == 'debug':
