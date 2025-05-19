@@ -211,8 +211,9 @@ def run_simulation():
         config.DIRECTOR_GEN_CONFIG,
         purpose="Director"
     )
-    director = Director(world, director_llm, config.NARRATIVE_GOAL if hasattr(
-        config, 'NARRATIVE_GOAL') else "An emergent story.")
+    director = Director(world,director_llm, config.NARRATIVE_GOAL if hasattr(
+        config, 'NARRATIVE_GOAL') else "An emergent story.",None,event_dispatcher)
+    director.memory = get_memory_module(director, config.AGENT_MEMORY_TYPE)
     if config.SIMULATION_MODE == 'debug':
         print(
             f"Director initialized with its own LLM and goal: '{director.narrative_goal}'")
@@ -281,6 +282,9 @@ def run_simulation():
 
         # --- Sequential Agent Action, Resolution, and Perception Loop ---
         for agent in current_step_agents:
+            
+            director.director_step()
+            
             if config.SIMULATION_MODE == 'debug':
                 # More prominent agent turn header
                 turn_header = f" AGENT: {agent.name}'s Turn "
