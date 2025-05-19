@@ -438,3 +438,104 @@ class WorldState:
                 print(
                     f"[World State Apply Error]: Failed to apply update {update_tuple}: {e}"
                 )
+
+    def add_item_to_location(self, location_name: str, item_name: str, item_state: str, item_description: str, triggered_by: str = "System") -> bool:
+        if location_name not in self.location_properties:
+            if config.SIMULATION_MODE == 'debug':
+                print(
+                    f"[WorldState Error] Add Item: Location '{location_name}' not found.")
+            return False
+
+        # Ensure 'contains' is a list
+        if "contains" not in self.location_properties[location_name] or not isinstance(self.location_properties[location_name]["contains"], list):
+            self.location_properties[location_name]["contains"] = []
+
+        # Check if item already exists (by name) to avoid duplicates, or decide policy
+        for item_data in self.location_properties[location_name]["contains"]:
+            if isinstance(item_data, dict) and item_data.get("object") == item_name:
+                if config.SIMULATION_MODE == 'debug':
+                    print(
+                        f"[WorldState Info] Add Item: Item '{item_name}' already exists in '{location_name}'. Not adding again.")
+                # Optionally, update existing item's state/desc here, or just return False
+                return False  # For now, don't add if name exists
+
+        new_item = {
+            "object": item_name,
+            "state": item_state,
+            "optional_description": item_description
+            # "linked_to": {} # Could be added if director specifies linkage
+        }
+        self.location_properties[location_name]["contains"].append(new_item)
+
+        log_msg = f"{triggered_by} causes '{item_name}' (described as: {item_description}, state: {item_state}) to appear in {location_name}."
+        self.log_event(
+            description=log_msg,
+            scope="local",
+            location=location_name,
+            triggered_by=triggered_by
+        )
+        if config.SIMULATION_MODE == 'debug':
+            print(
+                f"[WorldState Update] Add Item: '{item_name}' added to '{location_name}' by {triggered_by}.")
+        return True
+
+    def modify_item_state(self, location_name: str, item_name: str, new_state: str, triggered_by: str = "System") -> bool:
+        if location_name not in self.location_properties:
+            if config.SIMULATION_MODE == 'debug':
+                print(
+                    f"[WorldState Error] Modify Item State: Location '{location_name}' not found.")
+            return False
+
+        items_in_location = self.get_location_property(
+            location_name, "contains")
+        if not isinstance(items_in_location, list):
+            if config.SIMULATION_MODE == 'debug':
+                print(
+                    f"[WorldState Error] Modify Item State: 'contains' for '{location_name}' is not a list.")
+            return False
+
+        item_found_and_updated = False
+        for item_data in items_in_location:
+            if isinstance(item_data, dict) and item_data.get("object") == item_name:
+                old_state = item_data.get("state")
+                if old_state != new_state:
+                    item_data["state"] = new_state
+                    item_found_and_updated = True  # Mark as updated
+
+                    log_msg = f"The state of '{item_name}' in {location_name} changes from '{old_state}' to '{new_state}' (due to {triggered_by})."
+                    self.log_event(
+                        description=log_msg,
+                        scope="local",
+                        location=location_name,
+                        triggered_by=triggered_by
+                    )
+                    if config.SIMULATION_MODE == 'debug':
+                        print(
+                            f"[WorldState Update] Modify Item State: '{item_name}' in '{location_name}' changed to '{new_state}' by {triggered_by}.")
+
+                    # --- Handle Linked Objects (copied and adapted from apply_state_updates) ---
+                    linked_to_info = item_data.get("linked_to")
+                    if isinstance(linked_to_info, dict) and "location" in linked_to_info and "object_key" in linked_to_info:
+                        linked_loc_name = linked_to_info["location"]
+                        linked_obj_key = linked_to_info["object_key"]
+                        # Recursively call or directly implement linked update logic here
+                        # For simplicity, let's assume modify_item_state can be called for the linked item
+                        # This might need careful handling to avoid infinite loops if links are bidirectional AND state changes trigger more state changes.
+                        # However, here the trigger is external (Director), so it should be fine.
+                        self.modify_item_state(
+                            linked_loc_name, linked_obj_key, new_state, triggered_by=f"SystemLink (from {item_name})")
+                    # --- End Handle Linked Objects ---
+                    break  # Item found and updated
+                else:  # State is already the new_state
+                    if config.SIMULATION_MODE == 'debug':
+                        print(
+                            f"[WorldState Info] Modify Item State: '{item_name}' in '{location_name}' is already '{new_state}'. No change by {triggered_by}.")
+                    item_found_and_updated = True  # Still counts as "found" for returning True
+                    break
+
+        if not item_found_and_updated and config.SIMULATION_MODE == 'debug':
+            print(
+                f"[WorldState Warning] Modify Item State: Item '{item_name}' not found in '{location_name}' for update by {triggered_by}.")
+
+        # Return true if found (even if state was same), false if not found
+        return item_found_and_updated
