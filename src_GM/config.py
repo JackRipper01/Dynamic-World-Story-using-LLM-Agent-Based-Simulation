@@ -70,35 +70,133 @@ SIMULATION_MAX_STEPS = 30
 
 # --- World Definition ---
 KNOWN_LOCATIONS_DATA = {
-    "EscapeRoom": {
-        "description": "A plain, windowless room. The walls are bare, and the only prominent feature is a single door.",
-        # The conceptual exit, requires the door to be open
-        "exits_to": ["Corridor"],
+    "Study": {
+        "description": "Lord Alistair Finch's private sanctuary, filled with antique maps, worn leather books, and the scent of old paper and pipe tobacco. It is the scene of the crime.",
+        # Assume direct exit to the main gathering area
+        "exits_to": ["Drawing Room"],
         "properties": {
             "contains": [
-                {"object": "Room Door", "state": "closed and unlocked",
-                    "optional_description": "A standard wooden door. It appears to be the only way out.",
-                    # Link to the corresponding door object in the Corridor
-                    "linked_to": {"location": "Corridor", "object_key": "Corridor Access Door"}
-                 },
-                {"object": "small table", "state": "empty",
-                    "optional_description": "A dusty small table in one corner."},
-                {"object": "flickering lightbulb", "state": "dimly illuminating the room",
-                    "optional_description": "An old lightbulb hanging from the ceiling, casting long shadows."}
+                {"object": "lord alistair finch body", "state": "dead",
+                    "optional_description": "The body of Lord Alistair Finch lies face down near his desk, a dark stain spreading on his back."
+                },
+                {"object": "mahogany desk", "state": "slightly disturbed",
+                    "optional_description": "A heavy, ornate desk. Papers are scattered near the edge, suggesting a hasty departure or a brief struggle before the fall."
+                },
+                {"object": "antique globe", "state": "finial missing",
+                    "optional_description": "A large, floor-standing globe. The decorative, pointed metal finial at the top of the axis is missing."
+                },
+                {"object": "bookshelves", "state": "full of books",
+                    "optional_description": "Floor-to-ceiling shelves overflowing with books on art, history, and obscure subjects."
+                },
+                {"object": "armchair", "state": "overturned",
+                    "optional_description": "A heavy leather armchair lies on its side near the body."
+                },
+                {"object": "fireplace", "state": "dying embers",
+                    "optional_description": "A large fireplace where a fire is slowly burning down to embers."
+                },
+                {"object": "window", "state": "closed and latched",
+                    "optional_description": "A tall, mullioned window, securely closed and latched from the inside. Rain streaks down the panes."
+                },
+                {"object": "lord alistairs will", "state": "on desk",
+                    "optional_description": "A folded legal document titled 'Last Will and Testament', resting prominently on the desk."
+                },
+                {"object": "art negotiation papers", "state": "on desk scattered",
+                    "optional_description": "Documents and notes related to the potential sale of artworks, some scattered on the desk."
+                }
             ]
         }
     },
 
-    "Corridor": {
-        "description": "A long, narrow corridor stretching into the distance. It feels a bit drafty here.",
-        "exits_to": ["EscapeRoom"],  # Allows returning to the room
+    "Drawing Room": {
+        "description": "A grand but slightly faded room used for entertaining guests. Sumptuous furniture and family portraits line the walls. The characters gather here.",
+        # Acts as a central hub connecting to other main areas
+        "exits_to": ["Study", "Gallery", "Guest Bedroom", "Kitchen"],
         "properties": {
             "contains": [
-                {"object": "Corridor Access Door", "state": "closed and unlocked",  # Initial state matches Room Door
-                 "optional_description": "The door leading back into the room you (presumably) just exited.",
-                 # Link back to the corresponding door object in the EscapeRoom
-                 "linked_to": {"location": "EscapeRoom", "object_key": "Room Door"}
-                 }
+                {"object": "sofas and chairs", "state": "occupied by suspects",
+                    "optional_description": "Plush velvet sofas and armchairs where the remaining occupants of the manor are gathered."
+                },
+                {"object": "coffee table", "state": "scattered tea cups",
+                    "optional_description": "A large central table littered with teacups, saucers, and a teapot from the recent gathering."
+                },
+                {"object": "fireplace", "state": "roaring fire",
+                    "optional_description": "A large fireplace, providing warmth and light, a stark contrast to the storm outside and the mood within."
+                },
+                {"object": "family portraits", "state": "hanging on walls",
+                    "optional_description": "Numerous portraits of stern-faced Finch ancestors observing the scene from the walls."
+                },
+                {"object": "grandfather clock", "state": "ticking loudly",
+                    "optional_description": "A tall, ornate clock in the corner, its pendulum swinging and ticking filling the tense silence."
+                }
+            ]
+        }
+    },
+    "Gallery": {
+        "description": "A long hall dedicated to the manor's art collection. While impressive, many pieces are dusty or poorly lit, reflecting the manor's decline.",
+        # Assumed exit back to the main gathering area
+        "exits_to": ["Drawing Room"],
+        "properties": {
+            "contains": [
+                {"object": "painting collection", "state": "displayed",
+                    "optional_description": "Various oil paintings, landscapes, and portraits hanging along the walls."
+                },
+                {"object": "the obscure painting", "state": "hanging prominently",
+                    "optional_description": "A specific, darker painting depicting a scene that includes a figure holding a distinctive dagger or pointed object."
+                },
+                {"object": "pedestal", "state": "empty",
+                    "optional_description": "An empty pedestal in the centre of the room, perhaps awaiting a new acquisition or display piece."
+                },
+                {"object": "dust motes", "state": "visible in light",
+                    "optional_description": "Dust motes dance in the shafts of light filtering through the occasional window or lamps."
+                }
+            ]
+        }
+    },
+    "Kitchen": {
+        "description": "The functional heart of the manor's service wing. Large, slightly dated, filled with the smells of cooked meals and cleaning supplies.",
+        # Assumed exit back to the main house area (via service entrance near drawing room?)
+        "exits_to": ["Drawing Room"],
+        "properties": {
+            "contains": [
+                {"object": "large oven stove", "state": "warm",
+                    "optional_description": "A large, old-fashioned cast-iron oven and hob, still radiating warmth."
+                },
+                {"object": "work table", "state": "clean",
+                    "optional_description": "A large wooden table used for food preparation."
+                },
+                {"object": "knife rack", "state": "full",
+                    "optional_description": "A wooden block holding a set of various kitchen knives. All seem to be present."
+                },
+                {"object": "servant bell system", "state": "silent",
+                    "optional_description": "A panel on the wall with small bells and labels for different rooms, currently quiet."
+                },
+                {"object": "cleaning supplies", "state": "stored neatly",
+                    "optional_description": "Brooms, mops, and cleaning fluids stored in a corner."
+                }
+            ]
+        }
+    },
+    "Guest Bedroom": {
+        "description": "One of the manor's many guest rooms, comfortably furnished but perhaps a little impersonal. Likely occupied by one of the visitors.",
+        # Assumed exit back to the main house area (e.g., upstairs landing connected to drawing room area)
+        "exits_to": ["Drawing Room"],
+        "properties": {
+            "contains": [
+                {"object": "four poster bed", "state": "neatly made",
+                    "optional_description": "A large bed with curtains, currently tidy."
+                },
+                {"object": "wardrobe", "state": "closed",
+                    "optional_description": "A large wooden wardrobe for storing clothes."
+                },
+                {"object": "dressing table", "state": "tidy",
+                    "optional_description": "A small table with a mirror and a set of brushes or toiletries."
+                },
+                {"object": "suitcase", "state": "partially unpacked",
+                    "optional_description": "A suitcase lies open or closed near the wardrobe, suggesting the occupant is staying."
+                },
+                {"object": "window", "state": "closed",
+                    "optional_description": "A window looking out onto the stormy night."
+                }
             ]
         }
     }
@@ -113,30 +211,54 @@ EVENT_PERCEPTION_MODEL = "DirectEventDispatcher"
 STORY_GENERATOR_TYPE = "LLMLogStoryGenerator"
 
 # --- Narrative / Scenario ---
-NARRATIVE_GOAL = "Make a interesting emergent narrative."
+NARRATIVE_GOAL = """The story should culminate in Inspector Dubois gathering all the suspects, explaining his deductions step-by-step, and dramatically revealing the true murderer and their method. The "how" of the murder should be as intriguing as the "who." """
+TONE = "Formal, suspenseful, intellectually stimulating, with a focus on logical deduction and character interactions rather than gore or action."
 
 agent_configs = [
     {
-        "name": "Alex",
-        "personality": "Pragmatic and observant.",
-        "gender": "woman", 
-        "initial_location": "EscapeRoom",
-        "initial_goals":
-            "Find a way out of this room.",
-        "background":
-            """You suddenly find yourself in an unfamiliar, plain room with one other person.
-You have no memory of arriving here."""
-        ,
+        "name": "Thomas Dubois",
+        "identity": "Inspector Thomas Dubois, a slightly unassuming man in his late 40s, known for his meticulous logic, quiet observation, and ability to deduce motives from seemingly insignificant details and human psychology. He was coincidentally visiting Blackwood Manor for a social engagement.",
+        "initial_location": "Drawing Room",
+        "gender":"",
+        "personality":"",
+        "initial_goals":"",
+        "background":""
     },
     {
-        "name": "Ben",
-        "personality": "Action-oriented and somewhat impatient.",
-        "gender": "man",
-        "initial_location": "EscapeRoom",
-        "initial_goals": 
-            "Get out of this room as quickly as possible.",
-        "background":
-            "You've woken up in a strange, featureless room. Another person is here with you.",
+        "name": "Eleanor Finch",
+        "identity":"Eleanor Finch, Lord Alistair's estranged niece, in her early 30s. She carries a considerable amount of debt and has just discovered she is the sole beneficiary of Lord Alistair's revised will – a will she knew nothing about until his recent announcement. She appears nervous and overly emotional.",
+        "initial_location": "Drawing Room",
+        "gender": "",
+        "personality": "",
+        "initial_goals": "",
+        "background": ""
+    },
+    {
+        "name": "Aris Thorne",
+        "identity": "Dr. Aris Thorne, Lord Alistair's seemingly loyal, long-time personal physician, in his late 50s. He is outwardly calm and collected, but possesses an unnerving knowledge of the Finch family's deepest secrets. He frequently glances at Eleanor with concern.",
+        "initial_location": "Drawing Room",
+        "gender": "",
+        "personality": "",
+        "initial_goals": "",
+        "background": ""
+    },
+    {
+        "name": "Xenia Petrova",
+        "identity": "Madame Xenia Petrova, a flamboyant and ambitious international art dealer in her 40s, who was negotiating a major, highly secretive sale with Lord Alistair just hours before his death. She claims a strong alibi but seems overly interested in a specific, obscure painting in the manor's collection.",
+        "initial_location": "Drawing Room",
+        "gender": "",
+        "personality": "",
+        "initial_goals": "",
+        "background": ""
+    },
+    {
+        "name": "Mr. Davies",
+        "identity": "Mr. Davies, the manor's stoic and long-serving butler in his 60s. He sees and hears everything but reveals very little, offering only curt, precise answers to the Inspector's questions. He seems subtly protective of Lord Alistair's legacy and killed Lord Alistair.",
+        "initial_location": "Study",
+        "gender": "",
+        "personality": "",
+        "initial_goals": "",
+        "background": ""
     },
 ]
 SIMULATION_MODE = 'debug'  # Keep debug for testing
