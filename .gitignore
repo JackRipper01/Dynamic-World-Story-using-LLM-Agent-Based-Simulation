@@ -163,3 +163,4 @@ cython_debug/
 /combined_code.txt
 combined_code.txt
 simulation_story.txt
+simulation_logs.txt
