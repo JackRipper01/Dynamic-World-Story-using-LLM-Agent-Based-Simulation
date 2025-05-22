@@ -1,7 +1,20 @@
 # src_GM/story_generator.py
 from abc import ABC, abstractmethod
+import time
 from world import WorldState  # To access event logs, etc.
 import config  # To access agent_configs, narrative_goal for context
+try:
+    # Also catch general API errors
+    from google.api_core.exceptions import ResourceExhausted, GoogleAPICallError
+except ImportError:
+    # Provide fallback or raise an error if the necessary library is not installed
+    print("Warning: google-api-core not installed. API error handling may not work correctly.")
+
+    class ResourceExhausted(Exception):
+        pass  # Define a dummy exception if import fails
+
+    class GoogleAPICallError(Exception):
+        pass  # Define a dummy exception if import fails
 
 
 class BaseStoryGenerator(ABC):
@@ -34,10 +47,10 @@ class LLMLogStoryGenerator(BaseStoryGenerator):
         self.llm = model
         self.tone = config.TONE  
 
-    def generate_story(self, world_state: WorldState, agent_configs: list, narrative_goal: str) -> str:
+    def generate_story(self, log_file_path: str, agent_configs: list, narrative_goal: str) -> str:
         print("\n--- Generating Story from Simulation Logs ---")
 
-        # 1. Gather Character Information
+        # 1. Gather Character Information (remains the same)
         character_intros = []
         for agent_conf in agent_configs:
             intro = f"- {agent_conf['name']}: {agent_conf['identity']}."
@@ -46,34 +59,61 @@ class LLMLogStoryGenerator(BaseStoryGenerator):
         characters_summary = "The characters involved were:\n" + \
             "\n".join(character_intros)
 
-        # 2. Gather Event Log
-        # Format events for better readability by the LLM
+        # 2. Read Event Log from File
         formatted_events = []
-        for event in world_state.event_log:
-            # Event = namedtuple("Event", ["description", "location", "scope", "step", "triggered_by"])
-            location_info = f"at {event.location}" if event.location and event.location != "Global" else "globally"
-            scope_info = f"(scope: {event.scope})"
+        try:
+            # Read the content line by line from the log file
+            with open(log_file_path, 'r', encoding='utf-8') as f:
+                # Read all lines, strip whitespace/newlines, and filter out empty lines
+                raw_events = [line.strip() for line in f if line.strip()]
 
-            # Make agent actions more prominent
-            event_text = event.description
-            if event.scope == "action_outcome" and event.triggered_by != "System" and event.triggered_by != "Director":
-                # If the description already starts with the agent's name, use it.
-                # Otherwise, prepend. This handles cases where outcome_description is already good.
-                if not event_text.lower().startswith(event.triggered_by.lower()):
-                    event_text = f"{event.triggered_by} {event_text[0].lower() + event_text[1:] if event_text else ''}"
+            # Note: Since the log file saved raw strings without the original
+            # location, scope, triggered_by metadata, we can only present
+            # the raw logged strings to the LLM.
+            # The original formatting like 'Location: at {location_info}' is lost.
+            formatted_events = raw_events  # Each line from the file is an event
 
-            formatted_events.append(
-                f"{event_text}, Location: {location_info}, {scope_info} scope.\n")
-            print(f"Event: {event_text}, Location: {location_info}, {scope_info} scope.")#--------------------------> temporal
+            if not formatted_events:
+                events_summary = "No events were logged during the simulation."
+                print("No events found in the log file.")
+            else:
+                print(
+                    f"Read {len(formatted_events)} events from {log_file_path}")
+                # Print read events for debug/verification if needed
+                if config.SIMULATION_MODE == 'debug':
+                    print("--- Logged Events Read ---")
+                    # Print first 20 lines or less
+                    for i, event_line in enumerate(formatted_events[:20]):
+                        print(f"Event {i+1}: {event_line}")
+                    if len(formatted_events) > 20:
+                        print("...")
+                    print("------------------------")
 
-        events_summary = "The key events that unfolded, in chronological order:\n" + \
-            "\n".join(formatted_events)
+                events_summary = "The key events that unfolded, based on the simulation log:\n" + \
+                                 "\n".join(formatted_events)
+
+        except FileNotFoundError:
+            events_summary = f"Error: The event log file '{log_file_path}' was not found."
+            print(events_summary)
+            formatted_events = []  # Ensure it's empty if file not found
+        except Exception as e:
+            events_summary = f"Error reading event log file '{log_file_path}': {e}"
+            print(events_summary)
+            formatted_events = []  # Ensure it's empty if reading failed
 
         tone_prompt = ""
         if self.tone:
-            tone_prompt= self.tone
+            tone_prompt = self.tone
 
-        # 3. Craft Prompt
+        # 3. Craft Prompt (remains largely the same, uses the new events_summary)
+        # Check if we actually read events before including the summary header
+        if formatted_events:
+            events_section = f"""{events_summary}"""
+        else:
+            # If no events were read (file not found or empty), adapt the prompt
+            # This will contain the error message or "No events..."
+            events_section = events_summary
+
         prompt = f"""You are a master storyteller. Based on the following information from a simulated world, write a coherent and engaging story.
 
 Narrative Premise/Goal:
@@ -83,7 +123,7 @@ Tone: {tone_prompt if tone_prompt else "Neutral"}
 
 {characters_summary}
 
-{events_summary}
+{events_section}
 
 Please weave these elements into a flowing narrative. Describe the setting, character actions, interactions, and the overall progression of events. Try to infer thoughts or motivations if consistent with personalities and events, but clearly distinguish between observed events and inferred internal states if necessary. Make it readable and interesting.
 
@@ -93,36 +133,73 @@ Your Story:
 """
         if config.SIMULATION_MODE == 'debug':
             print("--- Story Generation Prompt ---")
-            print(prompt[:1000] + "..." if len(prompt) >
-                  1000 else prompt)  # Print a snippet if too long
+            # Limit prompt printing length for readability
+            print(prompt[:2000] + "..." if len(prompt) >
+                  2000 else prompt)
             print("-----------------------------")
 
-        # 4. Call LLM
+        # 4. Call LLM (remains the same)
         try:
-            # Potentially use a different generation config for storytelling
             story_generation_config = {
-                "temperature": 0.7,  # More creative but still coherent
+                "temperature": 0.7,
                 "top_p": 0.95,
-                "top_k": 60,  # Wider K for more diverse vocabulary
-                "max_output_tokens": 2000,  # Allow for a longer story
+                "top_k": 60,
+                "max_output_tokens": 2000,
             }
-            # If you want to use a specific model or config just for story generation:
-            # story_model = genai.GenerativeModel(model_name=config.MODEL_NAME, generation_config=story_generation_config)
-            # response = story_model.generate_content(prompt)
-            # Or use the existing model with its default config, or temporarily override
 
             response = self.llm.generate_content(
-                prompt, generation_config=story_generation_config)  # Can override if needed
+                prompt, generation_config=story_generation_config)
             story_text = response.text.strip()
 
             if not story_text:
-                return "The LLM storyteller was lost for words and produced an empty tale."
+                # Log the failure to the simulation output file as well
+                failure_message = "The LLM storyteller was lost for words and produced an empty tale."
+                print(failure_message)  # Print to console
+                # Use your logging utility here if needed:
+                # from logs import append_to_log_file
+                # append_to_log_file("simulation_log.txt", failure_message)
+                return failure_message
 
             print("--- Story Generation Complete ---")
-            return story_text
+            # Print generated story to console if desired
+            # print(story_text)
 
+            # You might also want to log the final generated story to a DIFFERENT file
+            # than the event log, or append it to the SAME file with a clear marker.
+            # E.g.,
+            # from logs import append_to_log_file
+            # append_to_log_file("simulation_log.txt", "\n--- Final Generated Story ---")
+            # append_to_log_file("simulation_log.txt", story_text)
+            # append_to_log_file("simulation_log.txt", "---------------------------\n")
+
+            return story_text
+        except ResourceExhausted as e:
+            print(
+                f"[{self.name} Error]: LLM generation failed: {e}. Waiting 10 seconds and retrying...")
+            time.sleep(10)
+            return self.generate_story(log_file_path, agent_configs, narrative_goal)
+        
         except Exception as e:
-            print(f"[StoryGenerator Error]: LLM story generation failed: {e}")
+            error_message = f"[StoryGenerator Error]: LLM story generation failed: {e}"
+            print(error_message)
+            # Log the error to your simulation output file
+            # from logs import append_to_log_file
+            # append_to_log_file("simulation_log.txt", error_message)
+
             if hasattr(response, 'prompt_feedback') and response.prompt_feedback:
-                print(f" (Safety Feedback: {response.prompt_feedback})")
+                feedback_message = f" (Safety Feedback: {response.prompt_feedback})"
+                print(feedback_message)
+                # Log safety feedback
+                # from logs import append_to_log_file
+                # append_to_log_file("simulation_log.txt", feedback_message)
+
             return f"An error occurred while trying to tell the story: {e}"
+
+# Example usage (assuming you have a StoryGenerator instance 'story_gen'):
+# story_gen = StoryGenerator(llm_model=your_llm_instance, tone="Agatha Christie Style")
+# simulation_event_log_file = "path/to/your/event_log.txt"
+# agents_info = [...] # Your list of agent configs
+# narrative_goal_desc = "Solve the murder mystery at Blackwood Manor."
+# generated_story = story_gen.generate_story(simulation_event_log_file, agents_info, narrative_goal_desc)
+# print("\n--- Final Result ---")
+# print(generated_story)

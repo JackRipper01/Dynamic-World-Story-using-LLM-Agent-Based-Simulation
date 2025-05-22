@@ -407,6 +407,8 @@ def run_simulation():
                     'event_scope', 'action_outcome') if result else 'system_error'
                 world.log_event(outcome_desc_for_event, event_scope,
                                 current_loc, agent.name if result else 'System')
+                append_to_log_file(
+                    "simulation_logs.txt", outcome_desc_for_event)
                 new_event = Event(
                     description=outcome_desc_for_event,
                     location=current_loc,
@@ -495,7 +497,7 @@ def run_simulation():
         # The world_state object contains the event_log
         # Agent configurations and narrative goal are in config
         generated_story = story_generator.generate_story(
-            world_state=world,  # world object is an instance of WorldState
+            "simulation_logs.txt",
             agent_configs=config.agent_configs,
             narrative_goal=config.NARRATIVE_GOAL if hasattr(
                 config, 'NARRATIVE_GOAL') else "An undescribed adventure."
