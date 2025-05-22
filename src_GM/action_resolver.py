@@ -1,3 +1,4 @@
+import time
 import google.generativeai as genai  # Keep LLM import here if resolver uses it
 import json
 import re
@@ -75,7 +76,7 @@ Output your analysis as a single line of text with exactly four parts, separated
 2.  Action Type: One of MOVE, SPEAK, INTERACT, OBSERVE, WAIT, FAIL, UNKNOWN.
 3.  Parameters: Key details for the action.
     - For MOVE: "destination: <location_name>"
-    - For SPEAK: "target: <character_name>, message: <text_of_message>"
+    - For SPEAK: "target: <character_name>, message: <text_of_message>" (Very important here to put in the message field the exact words the agent is saying)
     - For INTERACT: "object: <object_name>, state: <new_state_of_object_after_interaction>" (If FAILURE, 'state' should reflect the current unchanged state that caused failure, e.g., 'state: locked')
     - For OBSERVE: "target: <what_is_observed>"
     - For WAIT: "duration: <e.g., a moment, briefly>"
@@ -234,7 +235,7 @@ Your single-line output:
                 
                 if action_type_upper == "MOVE":
                     destination = action_params.get("destination")
-    
+
                     if not destination:
                         resolved_action["success"] = False
                         resolved_action["outcome_description"] = f"{agent_name} intends to move, but no destination was specified in the parameters."
@@ -242,8 +243,28 @@ Your single-line output:
                     elif destination == agent_location:
                         resolved_action["success"] = True
                     elif destination not in world_state.location_descriptions:
-                        resolved_action["success"] = False
-                        resolved_action["outcome_description"] = f"{agent_name} tries to move to '{destination}', but it is not a known location."
+                        objects_in_destination = world_state.get_location_property(
+                            agent_location, "contains")
+                        if config.SIMULATION_MODE == 'debug':
+                            print(f"[LLM Resolver Debug]: Checking if '{destination}' is an object in {agent_location}") 
+                            print(f"[LLM Resolver Debug]: Objects in {agent_location}: {objects_in_destination}")
+                        
+                        destination_is_object = False
+                        #check if destination is a object in the agent's location where objects_in_destination is a list of dictionaries 
+                        # e.g [{'object': 'sofas and chairs', 'state': 'occupied by suspects', 'optional_description': 'Plush velvet sofas and armchairs where the remaining occupants of the manor are gathered.'}, {'object': 'coffee table', 'state': 'scattered tea cups', 'optional_description': 'A round]
+                        #your code goes here
+                        if isinstance(objects_in_destination, list):
+                            for item_data in objects_in_destination:
+                                if isinstance(item_data, dict) and item_data.get("object") == destination:
+                                    destination_is_object = True
+                                    break
+                        # If destination is not a known location and not an object in the current location
+                        if destination_is_object is False:
+                            resolved_action["success"] = False
+                            resolved_action["outcome_description"] = f"{agent_name} tries to move to '{destination}', but it is not a known location."
+                        else:
+                            resolved_action["success"] = True
+                            
                         # world_state_updates remains empty for the move
                     elif destination not in world_state.get_reachable_locations(agent_location):
                         resolved_action["success"] = False
@@ -306,16 +327,16 @@ Your single-line output:
                 # --- END: Specific Action Validation ---
 
                 # --- Refine outcome_description, especially for SPEAK actions (AFTER MOVE validation) ---
-                # if resolved_action["action_type"] == "SPEAK" and resolved_action["success"]:
-                #     msg = action_params.get("message", "")
-                #     target_agent = action_params.get(
-                #         "target")  # Renamed to avoid conflict
+                if resolved_action["action_type"] == "SPEAK" and resolved_action["success"]:
+                    msg = action_params.get("message", "")
+                    target_agent = action_params.get(
+                        "target")  # Renamed to avoid conflict
 
-                #     if msg:
-                #         if target_agent:
-                #             resolved_action["outcome_description"] = f"{agent_name} says to {target_agent}, \"{msg}\""
-                #         else: # Optional: if LLM gives message but no target
-                #             resolved_action["outcome_description"] = f"{agent_name} says, \"{msg}\""
+                    if msg:
+                        if target_agent:
+                            resolved_action["outcome_description"] = f"{agent_name} to {target_agent}, \"{msg}\""
+                        else: # Optional: if LLM gives message but no target
+                            resolved_action["outcome_description"] = f"{agent_name}: \"{msg}\""
 
                 print(f"[LLM Resolver Final Output]: {resolved_action}")
                 return resolved_action
