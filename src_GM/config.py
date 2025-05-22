@@ -204,8 +204,8 @@ KNOWN_LOCATIONS_DATA = {
 
 
 # --- Component Selection ---
-AGENT_MEMORY_TYPE = "ShortLongTMemory"
-AGENT_PLANNING_TYPE = "GeminiThinker"
+AGENT_MEMORY_TYPE = "ShortLongTMemoryIdentityOnly"
+AGENT_PLANNING_TYPE = "SimplePlanningIdentityOnly"
 ACTION_RESOLVER_TYPE = "LLMResolver"
 EVENT_PERCEPTION_MODEL = "DirectEventDispatcher"
 STORY_GENERATOR_TYPE = "LLMLogStoryGenerator"

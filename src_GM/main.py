@@ -13,6 +13,7 @@ import config  # Import the whole config module to access global settings
 from world import WorldState
 from agent.agent import Agent
 from director import Director
+from logs import append_to_log_file  # For logging events
 
 # --- Data Structures ---
 
@@ -48,7 +49,7 @@ def create_llm_instance(model_name: str, generation_config: dict, purpose: str =
         print(f"Generation Config used: {generation_config}")
         raise  # Re-raise the exception to halt simulation if a critical LLM cannot be created
     
-    
+
 # --- Factory Functions for Components ---
 # These functions allow creating different implementations of simulation components
 # based on configuration strings, promoting modularity.
@@ -74,6 +75,20 @@ def get_memory_module(agent, memory_type):
             # Example: reflect every ~7 events
             reflection_threshold=10
         )
+    if memory_type == "ShortLongTMemoryIdentityOnly":
+        from agent.memory import ShortLongTMemoryIdentityOnly
+        reflection_llm = None
+        if hasattr(config, 'AGENT_REFLECTION_GEN_CONFIG'):
+            reflection_llm = create_llm_instance(
+                config.MODEL_NAME,  # Or a specific model name from config if you add it
+                config.AGENT_REFLECTION_GEN_CONFIG,
+                purpose=f"Agent {agent.name} Reflection"
+            )
+        return ShortLongTMemoryIdentityOnly(
+            agent,
+            reflection_model_instance=reflection_llm,
+            reflection_threshold=15
+        )
     else:
         # Handle unknown memory types specified in config
         raise ValueError(f"Unknown memory type: {memory_type}")
@@ -81,15 +96,22 @@ def get_memory_module(agent, memory_type):
 
 def get_planning_module(planning_type):  # Removed 'model' argument
     """Factory function to create an agent's planning module (thinker)."""
-    if planning_type == "GeminiThinker":
+    if planning_type == "SimplePlanning":
         from agent.planning import SimplePlanning
         planning_llm = create_llm_instance(
             config.MODEL_NAME,
             config.AGENT_PLANNING_GEN_CONFIG,
             purpose="Agent Planning"
         )
-        # Pass the specifically configured LLM
         return SimplePlanning(planning_llm)
+    elif planning_type == "SimplePlanningIdentityOnly":
+        from agent.planning import SimplePlanningIdentityOnly
+        planning_llm = create_llm_instance(
+            config.MODEL_NAME,
+            config.AGENT_PLANNING_GEN_CONFIG,
+            purpose="Agent Planning"
+        )
+        return SimplePlanningIdentityOnly(planning_llm)
     else:
         raise ValueError(f"Unknown thinker type: {planning_type}")
 
@@ -161,7 +183,7 @@ def run_simulation():
         story_generator = get_story_generator(config.STORY_GENERATOR_TYPE)
         if config.SIMULATION_MODE == 'debug' and story_generator:
             print(f"Story generator '{config.STORY_GENERATOR_TYPE}' initialized.")
-        
+
     # 2. Initialize World State and Event Dispatcher
     event_dispatcher = get_event_dispatcher(config.EVENT_PERCEPTION_MODEL)
     world = WorldState(known_locations_data=config.KNOWN_LOCATIONS_DATA)
@@ -185,6 +207,7 @@ def run_simulation():
             personality=agent_conf["personality"],
             initial_goals=agent_conf["initial_goals"],
             background=agent_conf["background"],
+            identity=agent_conf["identity"],
             memory_module=None,  # Memory will be assigned below
             planning_module=thinker
         )
@@ -356,7 +379,7 @@ def run_simulation():
                 reason = result.get('reasoning', 'Unknown reason')
                 outcome_desc = result.get(
                     'outcome_description', 'Action failed.')
-                outcome_desc_for_event = f"{agent.name} attempt to {intended_output.get('action_type','act')} failed: {outcome_desc}"
+                outcome_desc_for_event = f"{agent.name} attempt to {intended_output} failed: {outcome_desc}"
 
                 if config.SIMULATION_MODE == 'debug':
                     print(f"    [RESOLVER_FAILURE] Reason: {reason}")
@@ -487,7 +510,7 @@ def run_simulation():
                     f"Simulation Goal: {config.NARRATIVE_GOAL if hasattr(config, 'NARRATIVE_GOAL') else 'N/A'}\n")
                 f.write("Characters:\n")
                 for ac in config.agent_configs:
-                    f.write(f"  - {ac['name']}: {ac['personality']}\n")
+                    f.write(f"  - {ac['name']}: {ac['identity']}\n")
                 f.write("\n--- STORY ---\n")
                 f.write(generated_story)
             print("\n(Story also saved to simulation_story.txt)")

@@ -4,7 +4,7 @@ from agent.planning import BasePlanning
 # from world import WorldState
 import config
 class Agent:
-    def __init__(self, name:str,gender:str, personality:str, memory_module:BaseMemory, planning_module:BasePlanning, initial_goals: list[str] = None,background:list[str] = None):
+    def __init__(self, name:str,gender:str, personality:str,identity:str, memory_module:BaseMemory, planning_module:BasePlanning, initial_goals: list[str] = None,background:list[str] = None):
         self.name = name
         self.gender = gender
         self.personality = personality
@@ -12,6 +12,7 @@ class Agent:
         self.planning = planning_module # An instance of BasePlanning
         self.goals = initial_goals if initial_goals is not None else [] # List of goal descriptions
         self.background = background if background is not None else []  # Placeholder for agent's background
+        self.identity = identity 
         self.action_buffer = None  # Store the output of plan() before resolution
         print(f"Agent {name} initialized with {type(memory_module).__name__} and {type(planning_module).__name__}.")
 
@@ -20,8 +21,8 @@ class Agent:
         # Simple formatting for now, could be more sophisticated
         perception_text = f"You just perceived in step {event.step} of the simulation the following event at {event.location}{f' by {event.triggered_by}' if event.triggered_by else ''}: {event.description}"
         self.memory.add_observation(perception_text)
-        if config.SIMULATION_MODE == 'debug':
-            print(f"DEBUG {self.name} Perceived: {perception_text}") # Optional debug
+        # if config.SIMULATION_MODE == 'debug': -------------------------------------------------> temporally disabled
+        #     print(f"DEBUG {self.name} Perceived: {perception_text}") # Optional debug
 
     def add_goal(self, goal_description: str):
         """Adds a new goal to the agent's list."""

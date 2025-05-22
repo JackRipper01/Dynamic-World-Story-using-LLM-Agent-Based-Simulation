@@ -1,6 +1,7 @@
 # File: src_GM/director.py
 
 import re
+import time
 import google.generativeai as genai
 import config
 import random
@@ -17,11 +18,12 @@ class Director:
         self.event_dispatcher = event_dispatcher_ref
 
         # Attributes for memory system (e.g., ShortLongTMemory)
-        self.name = "TheDirector"  # Unique name for logging, memory, and as a trigger_by
+        self.name = "The Director"  # Unique name for logging, memory, and as a trigger_by
         self.goals = [f"Fulfill narrative goal: {self.narrative_goal}"]
-        self.personality = "Subtle, insightful, and orchestrating."  # Example
-        self.background = "An unseen force shaping the narrative flow of this world."  # Example
-        self.gender = "entity"  # For memory module consistency
+        self.personality = "Subtle, insightful, and orchestrating."  
+        self.background = "An unseen force shaping the narrative flow of this world." 
+        self.gender = "entity"  
+        self.identity= f"You are the Director, an unseen force guiding the narrative of this world. Your goal is to subtly influence the story's direction without direct intervention in order to fulfill the following narrative goal: {self.narrative_goal}."
 
         self.is_initial_prompt = False  # For debugging the first prompt
 

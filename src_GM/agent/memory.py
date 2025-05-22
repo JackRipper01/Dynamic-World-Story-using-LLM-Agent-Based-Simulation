@@ -1,4 +1,5 @@
 # memory.py
+import time
 import config
 import google.generativeai as genai  # Add this import
 from abc import ABC, abstractmethod
@@ -204,6 +205,172 @@ class ShortLongTMemory(BaseMemory):
                 print(
                     f"WARN {self.agent.name}: Reflection generated empty text.")
 
+        except Exception as e:
+            print(
+                f"ERROR {self.agent.name}: Failed to generate reflection: {e}")
+            # Optionally add a placeholder LTM entry indicating failure?
+
+    def get_memory_context(self, **kwargs) -> str:
+        """Returns a formatted string containing both long-term reflections
+           and recent short-term observations."""
+
+        context = "Core Reflections and Summaries:\n"
+        if self.long_term_memory:
+            # Maybe limit the number of reflections shown? For now, show all.
+            context += "\n".join(f"- {ltm}" for ltm in self.long_term_memory) + "\n"
+        else:
+            context += "No long-term reflections generated yet.\n"
+
+        context += "\nRecent Observations (most recent last):\n"
+        if self.short_term_memory:
+            # Limit the number of short-term memories shown in context?
+            max_short_term_in_context = kwargs.get(
+                'max_short_term_entries', 40)  # Example limit
+            start_index = max(0, len(self.short_term_memory) -
+                              max_short_term_in_context)
+            if start_index > 0:
+                context += "[...older observations omitted...]\n"
+
+            for mem in self.short_term_memory[start_index:]:
+                # prefix = f"[T:{mem['type']}" + \
+                #     (f" S:{mem['step']}" if mem['step']
+                #      is not None else "") + "]"
+                context += f"{mem}\n"
+        else:
+            context += "No recent observations recorded.\n"
+
+        # Limit total context length if needed (crude truncation)
+        max_total_length = kwargs.get(
+            'max_context_length', 8000)  # Example limit
+        if len(context) > max_total_length:
+            context = f"... (Memory Context Trimmed) ...\n{context[-max_total_length:]}"
+
+        # print(f"DEBUG {self.agent.name} Memory Context Requested. Length: {len(context)}")
+        return context.strip()
+
+    def clear(self):
+        """Clears both short-term and long-term memory."""
+        self.short_term_memory = []
+        self.long_term_memory = []
+        self.unreflected_count = 0
+        print(f"DEBUG {self.agent.name}: Memory cleared.")
+
+
+class ShortLongTMemoryIdentityOnly(BaseMemory):
+    """Memory storing recent events (short-term) and LLM-generated
+       reflections/summaries (long-term). Does NOT use embeddings."""
+
+    def __init__(self, agent: 'Agent', reflection_model_instance: Optional[genai.GenerativeModel] = None, reflection_threshold: int = 5):
+        """
+        Initializes ShortLongTermMemory.
+
+        Args:
+            agent: The agent this memory belongs to.
+            reflection_model_instance: An initialized GenerativeModel for reflections.
+            reflection_threshold: Number of new short-term memories needed to trigger a reflection.
+        """
+        super().__init__(agent)
+        # Stores {'step': int, 'type': str, 'text': str}
+        self.short_term_memory: List[Dict[str, Any]] = []
+        self.long_term_memory: List[str] = []  # Stores reflection strings
+        self.reflection_threshold = reflection_threshold
+        self.unreflected_count = 0  # Counter for triggering reflection
+        self.is_initial_prompt = False  # Flag for initial prompt
+
+        self.reflection_model = reflection_model_instance
+
+        # Configure and instantiate the reflection model
+        try:
+            if self.reflection_model:
+                if config.SIMULATION_MODE == 'debug':
+                    print(
+                        f"DEBUG {self.agent.name}: Reflection model '{self.reflection_model.model_name}' "
+                        f"received for ShortLongTermMemory.")
+            else:
+                if config.SIMULATION_MODE == 'debug':
+                    print(
+                        f"WARN {self.agent.name}: No reflection model provided to ShortLongTermMemory. "
+                        "Reflections will be disabled.")
+        except Exception as e:
+            print(
+                f"ERROR {self.agent.name}: Failed to initialize reflection model '{config.MODEL_NAME}': {e}. Reflections will be disabled.")
+
+    def add_observation(self, observation_text: str, step: Optional[int] = None, type: str = "Generic"):
+        """Adds observation to short-term memory and triggers reflection if threshold is met."""
+        memory_entry = observation_text.strip()
+        self.short_term_memory.append(memory_entry)
+        self.unreflected_count += 1
+        # TEMPORAL ------------------------------------->
+        # print(f"DEBUG {self.agent.name} Memory Add ShortTerm: {memory_entry}")
+        # --- Trigger Reflection ---
+        if self.reflection_model and self.unreflected_count >= self.reflection_threshold:
+            self._reflect()
+            self.unreflected_count = 0  # Reset counter after reflection
+
+    def _reflect(self):
+        """Generates and stores a long-term reflection based on recent short-term memories."""
+        if not self.reflection_model:
+            print(
+                f"DEBUG {self.agent.name}: Skipping reflection, model not available.")
+            return
+        if len(self.short_term_memory) < self.reflection_threshold:
+            # Should not happen if called correctly, but safety check
+            return
+
+        # Get the most recent memories that haven't been reflected upon yet
+        # For simplicity, we take the last 'reflection_threshold' entries.
+        # A more robust way might track indices, but this works for now.
+        memories_to_reflect = self.short_term_memory[-self.reflection_threshold:]
+
+        # --- Prepare Prompt for Reflection LLM ---
+        # Basic agent context
+        prompt_context = f"Agent Name: {self.agent.name}\n"
+        prompt_context += f"Identity: {self.agent.identity}\n\n"
+        prompt_context += "Recent events:\n"
+
+        # Format the memories for the prompt
+        for mem in memories_to_reflect:
+            # prefix = f"[T:{mem['type']}" + \
+            #     (f" S:{mem['step']}" if mem['step'] is not None else "") + "]"
+            prompt_context += f"{mem}\n"
+
+        # Reflection Instruction
+        prompt_instruction = (
+            "\nBased on the agent's personality and the recent events listed above, "
+            "what are 1-3 high-level insights, conclusions, important observations, "
+            "or summaries about the current situation, relationships, or goals? "
+            "Focus on significance and synthesis, not just listing the events. Be concise."
+        )
+
+        full_prompt = prompt_context + prompt_instruction
+        if config.SIMULATION_MODE == 'debug':
+            print(f"DEBUG {self.agent.name}: Generating reflection...")
+            # Uncomment for deep debug
+            print(
+                f"--- Reflection Prompt ---\n{full_prompt}\n-----------------------")
+
+        # TEMPORAL ------------------------------------->
+        print(f"DEBUG {self.agent.name}: Generating reflection...")
+        print(
+            f"--- Reflection Prompt ---\n{full_prompt}\n-----------------------")
+
+        # --- Call LLM for Reflection ---
+        try:
+            response = self.reflection_model.generate_content(full_prompt)
+            reflection_text = response.text.strip()
+
+            if reflection_text:
+                self.long_term_memory.append(reflection_text)
+                # TEMPORAL ------------------------------------->
+                print(
+                    f"DEBUG {self.agent.name} Reflection Added: {reflection_text}")
+
+                if config.SIMULATION_MODE == 'debug':
+                    print(
+                        f"DEBUG {self.agent.name} Reflection Added: '{reflection_text[:80]}...'")
+            else:
+                print(
+                    f"WARN {self.agent.name}: Reflection generated empty text.")
         except Exception as e:
             print(
                 f"ERROR {self.agent.name}: Failed to generate reflection: {e}")
