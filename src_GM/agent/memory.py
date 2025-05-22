@@ -6,7 +6,18 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Optional, List, Dict, Any
 if TYPE_CHECKING:
     from agent import Agent
+try:
+    # Also catch general API errors
+    from google.api_core.exceptions import ResourceExhausted, GoogleAPICallError
+except ImportError:
+    # Provide fallback or raise an error if the necessary library is not installed
+    print("Warning: google-api-core not installed. API error handling may not work correctly.")
 
+    class ResourceExhausted(Exception):
+        pass  # Define a dummy exception if import fails
+
+    class GoogleAPICallError(Exception):
+        pass  # Define a dummy exception if import fails
 # --- Base Memory Class ---
 
 
@@ -371,6 +382,12 @@ class ShortLongTMemoryIdentityOnly(BaseMemory):
             else:
                 print(
                     f"WARN {self.agent.name}: Reflection generated empty text.")
+        except ResourceExhausted as e:
+            print(
+                f"[{self.agent.name} Error]: LLM generation failed: {e}. Waiting 10 seconds and retrying...")
+            time.sleep(10)
+            return self._reflect()
+        
         except Exception as e:
             print(
                 f"ERROR {self.agent.name}: Failed to generate reflection: {e}")

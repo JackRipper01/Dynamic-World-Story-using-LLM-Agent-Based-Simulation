@@ -7,6 +7,18 @@ import config
 import random
 from agent.memory import BaseMemory  # Assuming BaseMemory is in agent/memory.py
 from world import Event  # For creating event objects to dispatch
+try:
+    # Also catch general API errors
+    from google.api_core.exceptions import ResourceExhausted, GoogleAPICallError
+except ImportError:
+    # Provide fallback or raise an error if the necessary library is not installed
+    print("Warning: google-api-core not installed. API error handling may not work correctly.")
+
+    class ResourceExhausted(Exception):
+        pass  # Define a dummy exception if import fails
+
+    class GoogleAPICallError(Exception):
+        pass  # Define a dummy exception if import fails
 
 
 class Director:
@@ -119,7 +131,12 @@ Your chosen environmental intervention (single line):"""
                 print(f"[{self.name} Plans To]: {intervention_intent}")
 
             return intervention_intent
-
+        
+        except ResourceExhausted as e:
+            print(
+                f"[{self.name} Error]: LLM generation failed: {e}. Waiting 10 seconds and retrying...")
+            time.sleep(10)
+            return self.plan_intervention()
         except Exception as e:
             print(
                 f"[{self.name} Error]: LLM generation for intervention plan failed: {e}")

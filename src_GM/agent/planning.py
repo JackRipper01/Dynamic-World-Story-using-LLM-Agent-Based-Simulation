@@ -3,7 +3,19 @@ import time
 import google.generativeai as genai
 import config
 from abc import ABC, abstractmethod
+try:
+    # Also catch general API errors
+    from google.api_core.exceptions import ResourceExhausted, GoogleAPICallError
+except ImportError:
+    # Provide fallback or raise an error if the necessary library is not installed
+    print("Warning: google-api-core not installed. API error handling may not work correctly.")
 
+    class ResourceExhausted(Exception):
+        pass  # Define a dummy exception if import fails
+
+    class GoogleAPICallError(Exception):
+        pass  # Define a dummy exception if import fails
+    
 class BasePlanning(ABC):
     """Abstract base class for agent thinking/decision-making modules."""
     @abstractmethod
@@ -163,6 +175,11 @@ Your action output (one single action):"""
             # print(f"[{agent.name} Response]: {utterance}")  #TEMPORAL ------------------------------------->
             return utterance
 
+        except ResourceExhausted as e:
+            print(
+                f"[{agent.name} Error]: LLM generation failed: {e}. Waiting 10 seconds and retrying...")
+            time.sleep(10)
+            return self.generate_output(agent, static_world_context, memory_context)
         
         except Exception as e:
             print(f"[{agent.name} Error]: LLM generation failed: {e}")

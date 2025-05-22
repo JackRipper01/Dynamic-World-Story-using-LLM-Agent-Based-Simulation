@@ -1,10 +1,23 @@
 import time
+from django import conf
 import google.generativeai as genai  # Keep LLM import here if resolver uses it
 import json
 import re
 from abc import ABC, abstractmethod
 from world import WorldState
 import config
+try:
+    # Also catch general API errors
+    from google.api_core.exceptions import ResourceExhausted, GoogleAPICallError
+except ImportError:
+    # Provide fallback or raise an error if the necessary library is not installed
+    print("Warning: google-api-core not installed. API error handling may not work correctly.")
+
+    class ResourceExhausted(Exception):
+        pass  # Define a dummy exception if import fails
+
+    class GoogleAPICallError(Exception):
+        pass  # Define a dummy exception if import fails
 
 
 class BaseActionResolver(ABC):
@@ -352,7 +365,12 @@ Your single-line output:
                     "outcome_description": f"{agent_name} provides an unclear response ('{raw_output}').",
                     "world_state_updates": []
                 }
-
+        except ResourceExhausted as e:
+            print(
+                f"[{self.name} Error]: LLM generation failed: {e}. Waiting 10 seconds and retrying...")
+            time.sleep(10)
+            return self.resolve(agent_name, agent_location, action_output, world_state)
+        
         except Exception as e:
             print(f"[LLM Resolver Error]: LLM call or processing failed: {e}")
             # Check for response object and prompt feedback if available
