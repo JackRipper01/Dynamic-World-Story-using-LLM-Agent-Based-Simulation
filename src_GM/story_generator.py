@@ -32,6 +32,7 @@ class LLMLogStoryGenerator(BaseStoryGenerator):
 
     def __init__(self, model):
         self.llm = model
+        self.tone = config.TONE  
 
     def generate_story(self, world_state: WorldState, agent_configs: list, narrative_goal: str) -> str:
         print("\n--- Generating Story from Simulation Logs ---")
@@ -39,7 +40,7 @@ class LLMLogStoryGenerator(BaseStoryGenerator):
         # 1. Gather Character Information
         character_intros = []
         for agent_conf in agent_configs:
-            intro = f"- {agent_conf['name']}: A {agent_conf.get('gender','person')} with a personality described as '{agent_conf['personality']}'. Their initial goals were: {', '.join(agent_conf['initial_goals'])}."
+            intro = f"- {agent_conf['name']}: {agent_conf['identity']}."
             character_intros.append(intro)
 
         characters_summary = "The characters involved were:\n" + \
@@ -62,16 +63,23 @@ class LLMLogStoryGenerator(BaseStoryGenerator):
                     event_text = f"{event.triggered_by} {event_text[0].lower() + event_text[1:] if event_text else ''}"
 
             formatted_events.append(
-                f"Step {event.step}: {event_text} [{event.triggered_by}, {location_info} {scope_info}]")
+                f"{event_text}, Location: {location_info}, {scope_info} scope.\n")
+            print(f"Event: {event_text}, Location: {location_info}, {scope_info} scope.")#--------------------------> temporal
 
         events_summary = "The key events that unfolded, in chronological order:\n" + \
             "\n".join(formatted_events)
+
+        tone_prompt = ""
+        if self.tone:
+            tone_prompt= self.tone
 
         # 3. Craft Prompt
         prompt = f"""You are a master storyteller. Based on the following information from a simulated world, write a coherent and engaging story.
 
 Narrative Premise/Goal:
 {narrative_goal if narrative_goal else "An emergent narrative adventure."}
+
+Tone: {tone_prompt if tone_prompt else "Neutral"}
 
 {characters_summary}
 

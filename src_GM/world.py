@@ -116,14 +116,6 @@ class WorldState:
 
             # Log the arrival event
             if triggered_by != "Setup":
-                # If moving, log arrival at new location
-                self.log_event(
-                    # Made description more specific
-                    f"{agent_name} arrives at the {location_name}.",
-                    scope="local",
-                    location=location_name,
-                    triggered_by=triggered_by,
-                )
                 # Optionally, log departure from old location
                 if old_location and old_location != location_name:
                     self.log_event(
@@ -132,6 +124,14 @@ class WorldState:
                         location=old_location,
                         triggered_by=triggered_by
                     )
+                # If moving, log arrival at new location
+                self.log_event(
+                    # Made description more specific
+                    f"{agent_name} arrives at the {location_name}.",
+                    scope="local",
+                    location=location_name,
+                    triggered_by=triggered_by,
+                )
             elif not old_location:  # Log initial appearance only if no prior location
                 self.log_event(
                     f"{agent_name} appears in the {location_name}.",
@@ -467,13 +467,13 @@ class WorldState:
         }
         self.location_properties[location_name]["contains"].append(new_item)
 
-        log_msg = f"{triggered_by} causes '{item_name}' (described as: {item_description}, state: {item_state}) to appear in {location_name}."
-        self.log_event(
-            description=log_msg,
-            scope="local",
-            location=location_name,
-            triggered_by=triggered_by
-        )
+        # log_msg = f"{triggered_by} causes '{item_name}' (described as: {item_description}, state: {item_state}) to appear in {location_name}."
+        # self.log_event(
+        #     description=log_msg,
+        #     scope="local",
+        #     location=location_name,
+        #     triggered_by=triggered_by
+        # )
         if config.SIMULATION_MODE == 'debug':
             print(
                 f"[WorldState Update] Add Item: '{item_name}' added to '{location_name}' by {triggered_by}.")
