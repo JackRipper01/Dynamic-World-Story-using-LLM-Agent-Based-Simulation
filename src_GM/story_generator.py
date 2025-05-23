@@ -125,9 +125,14 @@ Tone: {tone_prompt if tone_prompt else "Neutral"}
 
 {events_section}
 
-Please weave these elements into a flowing narrative. Describe the setting, character actions, interactions, and the overall progression of events. Try to infer thoughts or motivations if consistent with personalities and events, but clearly distinguish between observed events and inferred internal states if necessary. Make it readable and interesting.
-
-If the simulation ended without a clear conclusion, feel free to create a fitting ending or cliffhanger.
+Instructions for the Story:
+- Weave these elements into a flowing narrative.
+- Describe the context, character actions, interactions, and the overall progression of events.
+- Strive for high fidelity to the simulation events, recounting them as they occurred.
+- Try to infer thoughts or motivations if consistent with personalities and events (clearly distinguish if needed).
+- Add one or two paragraphs for introduction/context at the start.
+- Create a fitting ending or cliffhanger if the simulation is inconclusive.
+- Make the story readable and engaging.
 
 Your Story:
 """

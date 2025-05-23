@@ -116,9 +116,17 @@ class SimplePlanningIdentityOnly(BasePlanning):
     def generate_output(self, agent, static_world_context, memory_context):
         """Formats prompt and calls the Gemini API."""
 
-        prompt = f"""You are {agent.name}, a character in a simulated world.
-Your identity: {agent.identity}
+        prompt = f"You are {agent.name}, a character in a simulated world.\n"
 
+
+        prompt += f"Your identity: {agent.identity}\n"
+
+        # Conditionally add the context line
+        if agent.initial_context:
+            prompt += f"Context: {agent.initial_context}\n"
+
+        # Add the rest of the multi-line content
+        prompt += f"""
 Your current world situation:
 
 {static_world_context}
@@ -144,7 +152,7 @@ Examples of valid single intents:
 - Walk towards the Forest Edge to see if I can find any berries.
 - Ask Bob, "Did you hear that strange noise coming from the shelter? It sounded like scratching."
 - Carefully examine the ground near the shelter for any tracks or clues.
-- Think: 'This weather is getting colder. I need to reinforce the shelter soon, especially if Bob plans on staying.'
+- Tell to self: 'This weather is getting colder. I need to reinforce the shelter soon, especially if Bob plans on staying.'
 - Wait silently and observe Bob's next move.
 - Respond to Alice, "The forest does look interesting, but I'm more concerned about finding food and water first. What kind of potion are you making?"
 
