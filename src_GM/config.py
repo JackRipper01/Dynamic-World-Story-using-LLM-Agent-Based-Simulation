@@ -68,7 +68,9 @@ MAX_RECENT_EVENTS = 15
 MAX_MEMORY_TOKENS = 1000  # Increased memory capacity
 SIMULATION_MAX_STEPS = 30
 
+
 # --- World Definition ---
+WEATHER="STORMY"  
 KNOWN_LOCATIONS_DATA = {
     "Study": {
         "description": "Lord Alistair Finch's private sanctuary, filled with antique maps, worn leather books, and the scent of old paper and pipe tobacco. It is the scene of the crime.",
@@ -217,12 +219,13 @@ TONE = "Formal, suspenseful, intellectually stimulating, with a focus on logical
 agent_configs = [
     {
         "name": "Thomas Dubois",
-        "identity": "Inspector Thomas Dubois, a slightly unassuming man in his late 40s, known for his meticulous logic, quiet observation, and ability to deduce motives from seemingly insignificant details and human psychology. He was coincidentally visiting Blackwood Manor for a social engagement.",
+        "identity": "Inspector Thomas Dubois, a slightly unassuming man in his late 40s, known for his meticulous logic, quiet observation, and ability to deduce motives from seemingly insignificant details and human psychology. ",
         "initial_location": "Drawing Room",
         "gender":"",
         "personality":"",
         "initial_goals":"",
-        "background":""
+        "background":"",
+        "initial_context": " Inspector Thomas Dubois had been enjoying a quiet, albeit slightly strained, evening as a guest at Blackwood Manor, discussing art and the terrible weather with the other occupants in the drawing-room. The sudden, hushed announcement from Mr. Davies that Lord Alistair had been found dead abruptly shattered the social facade, shifting Dubois immediately from polite visitor to keen observer and imminent investigator, his mind already beginning to piece together the puzzle from the reactions around him."
     },
     {
         "name": "Eleanor Finch",
@@ -231,7 +234,8 @@ agent_configs = [
         "gender": "",
         "personality": "",
         "initial_goals": "",
-        "background": ""
+        "background": "",
+        "initial_context": " Eleanor Finch was already on edge, her nerves frayed by the storm outside and the weight of her precarious financial situation, recently compounded by the bewildering news of her uncle's revised will. The shock of Lord Alistair's death sent her into a state of visible distress, wringing her hands and struggling to compose herself amidst gasps and murmurs in the drawing-room, her grief and fear intertwined."
     },
     {
         "name": "Aris Thorne",
@@ -240,7 +244,8 @@ agent_configs = [
         "gender": "",
         "personality": "",
         "initial_goals": "",
-        "background": ""
+        "background": "",
+        "initial_context": "Dr. Aris Thorne maintained a veneer of professional calm upon hearing the news, his medical background perhaps steels him against overt displays of panic. However, beneath the surface, his sharp eyes missed nothing, particularly Eleanor's reaction, while his mind processed the implications of Lord Alistair's sudden demise, perhaps connecting it to long-held family secrets he was privy to. He would be observing the scene from the drawing-room, ready to offer his 'assistance' or observations."
     },
     {
         "name": "Xenia Petrova",
@@ -249,16 +254,18 @@ agent_configs = [
         "gender": "",
         "personality": "",
         "initial_goals": "",
-        "background": ""
+        "background": "",
+        "initial_context": " Madame Xenia Petrova, fresh from her intense negotiation with Lord Alistair, was likely anticipating the outcome of her potential deal when the news broke. Her initial state would be one of dramatic shock and annoyance at the sudden disruption, quickly overlaid with a calculating curiosity as she assessed how this unforeseen event might impact her business interests and access to the manor's collection, while perhaps making a mental note of who else seemed affected. She'd be in the drawing-room, observing."
     },
     {
         "name": "Mr. Davies",
         "identity": "Mr. Davies, the manor's stoic and long-serving butler in his 60s. He sees and hears everything but reveals very little, offering only curt, precise answers to the Inspector's questions. He seems subtly protective of Lord Alistair's legacy and killed Lord Alistair.",
-        "initial_location": "Study",
+        "initial_location": "Drawing Room",
         "gender": "",
         "personality": "",
         "initial_goals": "",
-        "background": ""
+        "background": "",
+        "initial_context": "Mr. Davies, the unflappable butler, is the one who discovered the body in the study. His initial state is one of grim, controlled urgency as he delivers the shocking news to the assembled company in the drawing-room, his usual stoicism tested by the gravity of the situation, yet still managing to convey the facts with precise, if curt, language, before leading the Inspector to the scene."
     },
 ]
 SIMULATION_MODE = 'debug'  # Keep debug for testing

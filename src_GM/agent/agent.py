@@ -4,7 +4,7 @@ from agent.planning import BasePlanning
 # from world import WorldState
 import config
 class Agent:
-    def __init__(self, name:str,gender:str, personality:str,identity:str, memory_module:BaseMemory, planning_module:BasePlanning, initial_goals: list[str] = None,background:list[str] = None):
+    def __init__(self, name:str,gender:str, personality:str,identity:str,initial_context:str, memory_module:BaseMemory, planning_module:BasePlanning, initial_goals: list[str] = None,background:list[str] = None):
         self.name = name
         self.gender = gender
         self.personality = personality
@@ -13,6 +13,7 @@ class Agent:
         self.goals = initial_goals if initial_goals is not None else [] # List of goal descriptions
         self.background = background if background is not None else []  # Placeholder for agent's background
         self.identity = identity 
+        self.initial_context = initial_context
         self.action_buffer = None  # Store the output of plan() before resolution
         print(f"Agent {name} initialized with {type(memory_module).__name__} and {type(planning_module).__name__}.")
 

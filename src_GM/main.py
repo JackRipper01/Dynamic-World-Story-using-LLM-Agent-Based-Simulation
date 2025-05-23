@@ -4,6 +4,7 @@ import random
 import time  # For pausing execution (e.g., between agent actions)
 # For type hinting lists (e.g., list of Agents)
 from typing import List, Optional
+from django import conf
 import google.generativeai as genai  # Google's Generative AI library
 import argparse  # For parsing command-line arguments
 
@@ -187,7 +188,7 @@ def run_simulation():
     # 2. Initialize World State and Event Dispatcher
     event_dispatcher = get_event_dispatcher(config.EVENT_PERCEPTION_MODEL)
     world = WorldState(known_locations_data=config.KNOWN_LOCATIONS_DATA)
-    world.global_context['weather'] = "Clear"
+    world.global_context['weather'] = config.WEATHER
     if config.SIMULATION_MODE == 'debug':
         print("World state and event dispatcher initialized.")
 
@@ -208,6 +209,7 @@ def run_simulation():
             initial_goals=agent_conf["initial_goals"],
             background=agent_conf["background"],
             identity=agent_conf["identity"],
+            initial_context=agent_conf["initial_context"],
             memory_module=None,  # Memory will be assigned below
             planning_module=thinker
         )
@@ -331,7 +333,7 @@ def run_simulation():
             intended_output = agent.plan(world)
 
             # Optional pause
-            time.sleep(0.2)
+            time.sleep(1)
 
             # 2. ACTION RESOLUTION
             if config.SIMULATION_MODE == 'debug':
@@ -408,7 +410,7 @@ def run_simulation():
                 world.log_event(outcome_desc_for_event, event_scope,
                                 current_loc, agent.name if result else 'System')
                 append_to_log_file(
-                    "simulation_logs.txt", outcome_desc_for_event)
+                    "simulation_logs.txt",f"""{agent.name}'s turn in {current_loc}:\n {outcome_desc_for_event}\n\n""")
                 new_event = Event(
                     description=outcome_desc_for_event,
                     location=current_loc,
@@ -428,7 +430,7 @@ def run_simulation():
                 print("-" * 60)  # End agent turn block
 
             agent_who_took_last_turn_this_step = agent
-            time.sleep(0.1)
+            time.sleep(1)
             
          # Update the tracker for the *next* step's calculation
         if agent_who_took_last_turn_this_step:
