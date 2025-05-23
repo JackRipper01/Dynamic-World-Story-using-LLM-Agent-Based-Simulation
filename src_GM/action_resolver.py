@@ -100,7 +100,7 @@ Examples of the single-line output format:
 Intent: "go to the park" -> SUCCESS | MOVE | destination: Park | {agent_name} walks towards the Park.
 Intent: "unlock the lab door with a key" (if key is present and door is lockable) -> SUCCESS | INTERACT | object: Lab Door, state: unlocked | {agent_name} unlocks the Lab Door.
 Intent: "try to open shelter door" (if door is locked) -> FAILURE | INTERACT | object: Shelter Door, state: locked | {agent_name} tries the Shelter door, but it's locked.
-Intent: "say hello to Bob" -> SUCCESS | SPEAK | target: Bob, message: Hello | {agent_name} says to Bob, 'Hello'.
+Intent: "say hello to Bob waiving my hand" -> SUCCESS | SPEAK | target: Bob, message: "Waiving my hand to Bob, I say Hello" | {agent_name} says to Bob, 'Hello', waving her hand.
 Intent: "look around" -> SUCCESS | OBSERVE | target: surroundings | {agent_name} looks around.
 Intent: "wait a moment" -> SUCCESS | WAIT | duration: a moment | {agent_name} waits.
 Intent: "fly to the moon" (if impossible) -> FAILURE | FAIL | reason: impossible action | {agent_name} attempts an impossible action.
@@ -305,9 +305,7 @@ Your single-line output:
                             resolved_action["success"] = False
                             resolved_action["outcome_description"] = f"{agent_name} intends to interact, but no object was specified in parameters."
                         elif new_object_state is None:  # Check for None, empty string is a valid state
-                            resolved_action["success"] = False
-                            resolved_action[
-                                "outcome_description"] = f"{agent_name} interacts with {object_name}, but the resulting state is unclear (not provided by LLM)."
+                            resolved_action["success"] = True
                         else:
                             # Verify the object exists in the agent's current location
                             current_location_items = world_state.get_location_property(
@@ -320,7 +318,7 @@ Your single-line output:
                                         # Object found, create update for its state
                                         resolved_action["world_state_updates"].append(
                                             ('item_state', agent_location,
-                                             object_name, new_object_state)
+                                            object_name, new_object_state)
                                         )
                                         # LLM's outcome_description is generally used.
                                         # Optionally, refine if needed:
@@ -328,9 +326,9 @@ Your single-line output:
                                         break  # Item found and update added
 
                             if not item_found_in_location:
-                                resolved_action["success"] = False
-                                resolved_action[
-                                    "outcome_description"] = f"{agent_name} tries to interact with '{object_name}', but it's not found at their current location ({agent_location})."
+                                resolved_action["success"] = True
+                                # resolved_action[
+                                #     "outcome_description"] = f"{agent_name} tries to interact with '{object_name}', but it's not found at their current location ({agent_location})."
                                 # Clear any pending updates if item not found
                                 resolved_action["world_state_updates"] = []
                     # If llm_says_action_successful was False, we keep it as False.
