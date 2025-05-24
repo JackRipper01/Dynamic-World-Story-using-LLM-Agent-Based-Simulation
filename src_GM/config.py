@@ -8,7 +8,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise ValueError(
         "Gemini API Key not found. Make sure it's set in the .env file.")
-    
+
 # Model Name
 MODEL_NAME = "gemini-2.0-flash-lite"  # "gemini-pro"
 
@@ -70,135 +70,114 @@ SIMULATION_MAX_STEPS = 30
 
 
 # --- World Definition ---
-WEATHER="STORMY"  
+WEATHER = "Dark Silent Night"
 KNOWN_LOCATIONS_DATA = {
-    "Study": {
-        "description": "Lord Alistair Finch's private sanctuary, filled with antique maps, worn leather books, and the scent of old paper and pipe tobacco. It is the scene of the crime.",
-        # Assume direct exit to the main gathering area
-        "exits_to": ["Drawing Room"],
+    "Bathroom": {
+        "description": "A sterile, utilitarian space. The air smells faintly of disinfectant and damp stone. The remains of their tunnel entrance are barely noticeable behind a loose section of the tiled wall.",
+        "exits_to": ["Main Hallway"],
         "properties": {
             "contains": [
-                {"object": "lord alistair finch body", "state": "dead",
-                    "optional_description": "The body of Lord Alistair Finch lies face down near his desk, a dark stain spreading on his back."
-                },
-                {"object": "mahogany desk", "state": "slightly disturbed",
-                    "optional_description": "A heavy, ornate desk. Papers are scattered near the edge, suggesting a hasty departure or a brief struggle before the fall."
-                },
-                {"object": "antique globe", "state": "finial missing",
-                    "optional_description": "A large, floor-standing globe. The decorative, pointed metal finial at the top of the axis is missing."
-                },
-                {"object": "bookshelves", "state": "full of books",
-                    "optional_description": "Floor-to-ceiling shelves overflowing with books on art, history, and obscure subjects."
-                },
-                {"object": "armchair", "state": "overturned",
-                    "optional_description": "A heavy leather armchair lies on its side near the body."
-                },
-                {"object": "fireplace", "state": "dying embers",
-                    "optional_description": "A large fireplace where a fire is slowly burning down to embers."
-                },
-                {"object": "window", "state": "closed and latched",
-                    "optional_description": "A tall, mullioned window, securely closed and latched from the inside. Rain streaks down the panes."
-                },
-                {"object": "lord alistairs will", "state": "on desk",
-                    "optional_description": "A folded legal document titled 'Last Will and Testament', resting prominently on the desk."
-                },
-                {"object": "art negotiation papers", "state": "on desk scattered",
-                    "optional_description": "Documents and notes related to the potential sale of artworks, some scattered on the desk."
-                }
+                {"object": "sinks", "state": "clean",
+                    "optional_description": "Two porcelain sinks, mirrors above them."
+                 },
+                {"object": "toilets", "state": "unused",
+                    "optional_description": "Two white toilets, their lids closed."
+                 },
+                {"object": "hand dryers", "state": "mounted",
+                    "optional_description": "Electric hand dryers bolted to the wall."
+                 },
+                {"object": "tiled walls", "state": "immaculate",
+                    "optional_description": "Gleaming white tiles, reflecting the dim light."
+                 },
+                {"object": "tunnel entrance", "state": "concealed",
+                    "optional_description": "A small hole behind the tile, barely noticeable."
+                 }
             ]
         }
     },
-
-    "Drawing Room": {
-        "description": "A grand but slightly faded room used for entertaining guests. Sumptuous furniture and family portraits line the walls. The characters gather here.",
-        # Acts as a central hub connecting to other main areas
-        "exits_to": ["Study", "Gallery", "Guest Bedroom", "Kitchen"],
+    "Main Hallway": {
+        "description": "A long, echoing hallway lined with display cases. The faint hum of the museum's climate control system is audible. Exhibits of ancient artifacts line the walls, offering a treasure trove of potential targets.",
+        "exits_to": ["Bathroom", "Security Room", "Jewel Exhibit", "Egyptian Exhibit"],
         "properties": {
             "contains": [
-                {"object": "sofas and chairs", "state": "occupied by suspects",
-                    "optional_description": "Plush velvet sofas and armchairs where the remaining occupants of the manor are gathered."
-                },
-                {"object": "coffee table", "state": "scattered tea cups",
-                    "optional_description": "A large central table littered with teacups, saucers, and a teapot from the recent gathering."
-                },
-                {"object": "fireplace", "state": "roaring fire",
-                    "optional_description": "A large fireplace, providing warmth and light, a stark contrast to the storm outside and the mood within."
-                },
-                {"object": "family portraits", "state": "hanging on walls",
-                    "optional_description": "Numerous portraits of stern-faced Finch ancestors observing the scene from the walls."
-                },
-                {"object": "grandfather clock", "state": "ticking loudly",
-                    "optional_description": "A tall, ornate clock in the corner, its pendulum swinging and ticking filling the tense silence."
-                }
+                {"object": "display case", "state": "locked",
+                    "optional_description": "Glass cases filled with ancient artifacts - gold coins, ornate pottery, and jeweled daggers. Several cases have prominent 'DO NOT TOUCH' signs."
+                 },
+                {"object": "security cameras", "state": "operational",
+                    "optional_description": "Small, black cameras mounted on the ceiling, their lenses gleaming."
+                 },
+                {"object": "polished floor", "state": "reflective",
+                    "optional_description": "A highly polished stone floor."
+                 },
+                {"object": "velvet rope", "state": "in place",
+                    "optional_description": "Ropes to control the flow of visitors, now easily bypassed."
+                 },
+                {"object": "information plaques", "state": "in place",
+                    "optional_description": "Plaques in multiple languages explaining the displayed artifacts."
+                 }
             ]
         }
     },
-    "Gallery": {
-        "description": "A long hall dedicated to the manor's art collection. While impressive, many pieces are dusty or poorly lit, reflecting the manor's decline.",
-        # Assumed exit back to the main gathering area
-        "exits_to": ["Drawing Room"],
+    "Security Room": {
+        "description": "A cluttered room filled with monitors, computers, and security equipment. The air smells strongly of coffee and stale donuts.",
+        "exits_to": ["Main Hallway"],
         "properties": {
             "contains": [
-                {"object": "painting collection", "state": "displayed",
-                    "optional_description": "Various oil paintings, landscapes, and portraits hanging along the walls."
-                },
-                {"object": "the obscure painting", "state": "hanging prominently",
-                    "optional_description": "A specific, darker painting depicting a scene that includes a figure holding a distinctive dagger or pointed object."
-                },
-                {"object": "pedestal", "state": "empty",
-                    "optional_description": "An empty pedestal in the centre of the room, perhaps awaiting a new acquisition or display piece."
-                },
-                {"object": "dust motes", "state": "visible in light",
-                    "optional_description": "Dust motes dance in the shafts of light filtering through the occasional window or lamps."
-                }
+                {"object": "security monitor", "state": "active",
+                    "optional_description": "Screens displaying feeds from various security cameras throughout the museum, including those in the Jewel Exhibit."
+                 },
+                {"object": "control panel", "state": "operational",
+                    "optional_description": "Panels for controlling alarms, lights, and doors, offering potential opportunities to disable them."
+                 },
+                {"object": "desks", "state": "messy",
+                    "optional_description": "Desks covered with papers, coffee cups, and half-eaten food - and potentially a key card or two."
+                 },
+                {"object": "comfortable chair", "state": "empty",
+                    "optional_description": "A large, comfortable chair."
+                 },
+                {"object": "door", "state": "locked",
+                    "optional_description": "A sturdy metal door with a keypad lock."
+                 }
             ]
         }
     },
-    "Kitchen": {
-        "description": "The functional heart of the manor's service wing. Large, slightly dated, filled with the smells of cooked meals and cleaning supplies.",
-        # Assumed exit back to the main house area (via service entrance near drawing room?)
-        "exits_to": ["Drawing Room"],
+    "Jewel Exhibit": {
+        "description": "A brightly lit, high-security room housing the museum's most valuable jewels. The air is cool and the atmosphere is tense. Multiple display cases glimmer with the promise of riches.",
+        "exits_to": ["Main Hallway"],
         "properties": {
             "contains": [
-                {"object": "large oven stove", "state": "warm",
-                    "optional_description": "A large, old-fashioned cast-iron oven and hob, still radiating warmth."
-                },
-                {"object": "work table", "state": "clean",
-                    "optional_description": "A large wooden table used for food preparation."
-                },
-                {"object": "knife rack", "state": "full",
-                    "optional_description": "A wooden block holding a set of various kitchen knives. All seem to be present."
-                },
-                {"object": "servant bell system", "state": "silent",
-                    "optional_description": "A panel on the wall with small bells and labels for different rooms, currently quiet."
-                },
-                {"object": "cleaning supplies", "state": "stored neatly",
-                    "optional_description": "Brooms, mops, and cleaning fluids stored in a corner."
-                }
+                {"object": "diamond necklace", "state": "on display",
+                    "optional_description": "The centerpiece: a dazzling diamond necklace, radiating light."
+                 },
+                {"object": "display case", "state": "locked",
+                    "optional_description": "Showcasing various other precious items: rubies, emeralds, gold bracelets, and antique watches."
+                 },
+                {"object": "security camera", "state": "operational",
+                    "optional_description": "A high-definition camera, constantly monitoring the display case but with a blind spot."
+                 }
             ]
         }
     },
-    "Guest Bedroom": {
-        "description": "One of the manor's many guest rooms, comfortably furnished but perhaps a little impersonal. Likely occupied by one of the visitors.",
-        # Assumed exit back to the main house area (e.g., upstairs landing connected to drawing room area)
-        "exits_to": ["Drawing Room"],
+    "Egyptian Exhibit": {
+        "description": "This room showcases ancient Egyptian artifacts, including sarcophagi, statues, and jewelry. The ambiance is mysterious and potentially treacherous. The statues seem to watch their every move. Albert looks around this area, in order to determine what is really worthy for him, Josh is more worried about the guards arriving",
+        "exits_to": ["Main Hallway"],
         "properties": {
             "contains": [
-                {"object": "four poster bed", "state": "neatly made",
-                    "optional_description": "A large bed with curtains, currently tidy."
-                },
-                {"object": "wardrobe", "state": "closed",
-                    "optional_description": "A large wooden wardrobe for storing clothes."
-                },
-                {"object": "dressing table", "state": "tidy",
-                    "optional_description": "A small table with a mirror and a set of brushes or toiletries."
-                },
-                {"object": "suitcase", "state": "partially unpacked",
-                    "optional_description": "A suitcase lies open or closed near the wardrobe, suggesting the occupant is staying."
-                },
-                {"object": "window", "state": "closed",
-                    "optional_description": "A window looking out onto the stormy night."
-                }
+                {"object": "sarcophagi", "state": "closed",
+                    "optional_description": "Ornate stone sarcophagi of various sizes. Some are inscribed with hieroglyphs."
+                 },
+                {"object": "statue of pharaoh", "state": "standing",
+                    "optional_description": "Large stone statues of pharaohs and deities, their eyes seeming to follow movement."
+                 },
+                {"object": "display case", "state": "locked",
+                    "optional_description": "Showcasing gold jewelry, amulets, and scarabs."
+                 },
+                {"object": "hieroglyphic writings", "state": "inscribed",
+                    "optional_description": "Walls covered in hieroglyphic writings."
+                 },
+                {"object": "golden mask", "state": "on display",
+                    "optional_description": "The exhibit features a gold funerary mask in a heavily guarded display case."
+                 }
             ]
         }
     }
@@ -213,59 +192,30 @@ EVENT_PERCEPTION_MODEL = "DirectEventDispatcher"
 STORY_GENERATOR_TYPE = "LLMLogStoryGenerator"
 
 # --- Narrative / Scenario ---
-NARRATIVE_GOAL = """The story should culminate in Inspector Dubois gathering all the suspects, explaining his deductions step-by-step, and dramatically revealing the true murderer and their method. The "how" of the murder should be as intriguing as the "who." """
-TONE = "Formal, suspenseful, intellectually stimulating, with a focus on logical deduction and character interactions rather than gore or action."
+NARRATIVE_GOAL = """The core of the story should revolve around the tension between their contrasting personalities and the choices they make. The story should end with the success or failure of the heist, and what that means to both characters."""
+TONE = "Gritty, suspenseful, character-driven, with a focus on internal conflict and the ethical dilemmas faced by those desperate for survival."
 
 agent_configs = [
     {
-        "name": "Thomas Dubois",
-        "identity": "Inspector Thomas Dubois, a slightly unassuming man in his late 40s, known for his meticulous logic, quiet observation, and ability to deduce motives from seemingly insignificant details and human psychology. ",
-        "initial_location": "Drawing Room",
-        "gender":"",
-        "personality":"",
-        "initial_goals":"",
-        "background":"",
-        "initial_context": " Inspector Thomas Dubois had been enjoying a quiet, albeit slightly strained, evening as a guest at Blackwood Manor, discussing art and the terrible weather with the other occupants in the drawing-room. The sudden, hushed announcement from Mr. Davies that Lord Alistair had been found dead abruptly shattered the social facade, shifting Dubois immediately from polite visitor to keen observer and imminent investigator, his mind already beginning to piece together the puzzle from the reactions around him."
-    },
-    {
-        "name": "Eleanor Finch",
-        "identity":"Eleanor Finch, Lord Alistair's estranged niece, in her early 30s. She carries a considerable amount of debt and has just discovered she is the sole beneficiary of Lord Alistair's revised will – a will she knew nothing about until his recent announcement. She appears nervous and overly emotional.",
-        "initial_location": "Drawing Room",
+        "name": "Albert",
+        "identity": "Albert, a self-absorbed,egotistical, reckless, and impulsive man in his late 30s. He is a skilled thief with a substantial debt to clear. He wouldn't hesitate to betray a partner if it meant personal gain. He partnered with Josh through a mutual, trustworthy contact, needing assistance for this particular heist.His goal is to secure the heist's loot and pay off his debt",
+        "initial_location": "Bathroom",
         "gender": "",
         "personality": "",
         "initial_goals": "",
         "background": "",
-        "initial_context": " Eleanor Finch was already on edge, her nerves frayed by the storm outside and the weight of her precarious financial situation, recently compounded by the bewildering news of her uncle's revised will. The shock of Lord Alistair's death sent her into a state of visible distress, wringing her hands and struggling to compose herself amidst gasps and murmurs in the drawing-room, her grief and fear intertwined."
+        "initial_context": "Dust coated Albert's face as he hauled himself out of the newly-dug tunnel.  The humid air of the museum's bathroom, thick with the scent of disinfectant and old stone, filled his lungs. They'd done it; after weeks of painstaking work, they were in. Now, the real work began. He quickly surveyed the bathroom, ready to look for good stuff to take. He barked a terse order at Josh, impatient to get moving and get this done before anyone noticed anything."
     },
     {
-        "name": "Aris Thorne",
-        "identity": "Dr. Aris Thorne, Lord Alistair's seemingly loyal, long-time personal physician, in his late 50s. He is outwardly calm and collected, but possesses an unnerving knowledge of the Finch family's deepest secrets. He frequently glances at Eleanor with concern.",
-        "initial_location": "Drawing Room",
+        "name": "Josh",
+        "identity": "Josh, a loyal, cautious, and fearful man in his early 30s. He is driven by the desperate need to pay for his daughter's expensive medical operation. He has agreed to partner with Albert in the heist, promising to split the loot equally.",
+        "initial_location": "Bathroom",
         "gender": "",
         "personality": "",
         "initial_goals": "",
         "background": "",
-        "initial_context": "Dr. Aris Thorne maintained a veneer of professional calm upon hearing the news, his medical background perhaps steels him against overt displays of panic. However, beneath the surface, his sharp eyes missed nothing, particularly Eleanor's reaction, while his mind processed the implications of Lord Alistair's sudden demise, perhaps connecting it to long-held family secrets he was privy to. He would be observing the scene from the drawing-room, ready to offer his 'assistance' or observations."
-    },
-    {
-        "name": "Xenia Petrova",
-        "identity": "Madame Xenia Petrova, a flamboyant and ambitious international art dealer in her 40s, who was negotiating a major, highly secretive sale with Lord Alistair just hours before his death. She claims a strong alibi but seems overly interested in a specific, obscure painting in the manor's collection.",
-        "initial_location": "Drawing Room",
-        "gender": "",
-        "personality": "",
-        "initial_goals": "",
-        "background": "",
-        "initial_context": " Madame Xenia Petrova, fresh from her intense negotiation with Lord Alistair, was likely anticipating the outcome of her potential deal when the news broke. Her initial state would be one of dramatic shock and annoyance at the sudden disruption, quickly overlaid with a calculating curiosity as she assessed how this unforeseen event might impact her business interests and access to the manor's collection, while perhaps making a mental note of who else seemed affected. She'd be in the drawing-room, observing."
-    },
-    {
-        "name": "Mr. Davies",
-        "identity": "Mr. Davies, the manor's stoic and long-serving butler in his 60s. He sees and hears everything but reveals very little, offering only curt, precise answers to the Inspector's questions. He seems subtly protective of Lord Alistair's legacy and killed Lord Alistair.",
-        "initial_location": "Drawing Room",
-        "gender": "",
-        "personality": "",
-        "initial_goals": "",
-        "background": "",
-        "initial_context": "Mr. Davies, the unflappable butler, is the one who discovered the body in the study. His initial state is one of grim, controlled urgency as he delivers the shocking news to the assembled company in the drawing-room, his usual stoicism tested by the gravity of the situation, yet still managing to convey the facts with precise, if curt, language, before leading the Inspector to the scene."
-    },
+        "initial_context": """Josh coughed, wiping dirt and sweat from his forehead as he followed Albert out of the cramped tunnel.  The cold, sterile air of the museum bathroom was a stark contrast to the stifling heat of their burrow. He felt a jolt of adrenaline, mingled with a growing sense of dread.  They were in . He glanced around the pristine bathroom, acutely aware of every shadow and sound, already imagining the alarms, the guards, and the certain prison time. The weight of his daughter's health, the reason for this risky venture, pressed heavily on his shoulders. He hoped to get in and get out, without any hiccups."""
+    }
 ]
+
 SIMULATION_MODE = 'debug'  # Keep debug for testing

@@ -196,7 +196,7 @@ agent_configs = [
     }
 ]
 
-ALICE AND THE MURDERER BOB
+ALICE AND THE MURDERER BOB 
 agent_configs = [
     # --- The Investigator/Observer ---
     {

@@ -80,7 +80,7 @@ This is what the agent '{agent_name}' senses about the world:
 {world_state.get_static_context_for_agent(agent_name)}
 
 Analyze the agent's intent. 
-Is it possible? (Does the object it interacts with exist?)
+Is it possible? 
 What is the most plausible outcome?
 Your task is to determine if the action is successful, what type of action it is, any key parameters, and a description of what a close observer would see or hear or both.
 
@@ -345,9 +345,12 @@ Your single-line output:
 
                     if msg:
                         if target_agent:
-                            resolved_action["outcome_description"] = f"{agent_name} to {target_agent}, \"{msg}\""
-                        else: # Optional: if LLM gives message but no target
-                            resolved_action["outcome_description"] = f"{agent_name}: \"{msg}\""
+                            if target_agent in world_state.get_agents_at(agent_location):
+                                resolved_action["outcome_description"] = f"{agent_name} to {target_agent}, \"{msg}\""
+                            else: # Optional: if LLM gives message but no target
+                                resolved_action["outcome_description"] = f"{agent_name} (if talking to an existing character then it is not in range to hear {agent_name}) : \"{msg}\""
+                            
+                        
 
                 print(f"[LLM Resolver Final Output]: {resolved_action}")
                 return resolved_action

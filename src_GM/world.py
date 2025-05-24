@@ -219,7 +219,7 @@ class WorldState:
             name for name in self.get_agents_at(location) if name != agent_name
         ]
         if other_agents:
-            context += f"Others present: {', '.join(other_agents)}.\n"
+            context += f"Agents in range for interaction(you cannot interact with agents not mentioned here): {', '.join(other_agents)}.\n"
         else:
             context += f"{agent_name} is alone here.\n"
 

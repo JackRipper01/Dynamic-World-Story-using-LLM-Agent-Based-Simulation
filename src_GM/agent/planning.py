@@ -139,8 +139,6 @@ Based on your identity, situation, and memories, what do you think, say, or do n
 Choose and describe ONE single action, or utterance. You can be descriptive but must focus on only one action.
 If you speak, use quotes. If you act, describe the action.
 
-IMPORTANT: If someone has spoken to you directly in your recent perceptions, prioritize responding to them before pursuing your own goals. Being responsive to others is crucial for realistic social interaction.
-
 Consider how you might interact with other agents if they're present. You can:
 - Talk to them (e.g., "Ask Bob, "Hello, can you help me?"")
 - Collaborate with them on tasks
