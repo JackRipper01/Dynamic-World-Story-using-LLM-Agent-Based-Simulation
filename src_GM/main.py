@@ -498,28 +498,12 @@ def run_simulation():
         # Pass necessary context to the story generator
         # The world_state object contains the event_log
         # Agent configurations and narrative goal are in config
-        generated_story = story_generator.generate_story(
+        story_generator.generate_story(
             "simulation_logs.txt",
             agent_configs=config.agent_configs,
             narrative_goal=config.NARRATIVE_GOAL if hasattr(
                 config, 'NARRATIVE_GOAL') else "An undescribed adventure."
         )
-        print("\n\n--- THE STORY OF THE SIMULATION ---")
-        print(generated_story)
-
-        # Optionally save to a file
-        try:
-            with open("simulation_story.txt", "w", encoding="utf-8") as f:
-                f.write(
-                    f"Simulation Goal: {config.NARRATIVE_GOAL if hasattr(config, 'NARRATIVE_GOAL') else 'N/A'}\n")
-                f.write("Characters:\n")
-                for ac in config.agent_configs:
-                    f.write(f"  - {ac['name']}: {ac['identity']}\n")
-                f.write("\n--- STORY ---\n")
-                f.write(generated_story)
-            print("\n(Story also saved to simulation_story.txt)")
-        except Exception as e:
-            print(f"\n[Error] Could not save story to file: {e}")
 
 
 # --- Main Execution Block ---
