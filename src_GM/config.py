@@ -25,10 +25,10 @@ GENERATION_CONFIG = {
 
 # For Agent Planning (more creative)
 AGENT_PLANNING_GEN_CONFIG = {
-    "temperature": 1.5,  # User's desired higher temperature
+    "temperature": 1.0,  # User's desired higher temperature
     "top_p": 0.95,
-    "top_k": 60,         # Adjusted for higher temp
-    "max_output_tokens": 250,  # Slightly more room for creative plans
+    "top_k": 50,         # Adjusted for higher temp
+    "max_output_tokens": 128,  # Slightly more room for creative plans
 }
 
 # For Action Resolver (more logical, less creative)
@@ -44,7 +44,7 @@ STORY_GENERATOR_GEN_CONFIG = {
     "temperature": 0.75,  # Balanced for storytelling
     "top_p": 0.95,
     "top_k": 60,
-    "max_output_tokens": 2000,  # Allow for a longer story
+    "max_output_tokens": 4000,  # Allow for a longer story
 }
 
 # For Director (balanced for decision making and subtle influence)
@@ -52,13 +52,13 @@ DIRECTOR_GEN_CONFIG = {
     "temperature": 0.8,
     "top_p": 0.9,
     "top_k": 40,
-    "max_output_tokens": 150,
+    "max_output_tokens": 128,
 }
 
 # For Agent Memory Reflection (synthesis, concise, accurate)
 AGENT_REFLECTION_GEN_CONFIG = {
     "temperature": 0.6,  # More focused for reflection
-    "top_p": 0.85,
+    "top_p": 0.95,
     "top_k": 30,
     "max_output_tokens": 300,  # Enough for a few insights
 }
@@ -149,7 +149,7 @@ KNOWN_LOCATIONS_DATA = {
                 {"object": "diamond necklace", "state": "on display",
                     "optional_description": "The centerpiece: a dazzling diamond necklace, radiating light."
                  },
-                {"object": "display case", "state": "locked",
+                {"object": "display case", "state": "locked(but can be unlocked using tools)",
                     "optional_description": "Showcasing various other precious items: rubies, emeralds, gold bracelets, and antique watches."
                  },
                 {"object": "security camera", "state": "operational",
@@ -163,13 +163,13 @@ KNOWN_LOCATIONS_DATA = {
         "exits_to": ["Main Hallway"],
         "properties": {
             "contains": [
-                {"object": "sarcophagi", "state": "closed",
+                {"object": "sarcophagi", "state": "locked(but can be opened using tools)",
                     "optional_description": "Ornate stone sarcophagi of various sizes. Some are inscribed with hieroglyphs."
                  },
                 {"object": "statue of pharaoh", "state": "standing",
                     "optional_description": "Large stone statues of pharaohs and deities, their eyes seeming to follow movement."
                  },
-                {"object": "display case", "state": "locked",
+                {"object": "display case", "state": "locked(but can be unlocked using tools)",
                     "optional_description": "Showcasing gold jewelry, amulets, and scarabs."
                  },
                 {"object": "hieroglyphic writings", "state": "inscribed",
@@ -198,7 +198,7 @@ TONE = "Gritty, suspenseful, character-driven, with a focus on internal conflict
 agent_configs = [
     {
         "name": "Albert",
-        "identity": "Albert, a self-absorbed,egotistical, reckless, and impulsive man in his late 30s. He is a skilled thief with a substantial debt to clear. He wouldn't hesitate to betray a partner if it meant personal gain. He partnered with Josh through a mutual, trustworthy contact, needing assistance for this particular heist.His goal is to secure the heist's loot and pay off his debt",
+        "identity": "Albert, a mildly self-absorbed, somewhat egotistical, occasionally reckless, and at times impulsive man in his late 30s. He is a skilled thief with a substantial debt to clear. He wouldn't hesitate to betray a partner if it meant personal gain. He partnered with Josh through a mutual, trustworthy contact, needing assistance for this particular heist.His goal is to secure the heist's loot and pay off his debt",
         "initial_location": "Bathroom",
         "gender": "",
         "personality": "",
@@ -208,7 +208,7 @@ agent_configs = [
     },
     {
         "name": "Josh",
-        "identity": "Josh, a loyal, cautious, and fearful man in his early 30s. He is driven by the desperate need to pay for his daughter's expensive medical operation. He has agreed to partner with Albert in the heist, promising to split the loot equally.",
+        "identity": "Josh, a loyal, somewhat cautious and timid man in his early 30s. He is driven by the desperate need to pay for his daughter's expensive medical operation. He has agreed to partner with Albert in the heist, promising to split the loot equally.",
         "initial_location": "Bathroom",
         "gender": "",
         "personality": "",
