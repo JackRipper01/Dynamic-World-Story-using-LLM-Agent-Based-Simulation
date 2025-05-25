@@ -262,21 +262,25 @@ Your single-line output:
                             print(f"[LLM Resolver Debug]: Checking if '{destination}' is an object in {agent_location}") 
                             print(f"[LLM Resolver Debug]: Objects in {agent_location}: {objects_in_destination}")
                         
-                        destination_is_object = False
-                        #check if destination is a object in the agent's location where objects_in_destination is a list of dictionaries 
-                        # e.g [{'object': 'sofas and chairs', 'state': 'occupied by suspects', 'optional_description': 'Plush velvet sofas and armchairs where the remaining occupants of the manor are gathered.'}, {'object': 'coffee table', 'state': 'scattered tea cups', 'optional_description': 'A round]
-                        #your code goes here
-                        if isinstance(objects_in_destination, list):
-                            for item_data in objects_in_destination:
-                                if isinstance(item_data, dict) and item_data.get("object") == destination:
-                                    destination_is_object = True
-                                    break
-                        # If destination is not a known location and not an object in the current location
-                        if destination_is_object is False:
-                            resolved_action["success"] = False
-                            resolved_action["outcome_description"] = f"{agent_name} tries to move to '{destination}', but it is not a known location."
-                        else:
-                            resolved_action["success"] = True
+                        
+                        resolved_action["success"] = True #--------------------------------------> INCREASED FREEDOM
+                        
+                        # -------------------------------> INCREASE CONTROL BUT LESS FREEDOM
+                        # destination_is_object = False
+                        # #check if destination is a object in the agent's location where objects_in_destination is a list of dictionaries 
+                        # # e.g [{'object': 'sofas and chairs', 'state': 'occupied by suspects', 'optional_description': 'Plush velvet sofas and armchairs where the remaining occupants of the manor are gathered.'}, {'object': 'coffee table', 'state': 'scattered tea cups', 'optional_description': 'A round]
+                        # #your code goes here
+                        # if isinstance(objects_in_destination, list):
+                        #     for item_data in objects_in_destination:
+                        #         if isinstance(item_data, dict) and item_data.get("object") == destination:
+                        #             destination_is_object = True
+                        #             break
+                        # # If destination is not a known location and not an object in the current location
+                        # if destination_is_object is False:
+                        #     resolved_action["success"] = False
+                        #     resolved_action["outcome_description"] = f"{agent_name} tries to move to '{destination}', but it is not a known location."
+                        # else:
+                        #     resolved_action["success"] = True
                             
                         # world_state_updates remains empty for the move
                     elif destination not in world_state.get_reachable_locations(agent_location):
@@ -347,8 +351,10 @@ Your single-line output:
                         if target_agent:
                             if target_agent in world_state.get_agents_at(agent_location):
                                 resolved_action["outcome_description"] = f"{agent_name} to {target_agent}, \"{msg}\""
+                            elif target_agent in world_state.registered_agents:
+                                resolved_action["outcome_description"] = f"{agent_name} tries to speak to {target_agent} but {target_agent} is not in range to hear it, maybe moving to a different location solves the problem."
                             else: # Optional: if LLM gives message but no target
-                                resolved_action["outcome_description"] = f"{agent_name} (if talking to an existing character then it is not in range to hear {agent_name}) : \"{msg}\""
+                                resolved_action["outcome_description"] = f"{agent_name}  : \"{msg}\""
                             
                         
 
