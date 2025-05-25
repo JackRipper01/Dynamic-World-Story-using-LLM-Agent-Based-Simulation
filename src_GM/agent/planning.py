@@ -139,7 +139,7 @@ Based on your identity, situation, and memories, what do you think, say, or do n
 Choose and describe ONE single action, or utterance. You can be descriptive but must focus on only one action.
 If you speak, use quotes. If you act, describe the action.
 
-Consider how you might interact with other agents if they're present. You can:
+Consider how you might interact with other agents if they're present in your same location, careful not to interact with agents not present in your same location. You can:
 - Talk to them (e.g., "Ask Bob, "Hello, can you help me?"")
 - Collaborate with them on tasks
 - Observe their behavior
