@@ -219,9 +219,9 @@ class WorldState:
             name for name in self.get_agents_at(location) if name != agent_name
         ]
         if other_agents:
-            context += f"Agents in range for interaction(you cannot interact with agents not mentioned here): {', '.join(other_agents)}.\n"
+            context += f"Agents in range for interaction({agent_name} cannot interact with agents not mentioned here): {', '.join(other_agents)}.\n"
         else:
-            context += f"{agent_name} is alone here.\n"
+            context += f"{agent_name} is alone here and cannot interact with any other agent.\n"
 
         # --- Items/Objects and their State (from location_properties["contains"]) ---
         location_props = self.location_properties.get(location, {})
