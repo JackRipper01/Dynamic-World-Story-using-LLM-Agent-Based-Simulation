@@ -82,7 +82,7 @@ This is what the agent '{agent_name}' senses about the world:
 Analyze the agent's intent. 
 Is it possible? 
 What is the most plausible outcome?
-Your task is to determine if the action is successful, what type of action it is, any key parameters, and a description of what a close observer would see or hear or both.
+Your task is to determine if the action is successful, what type of action it is, any key parameters, and a description of what a close observer would see or hear.
 
 Output your analysis as a single line of text with exactly four parts, separated by " | " (a pipe symbol with spaces around it):
 1.  Success Status: Either "SUCCESS" or "FAILURE".
@@ -352,7 +352,7 @@ Your single-line output:
                             if target_agent in world_state.get_agents_at(agent_location):
                                 resolved_action["outcome_description"] = f"{agent_name} to {target_agent}, \"{msg}\""
                             elif target_agent in world_state.registered_agents:
-                                resolved_action["outcome_description"] = f"{agent_name} tries to speak to {target_agent} but {target_agent} is not in range to hear it, maybe moving to a different location solves the problem."
+                                resolved_action["outcome_description"] = f"{agent_name} tries to speak to {target_agent} but {target_agent} is not close enough to hear it."
                             else: # Optional: if LLM gives message but no target
                                 resolved_action["outcome_description"] = f"{agent_name}  : \"{msg}\""
                             
