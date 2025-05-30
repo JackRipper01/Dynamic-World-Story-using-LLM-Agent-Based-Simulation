@@ -1,0 +1,172 @@
+Turno de Josh en el baño:
+Josh a Albert: "Albert... ¿estás seguro? Digo, la seguridad... dijeron que era de última generación. Y... ¿y si nos pillan? Sarah..."
+
+Turno de Albert en el baño:
+Albert a Josh: "Tranquilo, Josh. ¿Seguridad de última generación? Por favor. Eso es lo que *quieren* que pienses. Ahora, vayámonos. Cuanto antes entremos y salgamos, antes podrás volver con tu... Sarah."
+
+Turno de Josh en el baño:
+Josh a Albert: "Bien. Bien", digo, intentando parecer más seguro de lo que me siento. "Vamos... a darnos prisa, ¿de acuerdo? Cuanto menos tiempo pasemos aquí, mejor."
+
+Turno de Albert en el baño:
+Albert a Josh: "No te preocupes, Josh. He pasado por cosas peores. Ahora, ¿te vas a quedar ahí parado, boquiabierto, o me vas a *ayudar* a hacerme rico?
+
+Turno de Josh en el Baño:
+Josh a Albert: "Solo... prométeme que seguiremos el plan, Albert. Nada de improvisar, ¿de acuerdo? No puedo permitirme ningún error."
+
+Turno de Albert en el Baño:
+Albert a Josh: "¿Seguir el plan? Josh, *Yo soy* el plan. Ahora, movámonos. Y trata de seguir el ritmo."
+
+Turno de Josh en el Baño:
+Josh a Albert: "Espera... antes de irnos. ¿Qué hay de las cámaras? ¿Las desactivaste todas?"
+
+Turno de Albert en el Baño:
+Albert a Josh: "¿Cámaras? Por supuesto, desactivé las cámaras. ¿Crees que soy un aficionado? ¿Estás listo o tengo que hacerlo todo yo solo?
+
+Turno de Josh en el baño:
+Josh: "Bien... bien, vayámonos."
+
+Turno de Albert en el pasillo principal:
+Albert empuja la puerta del baño y entra al pasillo principal.
+
+Turno de Josh en el baño:
+Josh abre lentamente la puerta del baño y mira con cautela hacia el pasillo principal, buscando cualquier señal de peligro.
+
+Turno de Albert en el pasillo principal:
+Albert introduce la ganzúa en la cerradura de la vitrina.
+
+Turno de Josh en el pasillo principal:
+Josh sale lentamente del baño hacia el pasillo, con la espalda pegada a la pared, e inmediatamente agacha la cabeza hacia la izquierda, mirando con cautela por la esquina.
+
+Turno de Albert en el pasillo principal:
+Albert a Josh: "Tranquilo, Josh". Estamos dentro. Intenta seguirles el ritmo y quizás te toque una parte del pastel.
+
+Turno de Josh en el Pasillo Principal:
+Josh mantiene la cabeza gacha y recorre el pasillo con la mirada, explorando rápidamente las vitrinas en busca de la Exhibición de Joyas. Luego, en silencio, hace un gesto con la cabeza hacia ella.
+
+Turno de Albert en el Pasillo Principal:
+Albert ignora a Josh, abre la vitrina, saca el cáliz y lo examina. Luego le dice a Josh: "No te distraigas, Josh. Yo me encargo de lo bueno. Puedes empezar a explorar las demás exhibiciones".
+
+Turno de Josh en la Exhibición de Joyas:
+Josh da un paso vacilante hacia la Exhibición de Joyas.
+
+Turno de Albert en el Pasillo Principal:
+Albert intenta hablar con Josh, pero Josh no está a su alcance para oírlo; quizás moverse a otro lugar resuelva el problema.
+
+Turno de Josh en la Exhibición de Joyas:
+Josh da unos pasos, con la mirada fija en el collar de diamantes.
+
+Turno de Albert en la Sala de Seguridad:
+Albert, tras comprobar si había amenazas y hablar con Josh (aunque Josh no estaba presente), se gira y camina lentamente hacia la Sala de Seguridad.
+
+Turno de Josh en la Exhibición de Joyas:
+Josh: "Esto es todo. Solo esto. Luego nos vamos."
+
+Turno de Albert en la Sala de Seguridad:
+Albert revisa las cámaras, encuentra la de la Exhibición de Joyas y la observa.
+
+Turno de Josh en el Pasillo Principal:
+Josh da un paso atrás y susurra para sí mismo, luego se gira y camina hacia el Pasillo Principal.
+
+Turno de Albert en la Sala de Seguridad:
+Albert intenta hablar con Josh, pero Josh no está a su alcance para oírlo; quizás moverse a otro lugar solucione el problema.
+
+Turno de Josh en el Pasillo Principal:
+Josh intenta hablar con Albert, pero Albert no está a su alcance para oírlo; quizás moverse a otro lugar solucione el problema.
+
+Turno de Albert en la Sala de Seguridad:
+Albert gira en la silla, se reclina y estudia el monitor de seguridad, concentrándose en otras señales que no sean la de la Exhibición de Joyas, intentando discernir los horarios de patrulla.
+
+Turno de Josh en el Pasillo Principal:
+Josh intenta... Doy unos pasos vacilantes hacia Albert, con las manos fuertemente entrelazadas delante de mí. Intento sostener su mirada, pero mis ojos se desvían. Trago saliva con dificultad, y mi voz es apenas un susurro cuando digo: "Albert... por favor. Vámonos. Podemos... podemos intentar algo diferente. Esto es... es demasiado". Josh, solo en el pasillo, le susurra a un Albert ausente, con la voz apenas audible, mientras le ruega que se vaya.
+
+Turno de Albert en la Sala de Seguridad:
+Albert se inclina hacia adelante, pulsa un botón en el panel de control, y el monitor de seguridad muestra la señal del Pasillo Principal, cerca de la Exhibición de Joyas.
+
+Turno de Josh en el baño:
+Josh se gira y camina rápidamente hacia el baño, buscando a Albert en el camino.
+
+Turno de Albert en la sala de seguridad:
+Albert sostiene el descifrador de códigos cerca del teclado, el dispositivo zumba, ya tiene en sus manos la decisión que tanto había esperado.
+
+Turno de Josh en el baño:
+Josh inspecciona el baño, se pregunta donde pudiera estar Albert.
+
+Turno de Albert en la sala de seguridad:
+Albert se inclina y busca en las cámaras alguna señal de Josh, lo perdió de vista cuando se imaginaba su plan perfecto en la cabeza.
+
+Turno de Josh en el Baño:
+Josh escucha un sonido por lo que cierra y echa el cerrojo a la puerta tras él.
+
+Turno de Albert en la Sala de Seguridad:
+Albert inquieto observa atentamente la pantalla.
+
+Turno de Josh en el Baño:
+Josh se agacha y recoge el cuchillo que hay en la caja de herramientas.
+
+Turno de Albert en la Sala de Seguridad:
+Albert se inclina hacia adelante, con los ojos fijos en el monitor de seguridad y el panel de la cerradura, listo para cerrar la puerta a distancia si es necesario.
+
+Turno de Josh en el Baño:
+Josh se apoya en la puerta con el cuchillo en la mano, espera con todas sus fuerzas que el sonido que escucho haya sido Albert, digo: “Albert….Albert eres tu…”
+
+Turno de Albert en la Sala de Seguridad:
+Albert introduce el código en el teclado y la puerta permanece desbloqueada, permitiéndole pasar.
+
+Turno de Josh en el Baño:
+Josh  se despega de la puerta, suelta el cuchillo junto al lavabo, se echa agua fría en la cara, despejándose momentáneamente.
+
+Turno de Albert en la Sala de Seguridad:
+Albert ansioso se prepara para bloquear la puerta.
+
+Turno de Josh en el baño:
+Josh se apoya en el lavabo, se mira fijamente, murmura algo y respira hondo varias veces.
+
+Turno de Albert en la sala de seguridad:
+Albert empieza a perder la paciencia y vuelve a buscar a Josh es las cámaras.
+
+Turno de Josh en el baño:
+Josh piensa en que todo ha salido mal y empieza a plantearse la idea de irse ahí, total la entrada del túnel estaba allí mismo.
+
+Turno de Albert en la sala de seguridad:
+Albert se inclina hacia delante, con la mirada fija en el monitor de seguridad, mirando sutilmente el temporizador y sonriendo.
+
+Turno de Josh en el baño:
+Josh se acerca a  la entrada del túnel, decide si debe irse o seguir esperando a Albert, empieza a sospechar en la posibilidad de que Albert de haya ido con el collar y lo haya dejado solo a la espera de los guardias.
+
+Turno de Albert en la sala de seguridad:
+Albert se inclina hacia adelante, amplía la vista del pasillo principal  en el monitor de seguridad y sonríe.
+Turno de Josh en el baño:
+Josh se apoya en la fría pared de azulejos, decide ir a buscar a Albert.
+
+Turno de Albert en la sala de seguridad:
+Albert: "A ver cuánto tarda en darse cuenta de que ahora está solo".
+
+Turno de Josh en el baño:
+Josh se acerca a la puerta, la desbloquea tratando de hacer el menor ruido posible, se asoma al pasillo y sale en busca de su compañero.
+
+Turno de Albert en la sala de seguridad:
+Albert: "Tic-tac, Josh. Se acaba el tiempo."
+
+Turno de Josh en el pasillo principal:
+Josh se aleja lentamente de la puerta, sin apartar la vista de ella, y comienza a revisar las áreas en las que podría estar Albert.
+
+Turno de Albert en la sala de seguridad:
+Albert: "Muy bien, a ver si mi "compañero" tiene el cerebro de salir antes de que el cronómetro llegue a cero." O si necesito ajustar aún más las medidas de seguridad.
+
+Turno de Josh en el Pasillo Principal:
+Josh examina cuidadosamente las cámaras, con el miedo de que alguna pudiera no estar desactivada.
+
+Turno de Albert en la Sala de Seguridad:
+Albert se inclina hacia adelante, ajusta la señal del monitor de seguridad a la cámara del Pasillo Principal y observa atentamente si hay alguna señal de Josh.
+
+Turno de Josh en el Pasillo Principal:
+Josh examina meticulosamente el suelo,  llega a la sección de la Exposicion de Joyas, se mueve lentamente y murmura "Maldita sea" en voz baja al darse cuenta de que no ve a Albert por ningún lado.
+
+Turno de Albert en la Sala de Seguridad:
+Albert se inclina hacia adelante y presiona el botón del panel de control, activando el cierre total de la Exposición de Joyas.
+
+Turno de Josh en el Pasillo Principal:
+Josh se agacha y esquiva una cámara de seguridad todavía con el miedo de que alguna siga trasmitiendo.
+
+Turno de Albert en la Sala de Seguridad:
+Albert: "Vamos, Josh. No me decepciones. Tienes cinco minutos o te dejo atrás. Y al tesoro."

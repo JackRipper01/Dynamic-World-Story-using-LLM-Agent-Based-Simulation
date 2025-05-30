@@ -20,7 +20,7 @@ iteration_count = 0
 
 # STEP 1: Generate the initial draft
 current_story_draft = story_generator.generate_initial_story_draft(
-    log_file_path="simulation_logs.txt",
+    log_file_path="simulation_logs_upgraded.txt",
     agent_configs=config.agent_configs,
     narrative_goal=config.NARRATIVE_GOAL
 )

@@ -328,8 +328,12 @@ Instructions for the Story:
     - **Setting & Atmosphere:** Immerse the reader by vividly describing the environment, time of day, weather, and the overall atmosphere *as it changes and relates to the events*.
     - **Character Immersion:** Go beyond simple actions. Describe characters' appearances, expressions, body language, and subtle gestures. Infuse their internal thoughts, feelings, and emotional reactions to the unfolding events. Reveal their evolving motivations and the dynamics of their relationships through their interactions and dialogue.
     - **Sensory & Action Detail:** Incorporate rich sensory details (sights, sounds, smells, tactile sensations). For actions, detail *how* they were performed, the *purpose* behind them, and the *challenges or successes* encountered.
+- **Cohesion and Flow:**
+    - **Seamless Transitions:** Ensure smooth, logical, and evocative transitions between scenes and events. Avoid abrupt shifts and chronological leaps without proper narrative bridging. Each new scene should naturally follow the previous one.
+    - **Pacing & Rhythm:** Vary sentence structure and paragraph length to create a dynamic reading experience that reflects the story's tension and calm.
+    - **Unified Story, Not a List:** The ultimate goal is a flowing, prose-driven narrative, not a factual report or a series of bullet points disguised as text. Every event should feel earned and contribute to the overall story progression. Avoid starting sentences with "Then," or similar repetitive chronological markers.
+- **Leveraging the Narrative Goal:** Continuously keep the overarching "Narrative Premise/Goal" in mind. How do the events contribute to or evolve this goal? Use it to guide the story's direction, emotional tone, and ultimate conclusion.
 - **Introduction:** Begin with an engaging introduction (1-2 paragraphs) that sets the stage, introduces the primary characters, and hints at the overarching premise. Make sure that the introduction is coherent with the logs. For example, if the logs start with a character in a certain location, ensure the introduction connects to that.
-
 Your Story:
 """
 
