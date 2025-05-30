@@ -49,7 +49,7 @@ def create_llm_instance(model_name: str, generation_config: dict, purpose: str =
             f"FATAL ERROR: Could not create LLM instance for {purpose} ({model_name}). Error: {e}")
         print(f"Generation Config used: {generation_config}")
         raise  # Re-raise the exception to halt simulation if a critical LLM cannot be created
-    
+
 
 # --- Factory Functions for Components ---
 # These functions allow creating different implementations of simulation components
@@ -119,7 +119,7 @@ def get_planning_module(planning_type):  # Removed 'model' argument
 
 def get_action_resolver(resolver_type, world_ref=None):  # Removed 'model' argument
     """Factory function to create the action resolver."""
-    if resolver_type == "LLMResolver":
+    if resolver_type == "LLMActionResolver":
         from action_resolver import LLMActionResolver
         resolver_llm = create_llm_instance(
             config.MODEL_NAME,
@@ -128,6 +128,15 @@ def get_action_resolver(resolver_type, world_ref=None):  # Removed 'model' argum
         )
         # Pass the specific LLM
         return LLMActionResolver(resolver_llm, world_ref)
+    if resolver_type == "LLMActionResolverWithReason":
+        from action_resolver import LLMActionResolverWithReason
+        resolver_llm = create_llm_instance(
+            config.MODEL_NAME,
+            config.ACTION_RESOLVER_GEN_CONFIG,
+            purpose="Action Resolver with Reasoning"
+        )
+        # Pass the specific LLM
+        return LLMActionResolverWithReason(resolver_llm, world_ref)
     else:
         raise ValueError(f"Unknown action resolver type: {resolver_type}")
 
@@ -156,7 +165,7 @@ def get_story_generator(generator_type: str):  # Removed 'model' argument
         return None
     else:
         raise ValueError(f"Unknown story generator type: {generator_type}")
-    
+
 # --- Main Simulation Function ---
 
 
@@ -177,13 +186,13 @@ def run_simulation():
     elif config.SIMULATION_MODE == 'story':
         print("--- Starting Agent Simulation ---")
 
-
-    # 1. Initialize Story Generator 
+    # 1. Initialize Story Generator
     story_generator = None
     if hasattr(config, 'STORY_GENERATOR_TYPE') and config.STORY_GENERATOR_TYPE:
         story_generator = get_story_generator(config.STORY_GENERATOR_TYPE)
         if config.SIMULATION_MODE == 'debug' and story_generator:
-            print(f"Story generator '{config.STORY_GENERATOR_TYPE}' initialized.")
+            print(
+                f"Story generator '{config.STORY_GENERATOR_TYPE}' initialized.")
 
     # 2. Initialize World State and Event Dispatcher
     event_dispatcher = get_event_dispatcher(config.EVENT_PERCEPTION_MODEL)
@@ -236,8 +245,8 @@ def run_simulation():
         config.DIRECTOR_GEN_CONFIG,
         purpose="Director"
     )
-    director = Director(world,director_llm, config.NARRATIVE_GOAL if hasattr(
-        config, 'NARRATIVE_GOAL') else "An emergent story.",None,event_dispatcher)
+    director = Director(world, director_llm, config.NARRATIVE_GOAL if hasattr(
+        config, 'NARRATIVE_GOAL') else "An emergent story.", None, event_dispatcher)
     director.memory = get_memory_module(director, config.AGENT_MEMORY_TYPE)
     if config.SIMULATION_MODE == 'debug':
         print(
@@ -307,9 +316,9 @@ def run_simulation():
 
         # --- Sequential Agent Action, Resolution, and Perception Loop ---
         for agent in current_step_agents:
-            
+
             director.director_step()
-            
+
             if config.SIMULATION_MODE == 'debug':
                 # More prominent agent turn header
                 turn_header = f" AGENT: {agent.name}'s Turn "
@@ -352,18 +361,24 @@ def run_simulation():
 
             # 3. PROCESS RESULT, UPDATE WORLD, DISPATCH EVENT (IMMEDIATELY)
             outcome_desc_for_event = ""
+            outcome_reason_for_event = ""
 
             if result and result.get("success"):
                 outcome_desc = result.get(
                     'outcome_description', f"{agent.name} acted.")
+                outcome_reason = result.get('outcome_reason', '')
+
                 outcome_desc_for_event = outcome_desc  # Use this for the event
+                outcome_reason_for_event = outcome_reason  # Use this for the event
+
                 if config.SIMULATION_MODE == 'debug':
                     print(
                         f"    [RESOLVER_SUCCESS] Action: {result.get('action_type', 'Unknown')}")
-                    print(f"      Outcome: {outcome_desc}")
+                    print(
+                        f"      Outcome: {outcome_desc} \n Reason: {outcome_reason}")
                 if config.SIMULATION_MODE == 'story':
                     # Slightly more spacing for story mode
-                    print(f"\n{outcome_desc}\n")
+                    print(f"\n{outcome_desc}\n{outcome_reason}\n\n")
 
                 if result.get("world_state_updates"):
                     if config.SIMULATION_MODE == 'debug':
@@ -407,10 +422,14 @@ def run_simulation():
             if outcome_desc_for_event:
                 event_scope = result.get(
                     'event_scope', 'action_outcome') if result else 'system_error'
+
+                if outcome_reason_for_event:
+                    outcome_desc_for_event += f" Because {outcome_reason_for_event}"
+
                 world.log_event(outcome_desc_for_event, event_scope,
                                 current_loc, agent.name if result else 'System')
                 append_to_log_file(
-                    "simulation_logs.txt",f"""{agent.name}'s turn in {current_loc}:\n {outcome_desc_for_event}\n\n""")
+                    "simulation_logs.txt", f"""{agent.name}'s turn in {current_loc}:\n {outcome_desc_for_event}\n\n""")
                 new_event = Event(
                     description=outcome_desc_for_event,
                     location=current_loc,
@@ -431,7 +450,7 @@ def run_simulation():
 
             agent_who_took_last_turn_this_step = agent
             time.sleep(1)
-            
+
          # Update the tracker for the *next* step's calculation
         if agent_who_took_last_turn_this_step:
             last_agent_acted_in_previous_step = agent_who_took_last_turn_this_step
@@ -491,7 +510,6 @@ def run_simulation():
 
     # ---------------------------------------- Simulation End ----------------------------------------
     print(f"\n--- Simulation Ended after {step} steps ---")
-
 
     # --- Story Generation (if configured) ---
     if story_generator:

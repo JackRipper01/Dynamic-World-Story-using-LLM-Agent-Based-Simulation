@@ -187,7 +187,7 @@ KNOWN_LOCATIONS_DATA = {
 # --- Component Selection ---
 AGENT_MEMORY_TYPE = "ShortLongTMemoryIdentityOnly"
 AGENT_PLANNING_TYPE = "SimplePlanningIdentityOnly"
-ACTION_RESOLVER_TYPE = "LLMResolver"
+ACTION_RESOLVER_TYPE = "LLMActionResolverWithReason"
 EVENT_PERCEPTION_MODEL = "DirectEventDispatcher"
 STORY_GENERATOR_TYPE = "LLMLogStoryGenerator"
 
