@@ -1,0 +1,52 @@
+Josh's turn in Bathroom:
+ Josh to Albert, ""Are you sure about this? I... I don't like this feeling.""
+
+
+Albert's turn in Bathroom:
+ Albert to Josh, ""Stop whining, Josh. We're in. That's all that matters. Now, let's get this done before someone realizes they're missing a priceless artifact!""
+
+
+Josh's turn in Bathroom:
+ Josh to Albert, ""Just... just promise me we stick to the plan, alright? No improvising. And if we get caught... promise me we'll prioritize getting out. My daughter... she needs me.""
+
+
+Albert's turn in Bathroom:
+ Albert runs his fingers along the edges of the sinks, presses the hand dryers' buttons, and mutters to himself. Because Albert is searching the bathroom for something hidden.
+
+
+Josh's turn in Bathroom:
+ Josh to Albert, ""Albert, what are you looking for?""
+
+
+Albert's turn in Bathroom:
+ Albert to Josh, ""What do you think I'm doing? I'm making sure we haven't missed anything! This is a museum, Josh, not a bloody library. They don't just leave priceless artifacts lying around. We need to be thorough, or we'll walk out of here with nothing but a headache. Now, unless you'd rather stand there and worry, start checking the toilets!""
+
+
+Josh's turn in Bathroom:
+ Josh reluctantly approaches a toilet, lifts the lid, and hesitantly feels around inside the bowl and under the seat. Because Josh is searching the toilet for something.
+
+
+Albert's turn in Main Hallway:
+ Albert walks toward the door, checks the handle, and glances back at Josh before muttering to himself. Because Albert wants to assess the exit and ensure the hallway is safe.
+
+
+Josh's turn in Bathroom:
+ Josh tries to speak to Albert but Albert is not close enough to hear it.
+
+
+Albert's turn in Main Hallway:
+ Albert attempt to I stride confidently into the main hallway, my eyes immediately sweeping the display cases. My hand reaches out, testing the cold glass of a case containing a golden dagger. I give it a little tug, just to see if it's worth the effort. "Let's see what treasures await," I mutter under my breath, already calculating the value of the artifacts on display. failed: Albert tugs at the glass case containing the golden dagger, but it remains firmly locked.
+
+
+Director:
+ 'Small Crowbar' (described as: A small, but sturdy crowbar, perfect for delicate lock-picking. It's tucked away behind a loose tile., state: hidden) appears in Bathroom.
+
+
+Josh's turn in Bathroom:
+ Josh slowly lifts the lid of the second toilet, his eyes darting around. Because Josh is searching the toilet.
+
+
+Director:
+ 'Small First Aid Kit' (described as: A compact first aid kit containing bandages, antiseptic wipes, and pain relievers. It's tucked away discreetly under the sink., state: hidden) appears in Bathroom.
+
+

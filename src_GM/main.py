@@ -430,6 +430,8 @@ def run_simulation():
                                 current_loc, agent.name if result else 'System')
                 append_to_log_file(
                     "simulation_logs.txt", f"""{agent.name}'s turn in {current_loc}:\n {outcome_desc_for_event}\n\n""")
+                append_to_log_file(
+                    "simulation_logs_with_director_logs.txt", f"""{agent.name}'s turn in {current_loc}:\n {outcome_desc_for_event}\n\n""")
                 new_event = Event(
                     description=outcome_desc_for_event,
                     location=current_loc,

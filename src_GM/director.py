@@ -6,6 +6,7 @@ import google.generativeai as genai
 import config
 import random
 from agent.memory import BaseMemory  # Assuming BaseMemory is in agent/memory.py
+from logs import append_to_log_file
 from world import Event  # For creating event objects to dispatch
 try:
     # Also catch general API errors
@@ -288,6 +289,8 @@ Your chosen environmental intervention (single line):"""
                     if action_type != "ADD_OBJECT":
                         self.event_dispatcher.dispatch_event(
                             event_to_dispatch, self.world.registered_agents, self.world.agent_locations)
+                    append_to_log_file(
+                        "simulation_logs_with_director_logs.txt", f"""Director:\n {event_to_dispatch.description}\n\n""")
             elif action_type != "DO_NOTHING":
                 self.memory.add_observation(
                     f"Action Failed: Attempted '{intervention_action_string}', but it could not be applied."
