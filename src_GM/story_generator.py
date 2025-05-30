@@ -186,9 +186,10 @@ Your Story:
             # than the event log, or append it to the SAME file with a clear marker.
             # E.g.,
             # from logs import append_to_log_file
-            append_to_log_file("simulation_log.txt", "\n--- Final Generated Story ---")
-            append_to_log_file("simulation_log.txt", story_text)
-            append_to_log_file("simulation_log.txt", "---------------------------\n")
+            append_to_log_file("simulation_story_zero-shot.txt", "\n--- Final Generated Story ---")
+            append_to_log_file("simulation_story_zero-shot.txt", story_text)
+            append_to_log_file("simulation_story_zero-shot.txt",
+                               "---------------------------\n")
 
             try:
                 # Ensure 'config' is accessible, or pass narrative_goal and agent_configs directly
@@ -321,23 +322,13 @@ Tone: {tone_prompt if tone_prompt else "Neutral"}
 {events_section}
 
 Instructions for the Story:
-- **Core Principle:** Use the simulation logs as the *ground knowledge* and *key plot points*. The story must adhere strictly to the sequence and core facts of the logged events, ensuring high fidelity.
-- **Narrative Expansion:** Your primary goal is to *elaborate upon* and *contextualize* these events. Do not simply list them or present only dialogue.
+- **Core Principle: Weaving the Narrative:** Your paramount task is to transform the raw simulation logs into a *rich, immersive, and continuous narrative*. While maintaining high fidelity to the core events in the logs, *do not simply recount them*. Instead, use them as the structural backbone upon which you build a compelling story.
+- **Narrative Expansion:** Your primary goal is to *elaborate upon* and *contextualize* these events but be careful not to simply list them or present only dialogue.
 - **Show, Don't Tell:**
-    - **Setting & Atmosphere:** Describe the environment, time of day, weather, and the overall atmosphere. Set the scene for each significant event.
-    - **Character Description:** Describe character appearances, expressions, body language, and subtle gestures.
-    - **Sensory Details:** Incorporate sights, sounds, smells, and tactile sensations to immerse the reader.
-    - **Actions & Movements:** Expand on simple actions. For example, instead of "Character A moved to the kitchen," describe *how* they moved, their purpose, and what they encountered.
-- **Character Depth:**
-    - **Internal Monologue/Thoughts:** Infer and describe characters' thoughts, feelings, and internal struggles. How do they react emotionally to the events? What are their immediate desires or concerns?
-    - **Motivations:** Clearly (or subtly) reveal the motivations behind characters' actions and decisions, consistent with their established identities.
-    - **Relationships:** Show the dynamics and evolution of relationships between characters through their interactions and reactions.
-- **Flow and Pacing:**
-    - Weave all elements into a flowing, continuous narrative prose.
-    - Use smooth transitions between events and scenes.
-    - Vary sentence structure and paragraph length for readability.
-- **Introduction:** Begin with an engaging introduction (1-2 paragraphs) that sets the stage, introduces the primary characters, and hints at the overarching premise.
-- **Conclusion:** Craft a compelling and conclusive ending (2 or more paragraphs), even if the simulation logs end abruptly. Provide a fitting resolution, an impactful cliffhanger, or a thoughtful reflection on the events. Expand on any final log entries to bring the story to a satisfying narrative close.
+    - **Setting & Atmosphere:** Immerse the reader by vividly describing the environment, time of day, weather, and the overall atmosphere *as it changes and relates to the events*.
+    - **Character Immersion:** Go beyond simple actions. Describe characters' appearances, expressions, body language, and subtle gestures. Infuse their internal thoughts, feelings, and emotional reactions to the unfolding events. Reveal their evolving motivations and the dynamics of their relationships through their interactions and dialogue.
+    - **Sensory & Action Detail:** Incorporate rich sensory details (sights, sounds, smells, tactile sensations). For actions, detail *how* they were performed, the *purpose* behind them, and the *challenges or successes* encountered.
+- **Introduction:** Begin with an engaging introduction (1-2 paragraphs) that sets the stage, introduces the primary characters, and hints at the overarching premise. Make sure that the introduction is coherent with the logs. For example, if the logs start with a character in a certain location, ensure the introduction connects to that.
 
 Your Story:
 """
@@ -356,18 +347,17 @@ Your Story:
             return failure_message
 
         print("--- Initial Story Draft Complete ---")
-        append_to_log_file("simulation_log.txt",
+        append_to_log_file("Initial_Story_Draft.txt",
                            "\n--- Initial Generated Story Draft ---")
-        append_to_log_file("simulation_log.txt", generated_story)
-        append_to_log_file("simulation_log.txt",
+        append_to_log_file("Initial_Story_Draft.txt", generated_story)
+        append_to_log_file("Initial_Story_Draft.txt",
                            "-----------------------------------\n")
 
         return generated_story
 
-    def refine_and_conclude_story(self, current_story_so_far: str,
-                                  log_file_path: str, agent_configs: list, narrative_goal: str) -> str:
+    def refine_and_conclude_story(self, current_story_so_far: str, agent_configs: list, narrative_goal: str) -> str:
         """
-        Iteratively refines and attempts to conclude the story based on previous content and logs.
+        Iteratively refines and attempts to conclude the story based on previous content.
         The LLM determines if it's complete or needs to continue.
         """
         print("\n--- Refining Story and Checking for Conclusion ---")
@@ -380,20 +370,10 @@ Your Story:
         characters_summary = "The characters involved were:\n" + \
             "\n".join(character_intros)
 
-        formatted_events = []
-        try:
-            with open(log_file_path, 'r', encoding='utf-8') as f:
-                raw_events = [line.strip() for line in f if line.strip()]
-            formatted_events = raw_events
-            events_summary = "The key events that unfolded, based on the simulation log:\n" + \
-                             "\n".join(formatted_events)
-        except Exception:
-            events_summary = "Error: Could not retrieve original event logs for context."
-
         tone_prompt = self.tone if self.tone else "Neutral"
 
         # The core iterative prompt
-        prompt = f"""You are a master storyteller, meticulously crafting a narrative from simulation data. You are currently reviewing a story in progress.
+        prompt = f"""You are a master storyteller. You are currently reviewing a story in progress.
 
 Narrative Premise/Goal:
 {narrative_goal if narrative_goal else "An emergent narrative adventure."}
@@ -401,8 +381,6 @@ Narrative Premise/Goal:
 Tone: {tone_prompt}
 
 {characters_summary}
-
-{events_summary}
 
 **Story So Far (Read this carefully):**
 {current_story_so_far}
@@ -412,8 +390,7 @@ Tone: {tone_prompt}
 **Your Task & Decision Process:**
 
 1.  **Review the "Story So Far":**
-    *   Has it covered all (or most significant) events from the "Events Summary"?
-    *   Does it feel like it has reached a compelling, natural, and conclusive narrative ending that aligns with the "Narrative Premise/Goal"? (Even if it requires adding entirely new content beyond the raw simulation logs to achieve this conclusion).
+    *   Does it feel like it has reached a compelling, natural, and conclusive narrative ending that aligns with the "Narrative Premise/Goal"?.
 
 2.  **Determine Action:**
     *   **IF the story is NOT yet complete OR needs further development/elaboration based on remaining logs or to reach a proper conclusion:**
@@ -424,18 +401,16 @@ Tone: {tone_prompt}
     *   **IF the story IS complete and has reached a satisfactory, conclusive ending:**
         *   Begin your response with the tag: `[STORY_COMPLETE]`
         *   Then, provide the *final, polished version* of the entire story. This should be the "Story So Far" potentially with a final concluding paragraph or two. Ensure it flows perfectly as a complete work.
-
 ---
 
-**General Storytelling Guidelines (applies to both continuation and finalization):**
-- **Maintain Fidelity:** The story must remain faithful to all core facts, events, and character actions presented in the "Events Summary." Do NOT invent new factual *past* events or contradict established ones.
+**General Storytelling Guidelines:**
 - **Narrative Expansion:** Elaborate upon and contextualize events. Do not simply list them or present only dialogue.
 - **Show, Don't Tell:** Expand descriptions of settings, character expressions, body language, actions, and incorporate sensory details.
 - **Character Depth:** Deepen character insight by inferring their thoughts, feelings, and motivations, consistent with their personalities.
 - **Pacing & Flow:** Ensure smooth transitions, varied sentence structure, and overall readability.
 - **Avoid Repetition:** Ensure variety in language and sentence structure.
 
-Your Response (starting with either `[CONTINUE_WRITING]` or `[STORY_COMPLETE]`):
+Your Response (starting with either [CONTINUE_WRITING] or [STORY_COMPLETE] ):
 """
         if config.SIMULATION_MODE == 'debug':
             print("--- Story Refinement/Conclusion Prompt ---")

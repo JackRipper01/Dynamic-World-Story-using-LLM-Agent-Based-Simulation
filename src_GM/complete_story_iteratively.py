@@ -20,7 +20,7 @@ iteration_count = 0
 
 # STEP 1: Generate the initial draft
 current_story_draft = story_generator.generate_initial_story_draft(
-    log_file_path="simulation_log.txt",
+    log_file_path="simulation_logs.txt",
     agent_configs=config.agent_configs,
     narrative_goal=config.NARRATIVE_GOAL
 )
@@ -35,7 +35,6 @@ else:
 
         response_from_llm = story_generator.refine_and_conclude_story(
             current_story_so_far=current_story_draft,
-            log_file_path="simulation_log.txt",
             agent_configs=config.agent_configs,
             narrative_goal=config.NARRATIVE_GOAL
         )
@@ -54,9 +53,9 @@ else:
             current_story_draft += "\n" + new_segment # Append new segment
             print("Story continued. Current length:", len(current_story_draft.split()))
         else:
-            # Fallback if no tag was found, assume it's a continuation
-            print("Unexpected LLM response format, assuming continuation.")
-            current_story_draft += "\n" + response_from_llm.strip()
+            print("Unexpected response format. Stopping iteration.")
+            final_story = current_story_draft
+            break
 
     if iteration_count >= max_iterations and not final_story:
         print(f"Max iterations ({max_iterations}) reached. Story may be incomplete.")
