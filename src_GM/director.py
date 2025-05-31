@@ -8,18 +8,9 @@ import random
 from agent.memory import BaseMemory  # Assuming BaseMemory is in agent/memory.py
 from logs import append_to_log_file
 from world import Event  # For creating event objects to dispatch
-try:
-    # Also catch general API errors
-    from google.api_core.exceptions import ResourceExhausted, GoogleAPICallError
-except ImportError:
-    # Provide fallback or raise an error if the necessary library is not installed
-    print("Warning: google-api-core not installed. API error handling may not work correctly.")
 
-    class ResourceExhausted(Exception):
-        pass  # Define a dummy exception if import fails
+from google.api_core.exceptions import ResourceExhausted, GoogleAPICallError
 
-    class GoogleAPICallError(Exception):
-        pass  # Define a dummy exception if import fails
 
 
 class Director:
