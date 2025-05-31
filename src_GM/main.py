@@ -522,7 +522,8 @@ def run_simulation():
             "simulation_logs.txt",
             agent_configs=config.agent_configs,
             narrative_goal=config.NARRATIVE_GOAL if hasattr(
-                config, 'NARRATIVE_GOAL') else "An undescribed adventure."
+                config, 'NARRATIVE_GOAL') else "An undescribed adventure.",
+            tone=config.TONE 
         )
 
 
