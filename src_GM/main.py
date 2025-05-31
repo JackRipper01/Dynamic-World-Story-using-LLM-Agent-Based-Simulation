@@ -513,18 +513,18 @@ def run_simulation():
     # ---------------------------------------- Simulation End ----------------------------------------
     print(f"\n--- Simulation Ended after {step} steps ---")
 
-    # --- Story Generation (if configured) ---
-    if story_generator:
-        # Pass necessary context to the story generator
-        # The world_state object contains the event_log
-        # Agent configurations and narrative goal are in config
-        story_generator.generate_story(
-            "simulation_logs.txt",
-            agent_configs=config.agent_configs,
-            narrative_goal=config.NARRATIVE_GOAL if hasattr(
-                config, 'NARRATIVE_GOAL') else "An undescribed adventure.",
-            tone=config.TONE 
-        )
+    # # --- Story Generation (if configured) ---
+    # if story_generator:
+    #     # Pass necessary context to the story generator
+    #     # The world_state object contains the event_log
+    #     # Agent configurations and narrative goal are in config
+    #     story_generator.generate_story(
+    #         "simulation_logs.txt",
+    #         agent_configs=config.agent_configs,
+    #         narrative_goal=config.NARRATIVE_GOAL if hasattr(
+    #             config, 'NARRATIVE_GOAL') else "An undescribed adventure.",
+    #         tone=config.TONE 
+    #     )
 
 
 # --- Main Execution Block ---

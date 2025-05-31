@@ -1,0 +1,784 @@
+Director:
+ 'Wet Footprints' (described as: A series of wet footprints leading from the Study door into the Drawing Room., state: visible) appears in Drawing Room.
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Eleanor Finch, ""The storm outside mirrors the turmoil within, doesn't it?""
+
+
+Director:
+ 'Small Metal Fragment' (described as: A small, metallic fragment, possibly from a broken object. It glints faintly in the firelight., state: metallic) appears in Drawing Room.
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois rises from the armchair and walks towards the fireplace, then kneels to examine the wet footprints. Because Thomas Dubois is investigating the source of the wet footprints.
+
+
+Director:
+ 'A single, muddy boot' (described as: A single, muddy boot, clearly belonging to a man., state: muddy) appears in Guest Bedroom.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Thomas Dubois, ""Be careful, Mr. Dubois. The Study is the scene of a… unfortunate incident. Try not to disturb anything further.""
+
+
+Director:
+ 'Torn Fabric' (described as: A small piece of expensive fabric, matching the pattern of a cushion in the Drawing Room., state: torn) appears in Study.
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova rises from her armchair, smooths her silk skirt, approaches Thomas Dubois, places a hand on his arm, and speaks to him in a concerned tone. Because Xenia Petrova wants to warn Thomas Dubois about the painting in the Study.
+
+
+Director:
+ 'Loose Thread' (described as: A single, loose thread, the same color as the torn fabric, clinging to the edge of the overturned armchair., state: visible) appears in Study.
+
+
+Eleanor Finch's turn in Drawing Room:
+ Eleanor Finch to Mr. Davies, ""Mr. Davies, do you... do you know what happened in the Study? Is it... is it connected to... to Lord Alistair's... passing?""
+
+
+Director:
+ 'Broken Finial' (described as: The missing finial from the globe, now in pieces., state: shattered) appears in Study.
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova  : ""Such a tragedy, to lose Lord Alistair… and in such a place. The family collection… I trust the authorities will exercise the utmost care in their investigation. There are some truly *priceless* pieces within these walls, you see.""
+
+
+Director:
+ 'Newspaper' (described as: A discarded newspaper, the front page detailing local news and a small article about a recent art theft in a neighboring town., state: discarded) appears in Study.
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne  : ""Indeed, a great loss, Lord Alistair. And, as Madame Petrova rightly points out, a profound impact on the future of the family's… legacy. I trust the authorities will proceed with… discretion. One must be mindful of delicate sensibilities at a time like this.""
+
+
+Director:
+ 'Oil Stain' (described as: A faint, but spreading, oil stain on the floor, near the door to the Study. It appears to be seeping from under the door., state: spreading) appears in Drawing Room.
+
+
+Eleanor Finch's turn in Drawing Room:
+ Eleanor Finch  : ""Is... is anyone else aware of the... the smell of oil? It's rather strong, isn't it?""
+
+
+Director:
+ 'Letter' (described as: A sealed letter, addressed to Lord Finch, lying partially obscured beneath the 'Last Will and Testament' on the desk., state: sealed) appears in Study.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Eleanor Finch, ""Indeed, Miss Finch. The oil, you noticed it. It appears a container may have been… compromised. Best not to linger in its vicinity.""
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Eleanor Finch, ""Miss Finch," I say, my voice low and measured, "The oil. You've noticed it. And the… unfortunate incident in the Study. Tell me, were you, or anyone else, in the Study earlier this evening, perhaps near the time of Lord Alistair's... passing?""
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Eleanor Finch, ""Indeed, Miss Finch, the smell is quite… noticeable. And concerning. Perhaps, we should all remain in the drawing room, at least until the source of this… *compromise* is fully understood.""
+
+
+Eleanor Finch's turn in Drawing Room:
+ Eleanor Finch to Thomas Dubois, ""Mr. Dubois, I... I was not in the Study earlier this evening. I was... with Lord Alistair, in the library, discussing... financial matters. We parted ways shortly before dinner.""
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Mr. Davies, ""Mr. Davies," I say, my voice level, "You mentioned that the situation in the Study was an 'unfortunate incident'. Can you elaborate? What precisely happened in there before... before Lord Alistair was found?""
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova to Eleanor Finch, ""Miss Finch," I say, my voice laced with a touch of sympathetic curiosity, "You mentioned being with Lord Alistair in the library. Did you happen to notice anything… unusual, before you parted ways? Any indication that… something was amiss?" I pause, allowing my eyes to flit over her briefly, before adding with a subtle emphasis, "Or any… specific items that may have captured your attention?""
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Thomas Dubois, ""I fix Thomas Dubois with a steady gaze. \"The precise details, Mr. Dubois, are best left to the authorities. Suffice to say, Lord Alistair was discovered in the Study. The circumstances… are currently under investigation. I will answer further questions when the Inspector arrives.\"""
+
+
+Director:
+ 'Small Bottle' (described as: A small, empty bottle, possibly containing oil, found near the overturned armchair., state: empty) appears in Study.
+
+
+Eleanor Finch's turn in Drawing Room:
+ Eleanor Finch to Xenia Petrova, ""No, Madame Petrova," I say, my voice tight, "Nothing... nothing unusual. We were merely discussing… estate matters. And I did not notice any specific items of interest. My mind was preoccupied with… other things.""
+
+
+Director:
+ 'Dagger' (described as: A distinctive dagger, matching the description of the one in the painting in the Gallery., state: missing) appears in Study.
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Eleanor Finch, ""Miss Finch," I say, my voice calm but firm, "You were with Lord Alistair shortly before his death, in the library, you say. And you noticed nothing… amiss. However, the oil, and the circumstances in the Study, are… concerning. Could you perhaps describe, in detail, the nature of your discussion with Lord Alistair? Specifically, what *estate matters* were you discussing?""
+
+
+Director:
+ 'Servant's Tray' (described as: A silver tray, typically used by the servants to carry drinks, now lying on the floor near the Study door, with a faint smell of oil., state: empty) appears in Drawing Room.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Thomas Dubois, ""Mr. Dubois, I believe it's best if we all await the Inspector's arrival. He is the one who will determine what questions are relevant.""
+
+
+Director:
+ 'Kitchen Knife' (described as: A very sharp kitchen knife, similar to those in the knife rack, but now missing., state: missing) appears in Kitchen.
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Eleanor Finch, ""The storm outside is a tempest, indeed, And the questions… they too, swirl about us like the wind. Perhaps, for now, we should all focus on comforting ourselves and finding some semblance of… *calm*.""
+
+
+Director:
+ 'Blood Stain' (described as: A small, but spreading, blood stain on the carpet near the overturned armchair, almost entirely concealed by the shadow., state: spreading) appears in Study.
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova to Thomas Dubois, ""Mr. Dubois, such thorough questioning is, of course, expected. But perhaps, before we delve too deeply into Miss Finch's affairs, we might consider the *more immediate* implications of… the oil? It seems a rather significant detail, wouldn't you agree? Might it be connected to the… incident in the Study? Perhaps, Mr. Davies, you could enlighten us? Is there anything... valuable that might""
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Xenia Petrova, ""Madame Petrova, the source of the oil is, as yet, undetermined. It appears to be a… mechanical issue. As for its connection to Lord Alistair's… demise, that, too, is under investigation. I am not at liberty to speculate.""
+
+
+Director:
+ 'Muddy Footprints' (described as: Muddy footprints leading from the Study towards the Kitchen, partially obscured by the rain., state: visible) appears in Kitchen.
+
+
+Eleanor Finch's turn in Drawing Room:
+ Eleanor Finch to Mr. Davies, ""Mr. Davies, has the… source of the oil been identified? And, more importantly… is there any danger? Is it… flammable?""
+
+
+Director:
+ 'Hidden Passage' (described as: A section of the bookshelves in the Study slides open, revealing a hidden passage., state: secret) appears in Study.
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova to Mr. Davies, ""Flammable," I murmur, my voice low and carrying just enough to be overheard, "That would be… *unfortunate*. Such a dreadful thing, a fire. Destroys everything. And, of course," I add, my voice taking on a more theatrical tone, "it would be a terrible shame if any of the… more *irreplaceable* pieces were to be… damaged.""
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Eleanor Finch, ""Miss Finch, perhaps the smell of oil is causing some… uneasiness. If you are feeling unwell, I would be more than happy to… examine you. It would be a shame if any of us were to succumb to the stresses of the day. Such a thing might complicate… matters further.""
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Mr. Davies, ""Mr. Davies," I say, my voice steady and low, "You seem particularly concerned about the authorities' investigation. Is there something specific you believe they might overlook? Perhaps something… hidden?""
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova to Thomas Dubois, ""Mr. Dubois, I find your line of questioning… *fascinating*. And perhaps, a little… *premature*. Before we concern ourselves with the mysteries of the oil, wouldn't you agree that we should first establish the identity of those who were *closest* to Lord Alistair in his final hours? Those, for example, who were involved in… *financial discussions*?""
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Thomas Dubois, ""Mr. Dubois," I say, my voice calm but with a subtle undercurrent of steel, "While Madame Petrova's suggestion is… prudent, I believe we should remain focused on the immediate concerns. Your interest in Miss Finch's affairs, while perhaps well-intentioned, feels a touch… precipitous. Before we cast stones, perhaps we should consider the *practical* implications of this oil. Mr. Davies, could you confirm if there are any flammable materials stored near the Study door? A fire, as Madame Petrova so aptly""
+
+
+Director:
+ 'Kitchen Knife' (described as: A very sharp kitchen knife, similar to those in the knife rack, now bloodied and lying near the entrance to the hidden passage., state: bloodied) appears in Study.
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Xenia Petrova, ""Madame Petrova, While I agree that establishing Lord Alistair's immediate associates is crucial, I believe we are remiss if we ignore the tangible evidence before us. The oil, the circumstances in the Study, and the… *compromised* state of whatever container it originated from. These are the physical clues, the tangible starting points. If we dismiss them too readily, we risk overlooking""
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Thomas Dubois, ""Mr. Dubois, as I have stated, the investigation is best left to the authorities. I am not at liberty to discuss the specifics of the situation in the Study, or the state of the container, whatever it may have been. Your persistence is... unproductive.""
+
+
+Director:
+ 'Empty Oil Can' (described as: A small, metal oil can, similar to those used for lubricating machinery. It smells faintly of oil., state: empty) appears in Kitchen.
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch, appearing unwell, subtly moves towards the door to the Guest Bedroom. Because Eleanor Finch intends to leave the tense situation in the Drawing Room.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies turns to face the fireplace and takes a slow step toward it. Because Mr. Davies wants to get closer to the fireplace.
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch quickly scoops the muddy boot into the suitcase and closes it. Because Eleanor Finch is trying to hide the muddy boot.
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova to Mr. Davies, ""I slowly lift a perfectly manicured hand, gesturing towards the Study door with a languid grace. “The oil, as Mr. Davies has noted, is the more… *tangible* concern at the moment. And, *perhaps*, a rather significant distraction. But I must confess, my mind keeps returning to one particular detail of my conversation with Lord Alistair. We were, of course, discussing… acquisitions. And one item in particular, that might have potentially changed hands had he been… more fortunate. Perhaps, Mr. Davies, *if* the authorities have already surveyed the Study, you could shed some light on""
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne rises slowly, moves to the silver tray, picks it up, and turns it in the firelight. Because Aris Thorne intends to examine the tray and question Mr. Davies about it.
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois slowly moves towards the Study door, his gaze fixed on the oil stain. Because Thomas Dubois is investigating the oil stain and its potential connection to the events in the Study.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Aris Thorne, ""The tray," I say, my voice flat and devoid of emotion, "was used to carry refreshments. It was found near the Study door. It appears to have... *fallen*." I allow a moment of silence to hang in the air, before adding, "The circumstances surrounding its presence are, as always, under investigation.""
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Aris Thorne, ""Mr. Thorne," I say, my voice calm but carrying the weight of scrutiny, "if you would be so kind as to place that tray back on the table, undisturbed. Before it is potentially examined by the authorities. I believe it would be prudent to preserve the evidence.""
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova to Aris Thorne, ""Mr. Thorne, how... *curious*. To find the tray fallen near the Study. And, even more intriguing, to find *oil* present. Perhaps, the authorities would appreciate you keeping a careful eye on it before… before they take it away.”"
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch glances around the room, reaches for the window latch, and subtly tests the weight of the suitcase. Because Eleanor Finch is trying to appear casual while assessing the situation and the suitcase.
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Xenia Petrova, ""I slowly lower the silver tray, feigning a thoughtful expression. "Mr. Dubois, of course. Preservation of evidence is paramount. I wouldn't want to… impede the investigation. However," I say, directing my gaze towards Xenia Petrova, "I must confess, Madame Petrova, I find your… *fascination* with this tray rather interesting. Perhaps you could enlighten us as to why you find it so… *intriguing*? Did you, perhaps, see it earlier? Or, perhaps, its current proximity to the Study sparks certain… associations?" I then place the tray back onto the table, carefully""
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch quickly moves to the dressing table, picks up the mirror, and scans the room, her eyes darting around nervously. Because Eleanor Finch is looking for anything suspicious in the room.
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Mr. Davies, ""Mr. Davies, you seem particularly anxious about the authorities' investigation, and the details surrounding the Study. Perhaps you could alleviate some of that anxiety by simply answering a few questions. For example, what type of oil is present, and what was its original container? A simple answer, if you have one, would be most helpful.""
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Thomas Dubois, ""The specifics of the oil and its container are matters for the investigation. Your continued questioning, Mr. Dubois, is becoming tiresome. I have nothing further to add on the matter.""
+
+
+Director:
+ 'Bloodied Handprint' (described as: A faint handprint, smeared with blood, visible on the doorframe leading from the Study to the Drawing Room., state: faint) appears in Drawing Room.
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne  : "“Miss Finch,” I say, my voice low and soothing, “The… *unpleasantness* in the Study seems to be causing a degree of unease. Are you quite alright? The stress of the situation could potentially exacerbate any… sensitivities. Perhaps a brief rest in your chambers would be beneficial. I would, of course, be available to… attend to you.” I pause, allowing my gaze to linger on her face before adding, “Should you require it, a calming draught might be… *necessary*.”"
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova to Aris Thorne, ""Oh, the *irony*! To be gathered here, discussing shadows and oil, when the true tragedy lies in the *untold story*! Lord Alistair, gone before the ink could dry on the agreement! And, I daresay, before I could even *admire* the masterpiece he had promised me... the 'Shadow of the""
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois circles the silver tray, touches its edge with a gloved finger, and sniffs, his face carefully neutral. Because Thomas Dubois is examining the silver tray for clues related to the oil and the recent events.
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova  : ""The *Shadow of the Raven*," I whisper, my voice barely audible, yet calculated to carry across the room. "A painting, they say, of such exquisite darkness… a true masterpiece. And, alas, now… *unattainable*.""
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Xenia Petrova, ""Madame Petrova, the 'Shadow of the Raven'? An ambitious commission indeed. One that, I understand, required a rather… *significant* initial investment. And, if I may be so bold, perhaps a rather… *unwise* one, given Lord Alistair’s current… predicament. A painting is a tangible item, Madame. Far easier to… *dispose of* than, say, a considerable sum of money already spent.”"
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch opens the wardrobe, hides the suitcase among her belongings, and closes the wardrobe again. Because Eleanor Finch wants to hide the suitcase without being observed.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Aris Thorne, ""Mr. Thorne, your pronouncements regarding Lord Alistair's affairs are… *impertinent*. The financial arrangements, or lack thereof, surrounding a painting are hardly the focus of the current, far more pressing, situation. I suggest you confine your inquiries to the matters at hand.""
+
+
+Eleanor Finch's turn in Drawing Room:
+ Eleanor Finch closes the wardrobe, leans against it, takes a breath, and walks towards the Drawing Room door, maintaining a slow pace. Because Eleanor Finch wants to leave the Guest Bedroom and appear calm.
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova to Aris Thorne, ""Mr. Thorne, your concerns about the 'initial investment' are... *intriguing*. Perhaps you have some insight into the details of my agreement with the late Lord Alistair? Did *you* know the precise sum, the terms, the specifics of this... *untimely* acquisition?""
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies turns towards the grandfather clock, feigning interest and checks his watch with exaggerated care. Because Mr. Davies wants to avoid direct eye contact with the other occupants while subtly observing the surroundings and possibly the reactions of others.
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Mr. Davies, ""Mr. Davies, your reluctance to discuss the oil is… *understandable*. However, a simple denial would suffice. Silence, in this circumstance, is far more revealing. Are you perhaps... protecting something? Or someone?""
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Eleanor Finch, ""Miss Finch," I say, my voice carrying just enough concern to be heard over the crackling fire, "Perhaps you would be best served by remaining here, in the company of those who care for your wellbeing. The chill of the storm, and indeed… the prevailing atmosphere, may not be conducive to… *recovery*. Are you quite certain you wish to venture out alone?""
+
+
+Director:
+ 'Soaked Handkerchief' (described as: A white handkerchief, sodden with water, lying near the overturned armchair. It has a faint smell of almonds., state: damp) appears in Study.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Thomas Dubois, ""My silence, Mr. Dubois, is not a sign of guilt, but of discretion. I am under no obligation to answer your insinuations. I suggest you direct your attention towards more relevant matters, before you find yourself... unwelcome.""
+
+
+Director:
+ 'Dusting Cloth' (described as: A small, linen dusting cloth, stained with oil and a faint smear of blood, lying discarded near the fireplace., state: stained) appears in Drawing Room.
+
+
+Eleanor Finch's turn in Drawing Room:
+ Eleanor Finch to Aris Thorne, ""Mr. Thorne, I appreciate your… *concern*. However, I assure you, I am quite capable of looking after myself. The air in here… is becoming rather oppressive. I simply require some… *fresh air*.""
+
+
+Director:
+ 'Note' (described as: A small, hastily scribbled note, torn in half, with a few words visible: "...meet...gallery...tonight...", state: torn) appears in Study.
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Eleanor Finch, ""Miss Finch, I say, my voice calm but firm, I understand your desire for fresh air, but I must strongly advise against it. The storm outside is treacherous, and the circumstances within... well, they require our immediate attention. Before you leave, perhaps you could answer a simple question. Do you know the nature of the oil present near the Study door, and whether you saw the silver tray before the incident?""
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Thomas Dubois, ""Mr. Dubois, while I appreciate your... *persistence*, Miss Finch is clearly distressed. Pressing her with questions now would be, in my professional opinion, quite insensitive. Let us, at least, allow her to gather her composure. Perhaps, *after* a period of… reflection, she may be more inclined to answer your inquiries. Unless, of course," I add, my gaze flickering towards Mr. Davies and then back to Eleanor, "you believe her to be... *hiding* something. In which""
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova to Eleanor Finch, ""My dear Miss Finch," I say, my tone silky smooth, "The oppressive atmosphere, you say? Perhaps a breath of *fresh air* would be lovely, indeed. However, wouldn't it be more *refreshing* to have the answers to a few simple questions? Namely, what exactly was the late Lord Alistair *doing* in the Study before his… untimely demise? And""
+
+
+Director:
+ 'Burning Ember' (described as: A single, glowing ember, dislodged from the fireplace, now resting on the edge of the oil stain on the floor., state: glowing) appears in Drawing Room.
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Aris Thorne, ""Mr. Thorne, Your observations are astute, as always. However, rather than speculate on Miss Finch's potential reticence, perhaps you could enlighten us on the nature of your *professional* opinion. Specifically, Mr. Thorne, what *exactly* do you do, and what would be the professional benefit of preventing Miss Finch from being questioned""
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies  : ""The questions regarding the oil, and the events in the Study, will be answered in due course. For now, I suggest we maintain a degree of… decorum. The Inspector’s arrival is imminent.”"
+
+
+Director:
+ 'Partial Footprint' (described as: A partial footprint, smudged and oily, near the oil stain in the Drawing Room., state: visible) appears in Drawing Room.
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova  : ""Oh, but isn't it fascinating? The path to *Lord Alistair's final moments* is so… *clearly marked*. Footprints leading from the scene of… *tragedy*! The oil, the blood, the… *untold stories*… They simply *whisper* for us to unravel them. And what, pray tell, is the *meaning* of these""
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Mr. Davies, ""I slowly turn my head towards Mr. Davies, a hint of a smile playing on my lips. "The Inspector's arrival, you say, Mr. Davies? How *convenient*. One might almost think the authorities were... *expected*. Perhaps Lord Alistair's passing was not quite as unexpected as it initially appeared, wouldn't you agree?" I allow my gaze to linger on Mr. Davies, gauging his reaction before adding, "Or perhaps you simply wished to expedite matters? To… control the narrative, as it were."""
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch takes two steps back, feigning interest in escaping, and then turns her gaze towards the Guest Bedroom door and begins to move towards it. Because Eleanor Finch is trying to distance herself from the accusations and escape the drawing room.
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois kneels, dabs the oil, and closes his eyes, murmuring to himself. Because Thomas Dubois is attempting to identify the oil and its source.
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch picks up the muddy boot and rummages inside it. Because Eleanor Finch wants to find something hidden inside the boot and buy herself time.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies  : ""The Inspector’s arrival is indeed imminent. I trust you will all comport yourselves accordingly. Further speculation, at this juncture, is… *unwise*. I suggest you conserve your… *energies*.”"
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova  : ""I slowly turn my gaze towards the partially obscured oil stain on the floor, drawing a gloved hand towards my cheek in a gesture of thoughtful contemplation. \"Oil, of course,\" I murmur, my voice a low, theatrical whisper that carries across the room. \"Such a… *messy* substance. And its presence near the Study... most intriguing, wouldn't you say? One wonders, does it have any connection to the *subject* of our final discussion with Lord Alistair, specifically the *source* of his financial outlay? The painting's composition, its… *handling* of the pigments…” I trail""
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne takes a step towards the coffee table, subtly glances at the Study doorway and Eleanor, then back to the bloodied handprint, murmuring about the tragedy and untidiness. Because Aris Thorne is subtly assessing the scene and subtly directing attention towards the Study and Eleanor.
+
+
+Director:
+ 'Footprints' (described as: A series of oily footprints leading from the Study to the Kitchen., state: oily) appears in Kitchen.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Xenia Petrova, ""Madam Petrova," I say, my voice as steady as the ticking clock, "Your speculations are, as always, *theatrical*. However, they serve only to distract from the matter at hand. Lord Alistair is dead. The details of his demise will be revealed in due course. I advise you to cease your… *performances* and await the Inspector's arrival with the same degree of… *respect* afforded to those who have passed.”"
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch reaches into the muddy boot, her fingers probing the interior. Because Eleanor Finch is searching the boot for something hidden.
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne  : ""Miss Finch, I say, my voice soft, but laced with a subtle urgency, Before you depart, I would be remiss if I did not remind you that your father… cared deeply for your wellbeing. And I, of course, share the same sentiments. Please, allow me to at least escort you to the guest bedroom. It is closest, should you need… anything at all. Or, if you would prefer, I could call for a servant to accompany you.""
+
+
+Director:
+ 'Dagger Sheath' (described as: A fine leather sheath, now empty, matching the description of the dagger that is missing., state: empty) appears in Study.
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova to Mr. Davies, ""My dear Mr. Davies, *respect* for the dead is certainly paramount, *particularly* when dealing with valuable assets. But perhaps you misunderstand. My 'performances' – as you so delicately put it – are merely an attempt to understand. And I, for one, find""
+
+
+Director:
+ 'Safe' (described as: A small, wall-mounted safe, now revealed, with a combination lock., state: locked) appears in Study.
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Mr. Davies, ""The presence of the oil, the blood, and the recent, albeit brief, discussion of finances suggests a connection. Mr. Davies, can you confirm if Lord Alistair had any specific disagreements or pending matters with anyone present regarding his financial dealings, particularly concerning an artwork?""
+
+
+Director:
+ 'Missing Dagger' (described as: The distinctive dagger, matching the description of the one in the painting in the Gallery, now found., state: found) appears in Gallery.
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch shakes the muddy boot over the floor, dislodging some dirt. Because Eleanor Finch is looking for anything hidden inside the boot.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Thomas Dubois, ""Mr. Dubois, your questions are becoming tiresome. Lord Alistair's financial affairs are not your concern. I suggest you focus your efforts on the more immediate matter of his death. Specifically, perhaps, you could enlighten us on where you were before I discovered the… incident.""
+
+
+Director:
+ 'Bloodied Kitchen Knife' (described as: The bloodied kitchen knife is lying near the overturned armchair., state: bloodied) appears in Study.
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova to Mr. Davies, ""Indeed, Mr. Davies, it's *always* about the assets, isn't it? Perhaps the esteemed Inspector, when he arrives, might be *particularly* interested in the whereabouts of a certain *'Madonna of Shadows'*. I believe it was the subject of our *last* negotiation, wouldn't you say? Its value is... *significant*, wouldn't""
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Mr. Davies, ""Mr. Davies, while I appreciate your attempts to redirect the focus, the financial aspects of Lord Alistair's life are *absolutely* relevant. A potential motive, a missing asset... these are crucial considerations. Now, before the Inspector arrives, perhaps you could simply answer the question: Did Lord Alistair have any recent disagreements about money, specifically pertaining to a painting, and if so, with whom?""
+
+
+Director:
+ 'Small Metal Shard' (described as: A small, sharp shard of metal, possibly from the broken finial, glinting in the dim light., state: metallic) appears in Drawing Room.
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Thomas Dubois, ""Mr. Dubois, you seem particularly keen on the financial aspects. Perhaps you might enlighten us on *your* interest in the painting, and the nature of your recent interactions with Lord Alistair. I'm simply curious as to the *depth* of your knowledge. Perhaps it goes beyond a simple… observation of the finances.""
+
+
+Director:
+ 'Oil Slick' (described as: A large, irregular oil slick now covers a portion of the floor in the Study, originating near the overturned armchair and extending towards the hidden passage., state: spreading) appears in Study.
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch kneels and carefully examines the floor around the muddy boot, searching for any small objects or imperfections. Because Eleanor Finch is looking for clues related to something that might have fallen out of the boot.
+
+
+Director:
+ 'Unsent Telegram' (described as: A crumpled telegram, addressed to a local doctor, lying discarded near the overturned armchair, with the date matching the day of the murder., state: crumpled) appears in Study.
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova slowly glides towards the oil stain, her heels clicking softly on the wooden floor, drawing the attention of those present. Because Xenia Petrova intends to investigate the oil stain.
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Aris Thorne, ""My interest stems from a simple pursuit of the truth, Mr. Thorne. A dead man, a potential financial dispute, and a painting of significant value... these are the elements of a potential crime. As for my interactions with Lord Alistair, they were limited to the polite formalities of a dinner guest. Now, if you'll indulge me, let's return to the matter at hand: the painting, and any potential disagreements regarding it. Did anyone here know of any such disputes, and if so, with whom?""
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne takes a slow step towards Xenia Petrova, subtly positioning himself between her and the oil stain. Because Aris Thorne wants to protect Xenia Petrova from the oil stain.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Thomas Dubois, ""Mr. Dubois, your persistent inquiries are becoming an affront. I will not be subjected to this… *interrogation* before the Inspector arrives. If you insist on questioning me, I suggest you await his presence, as I am certain *he* will be far more… *thorough*. Until then, I advise you to restrain your incessant… *speculations*.""
+
+
+Director:
+ 'Bottle of Almond Oil' (described as: A small bottle, once containing almond oil, now empty, lying near the overturned armchair. The label is smudged and unreadable., state: empty) appears in Study.
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova  : ""Such a tragedy. And to think, all this… *unraveling*… over a painting. A painting of such… *delicate* beauty, wouldn't you say? Perhaps, its true""
+
+
+Director:
+ 'Oily Footprint' (described as: A distinct, oily footprint, matching the partial footprint in the Drawing Room, leading from the Study towards the hidden passage., state: visible) appears in Study.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies walks towards the grandfather clock, placing a hand on its polished wood. Because Mr. Davies wants to emphasize the importance of truth and the arrival of the Inspector.
+
+
+Director:
+ 'Secret Compartment' (described as: A small, hidden compartment within the desk, now revealed, containing a small, silver locket., state: open) appears in Study.
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Xenia Petrova, ""The wind," I murmur, my voice barely audible above the roar, "can be a cruel mistress, indeed. And these… *storms*, they often bring unwelcome… *visitors*.""
+
+
+Director:
+ 'Oil Lamp' (described as: A small, ornate oil lamp, broken and lying near the entrance to the hidden passage. It's heavily coated in oil., state: broken) appears in Study.
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch presses her fingertips against the floorboards, finds a seam, and lifts the floorboard to reveal a small compartment. Because Eleanor Finch is searching for something hidden.
+
+
+Director:
+ 'Oily Footprint' (described as: A distinct, oily footprint, leading from the Kitchen towards the Drawing Room., state: visible) appears in Drawing Room.
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois picks up the teacup, examines it, and places it near the oil stain. Because Thomas Dubois wants to observe the reaction of placing the teacup on the floor near the oil stain.
+
+
+Director:
+ 'Final Note' (described as: A small note, hastily written and crumpled, found clutched in Lord Finch's hand. It reads: "...meet me... Study... tonight..."., state: visible) appears in Study.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies picks up the silver tray and turns it in his hands. Because Mr. Davies wants to examine the tray and make a statement about it.
+
+
+Director:
+ 'Servant's Tray' (described as: A silver tray, typically used by the servants to carry drinks, now lying on the floor near the Study door, with a faint smell of oil and a few drops of the same oil as the oil slick., state: oily) appears in Study.
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne kneels beside the oil stain, touches it with his gloved finger, inhales deeply, and murmurs to himself. Because Aris Thorne is examining the oil stain to gather clues about its composition and origin.
+
+
+Director:
+ 'Locked Safe Combination' (described as: A small slip of paper, found tucked inside a book on the bookshelves in the Study, bearing a series of numbers, likely the combination to the safe., state: hidden) appears in Study.
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch carefully lifts the floorboard, revealing a small compartment, and pulls out a velvet pouch. Because Eleanor Finch is searching for something hidden.
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Mr. Davies, ""Mr. Davies, you seem particularly keen on directing my attention elsewhere. Yet, the facts remain: oil, blood, and a potential financial motive. Before the Inspector arrives, perhaps you could tell me, was the silver tray, now on the floor near the Study door, used to serve food or drinks to Lord Alistair earlier this evening?""
+
+
+Director:
+ 'Poisoned Dart' (described as: A small, almost invisible dart, tipped with a dark substance, is found lodged in the back of the overturned armchair., state: concealed) appears in Study.
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova  : ""Such a *waste*, isn't it? All this… *passion*… reduced to ashes. And the secrets… perhaps they’ll burn with them.""
+
+
+Director:
+ 'The obscure painting' (described as: The obscure painting in the gallery now has a small, almost imperceptible scratch on the depicted dagger., state: altered) appears in Gallery.
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Xenia Petrova, ""Madam Petrova, you seem unduly concerned with the painting. Tell me, have you ever encountered a particular… *allergy* to the scent of almonds?""
+
+
+Director:
+ 'Empty Oil Can' (described as: The small, metal oil can, found in the Kitchen, is now found on the floor, near the hidden passage in the Study., state: empty) appears in Study.
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova to Aris Thorne, ""Almonds? A rather *peculiar* question, Mr. Thorne. But since you ask... perhaps some things, like certain... *passions*, leave a rather bitter aftertaste.""
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois kneels and dabs the oil stain with his handkerchief, then inhales deeply. Because Thomas Dubois wants to analyze the oil stain's scent.
+
+
+Director:
+ 'Muddy Footprints' (described as: A series of muddy footprints leading from the Drawing Room towards the Guest Bedroom., state: visible) appears in Drawing Room.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Thomas Dubois, ""Mr. Dubois, your questions are a relentless barrage. I will answer no further inquiries until the Inspector arrives. He will have the authority to demand the truth, and you, sir, will have to wait your turn. Now, I suggest you refrain from any further… *unwarranted* attempts to direct this… *investigation*.""
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch reaches into the velvet pouch, pulls out a rolled-up piece of parchment, and slowly uncurls it, leaning in to read it. Because Eleanor Finch is curious about the contents of the velvet pouch.
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Mr. Davies, ""Mr. Davies, your repeated refusals to cooperate are, shall we say, *unhelpful*. While I understand your desire to await the official investigation, the immediacy of the situation demands a more proactive approach. The presence of oil, blood, and a potential financial motive strongly suggests a carefully planned event. I suggest, then, that *everyone* refrains from touching any further objects within this room, and remain where they are. The Inspector will want to""
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch carefully folds the parchment and hides it back where she found it. Because Eleanor Finch wants to conceal the confession.
+
+
+Director:
+ 'Bloodied Footprints' (described as: A trail of bloodied footprints leading from the Study, through the Drawing Room and towards the Kitchen, partially obscured by the wet footprints., state: visible) appears in Kitchen.
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova to Aris Thorne, ""Almonds, Mr. Thorne? That's an… *intriguing* observation. Tell me, is that a common ingredient in the… *perfumes* favored by those who frequent the study? Or perhaps, are you suggesting the oil's composition is more… *cul""
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Xenia Petrova, ""Madam Petrova, the composition of the oil is, indeed, of some interest. But before we explore that further, let us consider the presence of... *blood*. I believe we have all, perhaps, overlooked a rather crucial detail. *Who* among us knew of Lord Alistair's... *allergy* to almonds?""
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Aris Thorne, ""Mr. Thorne, your questions are becoming... *unsettling*. I find your constant probing of Lord Alistair's… *afflictions* quite distasteful. Perhaps you should focus on the more immediate concerns, such as the *manner* of his passing, rather than delving into... *senseless* details.""
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova to Mr. Davies, ""Mr. Davies, are you suggesting that Lord Alistair's allergy was a *secret*? A secret perhaps known only to those privy to his… *private* life? Or, perhaps, a secret known only to those who… *benefited* from his demise?""
+
+
+Director:
+ 'Oily Rag' (described as: A small, oily rag, similar to those used to clean tools, is found discarded near the entrance to the hidden passage in the Study., state: discarded) appears in Study.
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Aris Thorne, ""Mr. Thorne, you seem to have a particular interest in the oil. Could you describe its scent, if you will? Does it, perhaps, remind you of a specific substance, perhaps something that might be found in a study, or even in a kitchen?""
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch tucks the parchment into the pouch, replaces it in the secret compartment, and smooths the floorboard back into place. Because Eleanor Finch is trying to hide the rolled parchment.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Xenia Petrova, ""Madam Petrova," I state, my voice a low rumble, "Lord Alistair's secrets are now... *irrelevant*. His death is the matter at hand. I suggest we all focus our attention on the *reality* of this situation, before the Inspector arrives."""
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Thomas Dubois, ""Mr. Dubois, the scent of the oil is quite distinct. As I mentioned, linseed oil and a hint of almonds, which, as you rightly point out, *could* be found in both a study and a kitchen. However, the more pertinent question, I believe, is not *where* it might be found, but *why* it's there. And, specifically, if it relates to Lord Alistair's sudden demise.""
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch opens the wardrobe. Because Eleanor Finch wants to search the wardrobe for a bag.
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Xenia Petrova, ""Madam Petrova, your interest in *passion* is… noteworthy. Tell me, are you implying that Lord Alistair's death was driven by… *love*? Or perhaps… *revenge*?""
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois examines the dusting cloth stained with oil and a faint smear of blood. Because Thomas Dubois is investigating the crime scene and gathering clues.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies places his hand on the cold marble of the fireplace mantel, his gaze sweeping across the room. Because Mr. Davies is assessing the situation and gathering his thoughts before the Inspector arrives.
+
+
+Xenia Petrova's turn in Drawing Room:
+ Xenia Petrova to Aris Thorne, ""Revenge, Mr. Thorne? Or perhaps simply… *business*? After all, sometimes the most… *valuable* transactions involve a certain… *exchange* of assets. And Lord Alistair, let's not forget, possessed""
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne slowly walks towards the wet footprints, traces one with his gloved finger, and then addresses the room. Because Aris Thorne is investigating the crime scene.
+
+
+Xenia Petrova's turn in Study:
+ Xenia Petrova rises, assesses the room, and takes a step towards the Study door, leaning in to inhale. Because Xenia Petrova is investigating the scene of the crime.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Aris Thorne, ""Mr. Thorne, I suggest you cease your *unnecessary* investigations. The Inspector will arrive shortly, and he will be the one to determine the *truth*. Your… *antics* are, frankly, delaying the process.""
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Mr. Davies, ""Mr. Davies, you appear to be taking a particular interest in the fireplace. May I ask if you noticed anything unusual about its operation this evening? Did you, perhaps, see anyone near the fireplace, perhaps attending to it, before Lord Alistair was discovered?""
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch pulls down the worn leather satchel from the shelf, opens it, and examines the interior. Because Eleanor Finch needs a discreet container for the parchment and assesses the satchel's suitability.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Thomas Dubois, ""Mr. Dubois, you are becoming *intrusive*. My attention is focused on the *facts* of this dreadful situation, not on idle speculation about the fireplace. I will not be answering any more questions until the Inspector arrives, and I suggest you cease your attempts to *interrogate* me further.""
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois kneels and carefully examines the muddy footprints, extracting a mud sample with his handkerchief. Because Thomas Dubois is investigating the muddy footprints to gather evidence.
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch places the velvet pouch into the satchel, tucks it into the lining, closes the satchel, secures the clasp, and quickly scans the room. Because Eleanor Finch is trying to hide the velvet pouch and assess how much time she has before someone might find it.
+
+
+Xenia Petrova's turn in Study:
+ Xenia Petrova pivots towards the hidden passage, takes a step, and gently brushes against the bookshelf's edge, carefully assessing the shadows and the scent of oil. Because Xenia Petrova wants to investigate the hidden passage without raising suspicion.
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Aris Thorne, ""The passage of time...it is a relentless judge, is it not? Tick...tock...tick...tock...""
+
+
+Xenia Petrova's turn in Study:
+ Xenia Petrova touches the bookshelf, observes the scene, and speaks aloud, "Intriguing… and perhaps… *revealing*." Because Xenia Petrova is investigating the scene of the crime and assessing the situation.
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch walks towards the window. Because Eleanor Finch wants to get out of the Guest Bedroom.
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Thomas Dubois, ""The fire is certainly roaring tonight, isn't it? Such a stark contrast to the… *chill* in the air, both inside and out. I do hope someone remembered to inform the staff about keeping the flames contained; a fire in such a grand old house would be a catastrophe.""
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies  : ""The hour is late. Let us all await the Inspector's arrival in *silence*.""
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Mr. Davies, ""Mr. Thorne, you mentioned almonds and a possible connection to the kitchen. Considering the oily footprint leading from the kitchen towards this room, and the bloodied handprint on the Study doorframe, I believe it prudent to secure the kitchen immediately. Mr. Davies, I must insist that you instruct the staff to seal the kitchen off. No one is to enter or leave until the official investigation commences, and the Inspector arrives. I would suggest that any kitchen staff remain""
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch cautiously pushes the window open a crack, assessing the wind and the possibility of escape. Because Eleanor Finch wants to test the window's potential for escape.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Thomas Dubois, ""I turn my gaze to Thomas Dubois, my expression hardening. "The kitchen will remain *unsecured*," I state, my voice a low, unwavering growl. "I will handle the instructions to the staff, and any attempt to *restrict* their movements will be… *counterproductive* to the investigation. The Inspector will decide, and until he arrives, *this house* will remain under my command."""
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Thomas Dubois, ""Mr. Dubois, your insistence on securing the kitchen is... *intriguing*. I am certain the staff are devastated by Lord Alistair's passing, and the thought of them being unfairly accused is quite… *unsettling*. But perhaps," I pause, my gaze drifting towards Mr. Davies, "perhaps *someone* within this house is keen on controlling the narrative. I would hate to see the innocent... *punished*.""
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Aris Thorne, ""Mr. Thorne, you seem concerned about the potential innocence of the staff and the 'narrative'. Given that you have so readily identified the scent of the oil as linseed, and, considering Lord Alistair's known allergy, could you perhaps enlighten us as to your knowledge of the contents of Lord Alistair's Study, or indeed, his Kitchen? Does either room hold any significance to you, and, if so, why?""
+
+
+Xenia Petrova's turn in Study:
+ Xenia Petrova opens her handbag and retrieves a silver compact. Because Xenia Petrova wants to check her appearance.
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Thomas Dubois, ""Mr. Dubois," I reply, my voice laced with mock innocence, "are you suggesting *I* possess knowledge that might... *incriminate* me? How very… *preposterous*. While I am Lord Alistair's physician, my duties are solely medical. My familiarity with his, or indeed, the *kitchen's* contents, stems from no nefarious intent, but rather, a long-standing professional relationship. However, now that you mention it, I do believe there may be some almond oil stored away""
+
+
+Eleanor Finch's turn in Guest Bedroom:
+ Eleanor Finch closes and latches the window. Because Eleanor Finch is trying to protect herself from the storm.
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois to Mr. Davies, ""Mr. Davies, is it common practice for the staff to use linseed oil in the vicinity of the fireplace, or perhaps in any rooms frequented by Lord Alistair, who, as we know, suffered from a severe nut allergy? Your adamant refusal to secure the kitchen, coupled with your insistence on controlling the narrative, raises further questions in my mind. Perhaps you could elaborate on your reasons for this resistance. Your reticence suggests that you might be concealing information that could""
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Thomas Dubois, ""Mr. Dubois, your *accusations* are as *unfounded* as they are *offensive*. The kitchen will remain under *my* supervision, as *this entire house* does. And I will *not* answer any more of your impertinent *questions* until the Inspector arrives.""
+
+
+Xenia Petrova's turn in Study:
+ Xenia Petrova traces the edge of the bloodstain with a gloved finger, brings it to her nose, and sniffs. Because Xenia Petrova is examining the bloodstain to gather clues about the crime.
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies turns his back on Thomas Dubois and begins polishing the silver tray, his movements precise and deliberate. Because Mr. Davies wants to appear calm and in control while assessing the situation.
+
+
+Xenia Petrova's turn in Study:
+ Xenia Petrova carefully examines the loose thread, places it in an evidence bag, and seals it. Because Xenia Petrova is investigating the crime scene and collecting evidence.
+
+
+Thomas Dubois's turn in Drawing Room:
+ Thomas Dubois  : ""The portraits of the Finch ancestors observe us, silently. Their presence within this house should remind us all of the weight of history and the consequences of our actions. The truth, I believe, is often found not in what is said, but in what is *left unsaid*, and the details we choose to *ignore*. Perhaps, in the face of such a tragedy, it is we all pause, and reflect""
+
+
+Eleanor Finch's turn in Drawing Room:
+ Eleanor Finch takes a tentative step towards the drawing-room door and listens intently. Because Eleanor Finch wants to leave the Guest Bedroom.
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Eleanor Finch, ""Eleanor, dear, are you quite alright? The storm outside seems to have matched the tumultuous events within. Perhaps you should sit down and allow me to fetch you some restorative tea. It might help steady your nerves.""
+
+
+Thomas Dubois's turn in Study:
+ Thomas Dubois slowly walks towards the door to the Study, pausing at the edge of the oil stain. Because Thomas Dubois wants to examine the handprint.
+
+
+Eleanor Finch's turn in Drawing Room:
+ Eleanor Finch to Aris Thorne, ""Thank you, Aris, but I... I don't think I can. The storm, and... everything... is rather overwhelming. Perhaps I might just… retire to my room. If you'll excuse me.""
+
+
+Aris Thorne's turn in Drawing Room:
+ Aris Thorne to Eleanor Finch, ""Eleanor, please, before you go, there is something I must ask you. Were you, by any chance, in Lord Alistair's study this evening? I only ask because... well, it may be important to clear up any misunderstandings, and I wouldn't want you to… *misinterpret* Mr. Dubois's inquiries. It is best to be forthright and honest, you know. It alleviates any suspicion.""
+
+
+Xenia Petrova's turn in Study:
+ Xenia Petrova to Thomas Dubois, ""Mr. Dubois," I say, my voice smooth and filled with a hint of amusement, "perhaps you can enlighten me. Is it considered… *impolite* to inquire about the finer details of Lord Alistair’s… *business affairs* in the midst of such a… *spectacle*? Or is that, perhaps, a question best left unanswered until the *Inspector* arrives?""
+
+
+Mr. Davies's turn in Drawing Room:
+ Mr. Davies to Eleanor Finch, ""Miss Finch, before you retire, perhaps you could enlighten us as to your whereabouts earlier this evening? It would be prudent to account for everyone's movements, wouldn't you agree?""
+
+
