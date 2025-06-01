@@ -69,139 +69,52 @@ MAX_MEMORY_TOKENS = 1000  # Increased memory capacity
 SIMULATION_MAX_STEPS = 30
 
 
-
 # --- World Definition ---
-WEATHER = "STORMY"
+WEATHER = "Warm, quiet afternoon"
 KNOWN_LOCATIONS_DATA = {
-    "Study": {
-        "description": "Lord Alistair Finch's private sanctuary, filled with antique maps, worn leather books, and the scent of old paper and pipe tobacco. It is the scene of the crime.",
-        # Assume direct exit to the main gathering area
-        "exits_to": ["Drawing Room"],
+    "Abuelo Ceibo": {
+        "description": "A colossal tree with deep, sprawling roots and a wide canopy that casts a significant shadow, central to the conflict between Mateo and Elena. Its bark is gnarled, bearing the marks of time.",
+        "exits_to": ["Mateo's Farm Land", "Elena's Homestead"],
         "properties": {
             "contains": [
-                {"object": "lord alistair finch body", "state": "dead",
-                    "optional_description": "The body of Lord Alistair Finch lies face down near his desk, a dark stain spreading on his back."
-                 },
-                {"object": "mahogany desk", "state": "slightly disturbed",
-                    "optional_description": "A heavy, ornate desk. Papers are scattered near the edge, suggesting a hasty departure or a brief struggle before the fall."
-                 },
-                {"object": "antique globe", "state": "finial missing",
-                    "optional_description": "A large, floor-standing globe. The decorative, pointed metal finial at the top of the axis is missing."
-                 },
-                {"object": "bookshelves", "state": "full of books",
-                    "optional_description": "Floor-to-ceiling shelves overflowing with books on art, history, and obscure subjects."
-                 },
-                {"object": "armchair", "state": "overturned",
-                    "optional_description": "A heavy leather armchair lies on its side near the body."
-                 },
-                {"object": "fireplace", "state": "dying embers",
-                    "optional_description": "A large fireplace where a fire is slowly burning down to embers."
-                 },
-                {"object": "window", "state": "closed and latched",
-                    "optional_description": "A tall, mullioned window, securely closed and latched from the inside. Rain streaks down the panes."
-                 },
-                {"object": "lord alistairs will", "state": "on desk",
-                    "optional_description": "A folded legal document titled 'Last Will and Testament', resting prominently on the desk."
-                 },
-                {"object": "art negotiation papers", "state": "on desk scattered",
-                    "optional_description": "Documents and notes related to the potential sale of artworks, some scattered on the desk."
+                {"object": "boundary markers", "state": "old, weathered",
+                    "optional_description": "Small, worn stones indicating the property line, almost swallowed by the encroaching grass."
                  }
             ]
         }
     },
-
-    "Drawing Room": {
-        "description": "A grand but slightly faded room used for entertaining guests. Sumptuous furniture and family portraits line the walls.",
-        # Acts as a central hub connecting to other main areas
-        "exits_to": ["Study", "Gallery", "Guest Bedroom", "Kitchen"],
+    "Mateo's House": {
+        "description": "Sprawling fields of meticulously tended crops stretch towards the horizon, showcasing Mateo's modern agricultural practices. The hum of distant machinery occasionally breaks the calm, hinting at ongoing work.",
+        "exits_to": ["Abuelo Ceibo", "Valley"],
         "properties": {
             "contains": [
-                {"object": "sofas and chairs", "state": "occupied by suspects",
-                    "optional_description": "Plush velvet sofas and armchairs where the remaining occupants of the manor are gathered."
+                {"object": "tractor", "state": "parked and well-maintained",
+                    "optional_description": "A powerful, clean tractor, a symbol of Mateo's efficient, modern farming methods, standing ready for use."
                  },
-                {"object": "coffee table", "state": "scattered tea cups",
-                    "optional_description": "A large central table littered with teacups, saucers, and a teapot from the recent gathering."
-                 },
-                {"object": "fireplace", "state": "roaring fire",
-                    "optional_description": "A large fireplace, providing warmth and light, a stark contrast to the storm outside and the mood within."
-                 },
-                {"object": "family portraits", "state": "hanging on walls",
-                    "optional_description": "Numerous portraits of stern-faced Finch ancestors observing the scene from the walls."
-                 },
-                {"object": "grandfather clock", "state": "ticking loudly",
-                    "optional_description": "A tall, ornate clock in the corner, its pendulum swinging and ticking filling the tense silence."
+                {"object": "sacks of new seeds", "state": "stacked neatly",
+                    "optional_description": "Durable sacks filled with a promising new variety of crop seeds, representing Mateo's aspirations for a more profitable harvest."
                  }
             ]
         }
     },
-    "Gallery": {
-        "description": "A long hall dedicated to the manor's art collection. While impressive, many pieces are dusty or poorly lit, reflecting the manor's decline.",
-        # Assumed exit back to the main gathering area
-        "exits_to": ["Drawing Room"],
+    "Elena's House": {
+        "description": "A quaint, traditional farmhouse nestled amidst a flourishing herbal garden and an ancient well. The atmosphere is one of timeless tranquility, steeped in history, with the gentle buzz of bees around the flowers.",
+        "exits_to": ["Abuelo Ceibo", "Valley"],
         "properties": {
             "contains": [
-                {"object": "painting collection", "state": "displayed",
-                    "optional_description": "Various oil paintings, landscapes, and portraits hanging along the walls."
+                {"object": "old wooden bench", "state": "weathered but sturdy",
+                    "optional_description": "A simple, well-worn wooden bench positioned under the shade of a smaller fruit tree, a place for quiet contemplation or storytelling."
                  },
-                {"object": "the obscure painting", "state": "hanging prominently",
-                    "optional_description": "A specific, darker painting depicting a scene that includes a figure holding a distinctive dagger or pointed object."
-                 },
-                {"object": "pedestal", "state": "empty",
-                    "optional_description": "An empty pedestal in the centre of the room, perhaps awaiting a new acquisition or display piece."
-                 },
-                {"object": "dust motes", "state": "visible in light",
-                    "optional_description": "Dust motes dance in the shafts of light filtering through the occasional window or lamps."
+                {"object": "herbal garden", "state": "vibrant and fragrant",
+                    "optional_description": "Elena's small, vibrant garden bursting with a diverse array of medicinal herbs and traditional vegetables, their scents mingling in the air."
                  }
             ]
         }
     },
-    "Kitchen": {
-        "description": "The functional heart of the manor's service wing. Large, slightly dated, filled with the smells of cooked meals and cleaning supplies.",
-        # Assumed exit back to the main house area (via service entrance near drawing room?)
-        "exits_to": ["Drawing Room"],
-        "properties": {
-            "contains": [
-                {"object": "large oven stove", "state": "warm",
-                    "optional_description": "A large, old-fashioned cast-iron oven and hob, still radiating warmth."
-                 },
-                {"object": "work table", "state": "clean",
-                    "optional_description": "A large wooden table used for food preparation."
-                 },
-                {"object": "knife rack", "state": "full",
-                    "optional_description": "A wooden block holding a set of various kitchen knives. All seem to be present."
-                 },
-                {"object": "servant bell system", "state": "silent",
-                    "optional_description": "A panel on the wall with small bells and labels for different rooms, currently quiet."
-                 },
-                {"object": "cleaning supplies", "state": "stored neatly",
-                    "optional_description": "Brooms, mops, and cleaning fluids stored in a corner."
-                 }
-            ]
-        }
-    },
-    "Guest Bedroom": {
-        "description": "One of the manor's many guest rooms, comfortably furnished but perhaps a little impersonal.",
-        # Assumed exit back to the main house area (e.g., upstairs landing connected to drawing room area)
-        "exits_to": ["Drawing Room"],
-        "properties": {
-            "contains": [
-                {"object": "four poster bed", "state": "neatly made",
-                    "optional_description": "A large bed with curtains, currently tidy."
-                 },
-                {"object": "wardrobe", "state": "closed",
-                    "optional_description": "A large wooden wardrobe for storing clothes."
-                 },
-                {"object": "dressing table", "state": "tidy",
-                    "optional_description": "A small table with a mirror and a set of brushes or toiletries."
-                 },
-                {"object": "suitcase", "state": "partially unpacked",
-                    "optional_description": "A suitcase lies open or closed near the wardrobe, suggesting the occupant is staying."
-                 },
-                {"object": "window", "state": "closed",
-                    "optional_description": "A window looking out onto the stormy night."
-                 }
-            ]
-        }
+    "Valley": {  # Adding a general valley location as suggested previously
+        "description": "The surrounding fertile valley, cradling the farms and homesteads. It's a place where ancient traditions subtly influence the land, but also where modern pressures are keenly felt.",
+        # Conceptual exits
+        "exits_to": ["Mateo's House", "Elena's House", "Abuelo Ceibo"]
     }
 }
 
@@ -214,60 +127,29 @@ EVENT_PERCEPTION_MODEL = "DirectEventDispatcher"
 STORY_GENERATOR_TYPE = "LLMLogStoryGenerator"
 
 # --- Narrative / Scenario ---
-NARRATIVE_GOAL = """The story should culminate in Inspector Dubois gathering all the suspects, explaining his deductions step-by-step, and dramatically revealing the true murderer and their method. The "how" of the murder should be as intriguing as the "who." """
-TONE = "Formal, suspenseful, intellectually stimulating, with a focus on logical deduction and character interactions rather than gore or action."
-
+NARRATIVE_GOAL = """The story should depict the escalating conflict between Mateo's pragmatic need to cut the ancient Abuelo Ceibo for agricultural expansion and Elena's deep, traditional conviction to protect it. It must build tension as both characters present their cases and take sides, leading to a critical confrontation at the tree's base. The narrative should then resolve this fundamental dispute, either through a negotiated compromise that allows both sides to find common ground, or a crucial discovery that redefines the tree's inherent value, ultimately guiding the characters towards a shared path forward."""
+TONE = "Reflective, empathetic, and slightly somber, focusing on the clash between tradition and progress, the weight of responsibility, and the deep connection to the land. The narrative should explore the emotional and practical complexities of the characters' positions, aiming for a resolution that honors the spirit of the valley and its inhabitants."
 agent_configs = [
     {
-        "name": "Thomas Dubois",
-        "identity": "Inspector Thomas Dubois, a slightly unassuming man in his late 40s, known for his meticulous logic, quiet observation, and ability to deduce motives from seemingly insignificant details and human psychology. ",
-        "initial_location": "Drawing Room",
+        "name": "Mateo",
+        "identity": "Young, pragmatic, and with a more modern vision of agriculture. Mateo has recently inherited his father's land and is eager to implement new techniques to improve productivity and secure his family's future. He is hardworking and respectful, but also views things from a perspective of efficiency and necessity. He feels the weight of responsibility and economic pressure. His objective is to expand his cultivation area to plant a new, more profitable type of crop, for which he considers the land occupied by the Abuelo Ceibo vital. Furthermore, he fears that the tree's old branches might be dangerous.",
+        "initial_location": "Mateo's House",
         "gender": "",
         "personality": "",
         "initial_goals": "",
         "background": "",
-        "initial_context": " Inspector Thomas Dubois had been enjoying a quiet, albeit slightly strained, evening as a guest at Blackwood Manor, discussing art and the terrible weather with the other occupants in the drawing-room. The sudden, hushed announcement from Mr. Davies that Lord Alistair had been found dead abruptly shattered the social facade, shifting Dubois immediately from polite visitor to keen observer and imminent investigator, his mind already beginning to piece together the puzzle from the reactions around him."
+        "initial_context": "Mateo surveyed his fields, the afternoon sun glinting off the newly turned earth. His gaze drifted to the immense Abuelo Ceibo at the property line, its sprawling canopy a dark silhouette against the sky. The familiar pang of economic pressure and the weight of his family's future gnawed at him. The tree stood directly in the path of his plans for a new, profitable crop, and its old branches seemed a constant threat. He knew he had to talk to Elena today, despite the heavy certainty of conflict."
     },
     {
-        "name": "Eleanor Finch",
-        "identity": "Eleanor Finch, Lord Alistair's estranged niece, in her early 30s. She carries a considerable amount of debt and has just discovered she is the sole beneficiary of Lord Alistair's revised will – a will she knew nothing about until his recent announcement. She appears  a little nervous and somehow  emotional.",
-        "initial_location": "Drawing Room",
+        "name": "Elena",
+        "identity": "An elder, widowed woman with a profound spiritual and sentimental connection to the land and its traditions. Elena has lived her entire life beside the Abuelo Ceibo, just as her parents and grandparents did. For her, the tree is not merely wood and leaves, but a living being with history, a guardian, and a symbol of her family's and the valley's resilience. She is wise, a bit stubborn, and perceives the world at a slower, more contemplative pace. Her objective is to protect the Abuelo Ceibo at all costs, considering cutting it down an act of betrayal.",
+        "initial_location": "Elena's House",
         "gender": "",
         "personality": "",
         "initial_goals": "",
         "background": "",
-        "initial_context": " Eleanor Finch was already on edge, her nerves frayed by the storm outside and the weight of her precarious financial situation, recently compounded by the bewildering news of her uncle's revised will. The shock of Lord Alistair's death sent her into a state of visible distress, wringing her hands and struggling to compose herself amidst gasps and murmurs in the drawing-room, her grief and fear intertwined."
-    },
-    {
-        "name": "Aris Thorne",
-        "identity": "Dr. Aris Thorne, Lord Alistair's seemingly loyal, long-time personal physician, in his late 50s. He is outwardly calm and collected, but possesses an unnerving knowledge of the Finch family's deepest secrets. He frequently glances at Eleanor with concern.",
-        "initial_location": "Drawing Room",
-        "gender": "",
-        "personality": "",
-        "initial_goals": "",
-        "background": "",
-        "initial_context": "Dr. Aris Thorne maintained a veneer of professional calm upon hearing the news, his medical background perhaps steels him against overt displays of panic. However, beneath the surface, his sharp eyes missed nothing, particularly Eleanor's reaction, while his mind processed the implications of Lord Alistair's sudden demise, perhaps connecting it to long-held family secrets he was privy to. He would be observing the scene from the drawing-room, ready to offer his 'assistance' or observations."
-    },
-    {
-        "name": "Xenia Petrova",
-        "identity": "Madame Xenia Petrova, a flamboyant and ambitious international art dealer in her 40s, who was negotiating a major, highly secretive sale with Lord Alistair just hours before his death. She claims a strong alibi but seems overly interested in a specific, obscure painting in the manor's collection.",
-        "initial_location": "Drawing Room",
-        "gender": "",
-        "personality": "",
-        "initial_goals": "",
-        "background": "",
-        "initial_context": " Madame Xenia Petrova, fresh from her intense negotiation with Lord Alistair, was likely anticipating the outcome of her potential deal when the news broke. Her initial state would be one of dramatic shock and annoyance at the sudden disruption, quickly overlaid with a calculating curiosity as she assessed how this unforeseen event might impact her business interests and access to the manor's collection, while perhaps making a mental note of who else seemed affected. She'd be in the drawing-room, observing."
-    },
-    {
-        "name": "Mr. Davies",
-        "identity": "Mr. Davies, the manor's stoic and long-serving butler in his 60s. He reveals very little, offering only curt, precise answers to the Inspector's questions. He seems subtly protective of Lord Alistair's legacy and killed Lord Alistair.",
-        "initial_location": "Drawing Room",
-        "gender": "",
-        "personality": "",
-        "initial_goals": "",
-        "background": "",
-        "initial_context": "Mr. Davies, the unflappable butler, is the one who discovered the body in the study. His initial state is one of grim, controlled urgency as he delivers the shocking news to the assembled company in the drawing-room, his usual stoicism tested by the gravity of the situation, yet still managing to convey the facts with precise, if curt, language, before leading the Inspector to the scene."
-    },
+        "initial_context": "Elena sat on her porch, sipping herbal tea, watching the changing light on the Abuelo Ceibo. Its ancient branches, familiar as her own skin, swayed gently in the breeze. She felt a deep sense of peace, but also a growing unease. Mateo had been looking at the tree differently lately, and she knew the unspoken threat that hung in the air. This tree was more than just wood; it was the history of her family, the guardian of the valley, and she would protect it with every fiber of her being."
+    }
 ]
 
 

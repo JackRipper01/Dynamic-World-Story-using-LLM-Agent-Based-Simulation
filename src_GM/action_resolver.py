@@ -433,8 +433,8 @@ Output your analysis as a single line of text with exactly four parts, separated
     - For OBSERVE: "target: <what_is_observed>"
     - For WAIT: "duration: <e.g., a moment, briefly>"
     - For FAIL or UNKNOWN: This part can be a brief reason for failure/unknown, or left empty if the reason is clear from the outcome description.
-4.  Outcome Description: A sentence describing what an observer sees happen.
-5. Outcome Reason: A brief sentence explaining why the agent took that action.
+4.  Outcome Description: Describe what an observer sees happen.
+5. Outcome Reason: A sentence explaining why the agent took that action.
 
 Examples of the single-line output format:
 Intent: "go to the park" -> SUCCESS | MOVE | destination: Park | {agent_name} walks towards the Park. | {agent_name} wants to relax and enjoy nature.
