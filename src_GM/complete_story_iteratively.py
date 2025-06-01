@@ -1,3 +1,4 @@
+import time
 from main import create_llm_instance
 from story_generator import LLMIterativeStoryGenerator
 from config import agent_configs
@@ -20,7 +21,7 @@ iteration_count = 0
 
 # STEP 1: Generate the initial draft
 current_story_draft = story_generator.generate_initial_story_draft(
-    log_file_path="simulation_logs_upgraded.txt",
+    log_file_path="murderer_case_logs.txt",
     agent_configs=config.agent_configs,
     narrative_goal=config.NARRATIVE_GOAL
 )
@@ -56,6 +57,8 @@ else:
             print("Unexpected response format. Stopping iteration.")
             final_story = current_story_draft
             break
+        
+        time.sleep(10)
 
     if iteration_count >= max_iterations and not final_story:
         print(f"Max iterations ({max_iterations}) reached. Story may be incomplete.")
