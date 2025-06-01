@@ -426,12 +426,19 @@ def run_simulation():
                 if outcome_reason_for_event:
                     outcome_desc_for_event += f" Because {outcome_reason_for_event}"
 
+                
                 world.log_event(outcome_desc_for_event, event_scope,
                                 current_loc, agent.name if result else 'System')
                 append_to_log_file(
                     "simulation_logs.txt", f"""{agent.name}'s turn in {current_loc}:\n {outcome_desc_for_event}\n\n""")
                 append_to_log_file(
                     "simulation_logs_with_director_logs.txt", f"""{agent.name}'s turn in {current_loc}:\n {outcome_desc_for_event}\n\n""")
+                
+                #check if second word of outcome_desc_for_event is "tries"
+                desc_splited = outcome_desc_for_event.split()
+                if len(desc_splited) > 1 and desc_splited[1] == "tries" and desc_splited[2] == "to" and desc_splited[3] == "speak" and desc_splited[4] == "to":
+                    outcome_desc_for_event+=" You must move to a different location in order to speak to that person."
+                    
                 new_event = Event(
                     description=outcome_desc_for_event,
                     location=current_loc,
@@ -446,6 +453,7 @@ def run_simulation():
                 event_dispatcher.dispatch_event(
                     new_event, world.registered_agents, world.agent_locations
                 )
+                director.perceive(new_event)  # Director perceives the event
 
             if config.SIMULATION_MODE == 'debug':
                 print("-" * 60)  # End agent turn block
