@@ -69,7 +69,7 @@ class Director:
         # --- PROMPT ENGINEERING FOR DIRECTOR (same as before, ensures consistency) ---
         prompt = f"""You are '{self.name}', the Director of this simulated world.
 Your primary narrative goal is: '{self.narrative_goal}'.
-Your role is to very subtly guide the narrative by making changes to the environment or introducing external events if necessary.
+Your role is to very subtly guide the narrative by making changes to the environment if necessary.
 
 Current World State Summary (as of Step {current_step}):
 {world_summary_for_prompt}
@@ -77,8 +77,8 @@ Current World State Summary (as of Step {current_step}):
 Your Past Interventions and Reflections (from your memory):
 {director_memory_context}
 
-Based on your narrative goal, the current world state and  your past actions (and their outcomes from memory), what single environmental intervention will you enact next?
-Your actions are powerful but should be used judiciously to nudge the story.
+Based on your narrative goal, the current world state and  your past actions (and their outcomes from memory), what single environmental intervention will you enact next? You can change the weather or add a new object to a location, the objects must be inanimate.
+Your actions are powerful but should be used judiciously to nudge the story and select carefully what action to take cause there is a limit to the amount of actions you can do.
 Choose ONE action from the list below. Be precise with parameters.
 
 Allowed Environmental Actions & Format:
