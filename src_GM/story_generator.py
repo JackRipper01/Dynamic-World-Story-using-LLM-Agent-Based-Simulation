@@ -343,7 +343,7 @@ Your Story:
             print("-----------------------------")
 
         # Use max_output_tokens from your config
-        generated_story = self._call_llm_for_story(prompt, max_tokens=2000)
+        generated_story = self._call_llm_for_story(prompt, max_tokens=8192)
 
         if not generated_story or "[ERROR]" in generated_story:
             failure_message = generated_story if "[ERROR]" in generated_story else "The LLM storyteller produced an empty draft."
