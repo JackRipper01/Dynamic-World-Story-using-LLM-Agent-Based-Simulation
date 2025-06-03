@@ -1,59 +1,378 @@
 
 --- Initial Generated Story Draft ---
-The storm outside, a tempest of wind and rain, mirrored the disquiet that had settled within the walls of Blackwood Manor. It was a night of secrets and shadows, a night when the venerable Lord Alistair Finch had been found dead in his study, the circumstances shrouded in a fog of suspicion. Now, gathered in the opulent, yet somehow stifling, drawing-room, were the remaining players in this macabre drama: Inspector Thomas Dubois, a man whose unassuming demeanor belied a mind as sharp as a honed blade; Eleanor Finch, the estranged niece, her eyes wide with a mixture of grief and fear; Dr. Aris Thorne, the family physician, whose calm facade seemed to barely contain a hidden knowledge; Madame Xenia Petrova, the flamboyant art dealer, her presence as dramatic as the storm raging outside; and Mr. Davies, the unflappable butler, an enigma of quiet observation.
 
-The air in the drawing-room was thick with unspoken accusations and the faint, unsettling scent of oil. The Inspector, a man who preferred facts to speculation, rose from his armchair and moved towards the fireplace, his gaze fixed on the wet footprints marring the polished floor. He knelt, examining them with meticulous care, his movements precise and economical.
+The storm outside mirrored the tempest brewing within Blackwood Manor. Rain lashed against the leaded windows, blurring the twilight that had already begun to creep across the grand drawing-room. Inside, a chilling stillness had settled, punctuated only by the crackling fire and the unspoken tension that crackled between the assembled guests. Inspector Thomas Dubois, a man whose unassuming demeanor masked a mind of relentless logic, surveyed the scene. Lord Alistair Finch, the manor's master, was dead. The circumstances were, to put it mildly, perplexing.
 
-"Be careful, Mr. Dubois," Mr. Davies's voice, flat and devoid of emotion, broke the tense silence. "The Study is the scene of a… unfortunate incident. Try not to disturb anything further."
+The air itself seemed thick with secrets, heavy with the scent of linseed oil that clung to the floor near the study door. Wet footprints marred the polished parquet, a silent testament to someone’s hurried passage. The guests, a collection of individuals whose lives were now irrevocably entwined with the tragedy, were a study in controlled anxiety. Eleanor Finch, Lord Alistair’s niece and sole beneficiary of a newly discovered will, wrung her hands, her face pale and etched with a nervous tremor. Dr. Aris Thorne, the family physician, his face a mask of practiced composure, offered her glances of what appeared to be concern. Madame Xenia Petrova, a flamboyant art dealer, exuded an air of both curiosity and calculation, her eyes darting around the room, seemingly more interested in the family’s art collection than the death of its patriarch. And then there was Mr. Davies, the stoic butler, a man whose silence and unwavering gaze hinted at a wealth of unspoken knowledge.
 
-Madame Petrova, ever the opportunist, seized the moment. Rising from her armchair, she smoothed her silk skirt and glided towards the Inspector. "Such a tragedy, to lose Lord Alistair… and in such a place," she murmured, placing a delicate hand on Dubois's arm. "The family collection… I trust the authorities will exercise the utmost care in their investigation. There are some truly *priceless* pieces within these walls, you see." Her eyes, however, betrayed a specific, almost predatory, interest in something beyond the general collection.
+Dr. Thorne, his voice a soothing balm against the rising unease, turned to Eleanor, “The storm outside mirrors the turmoil within, doesn’t it?”
 
-Dr. Thorne, his face an impassive mask, added his own measured words. "Indeed, a great loss, Lord Alistair. And, as Madame Petrova rightly points out, a profound impact on the future of the family's… legacy. I trust the authorities will proceed with… discretion. One must be mindful of delicate sensibilities at a time like this." He glanced at Eleanor, his expression a complex mixture of concern and something else, something that Dubois, with his keen eye for detail, could not quite decipher.
+Dubois, his gaze unwavering, rose from his armchair and walked towards the fireplace, his eyes fixed on the wet footprints. He knelt, his movements precise and deliberate, examining the pattern and the source of the moisture.
 
-Eleanor, her composure clearly fragile, turned to Mr. Davies. "Mr. Davies, do you... do you know what happened in the Study? Is it... is it connected to... to Lord Alistair's... passing?"
+“Be careful, Mr. Dubois,” Mr. Davies’s voice, a low rumble, cut through the quiet. “The Study is the scene of a… unfortunate incident. Try not to disturb anything further.”
 
-"Is... is anyone else aware of the... the smell of oil? It's rather strong, isn't it?" she added, her voice trembling slightly.
+Madame Petrova, her silk skirt rustling, glided towards Dubois, her perfectly manicured hand resting lightly on his arm. “Such a tragedy, to lose Lord Alistair… and in such a place. The family collection… I trust the authorities will exercise the utmost care in their investigation. There are some truly *priceless* pieces within these walls, you see.”
 
-Mr. Davies, his gaze steady and unwavering, replied to Eleanor, "Indeed, Miss Finch. The oil, you noticed it. It appears a container may have been… compromised. Best not to linger in its vicinity."
+Thorne, his voice laced with a subtle undertone of warning, added, “Indeed, a great loss, Lord Alistair. And, as Madame Petrova rightly points out, a profound impact on the future of the family's… legacy. I trust the authorities will proceed with… discretion. One must be mindful of delicate sensibilities at a time like this.”
 
-Dubois, sensing an opening, turned to Eleanor. "Miss Finch," he said, his voice low and measured, "The oil. You've noticed it. And the… unfortunate incident in the Study. Tell me, were you, or anyone else, in the Study earlier this evening, perhaps near the time of Lord Alistair's... passing?"
+Eleanor Finch, her voice barely a whisper, broke the tense silence. “Is… is anyone else aware of the… the smell of oil? It’s rather strong, isn’t it?”
 
-Dr. Thorne, ever the pragmatist, said "Indeed, Miss Finch, the smell is quite… noticeable. And concerning. Perhaps, we should all remain in the drawing room, at least until the source of this… *compromise* is fully understood."
+“Indeed, Miss Finch,” Davies replied, his voice devoid of emotion. “The oil, you noticed it. It appears a container may have been… compromised. Best not to linger in its vicinity.”
 
-Eleanor, her nervousness evident, replied, "Mr. Dubois, I... I was not in the Study earlier this evening. I was... with Lord Alistair, in the library, discussing... financial matters. We parted ways shortly before dinner."
+Dubois, his eyes narrowed, turned to Eleanor. “Miss Finch,” he said, his voice low and measured, “The oil. You’ve noticed it. And the… unfortunate incident in the Study. Tell me, were you, or anyone else, in the Study earlier this evening, perhaps near the time of Lord Alistair’s… passing?”
 
-Dubois turned to Mr. Davies, his voice unwavering. "Mr. Davies, you mentioned that the situation in the Study was an 'unfortunate incident'. Can you elaborate? What precisely happened in there before... before Lord Alistair was found?"
+“Indeed, Miss Finch, the smell is quite… noticeable. And concerning. Perhaps, we should all remain in the drawing room, at least until the source of this… *compromise* is fully understood,” Thorne interjected, his gaze flitting between Eleanor and Dubois.
 
-Madame Petrova, her eyes gleaming with a predatory light, interjected, "Miss Finch," she said, her voice laced with a touch of sympathetic curiosity, "You mentioned being with Lord Alistair in the library. Did you happen to notice anything… unusual, before you parted ways? Any indication that… something was amiss? Or any… specific items that may have captured your attention?" Her gaze, for a fleeting moment, swept over Eleanor, assessing, judging.
+Eleanor, her voice trembling slightly, replied, “Mr. Dubois, I… I was not in the Study earlier this evening. I was… with Lord Alistair, in the library, discussing… financial matters. We parted ways shortly before dinner.”
 
-Mr. Davies, the very picture of unflappable composure, fixed Dubois with a steady gaze. "The precise details, Mr. Dubois, are best left to the authorities. Suffice to say, Lord Alistair was discovered in the Study. The circumstances… are currently under investigation."
+Dubois turned his attention back to Davies. “Mr. Davies,” he said, his voice level, “You mentioned that the situation in the Study was an ‘unfortunate incident’. Can you elaborate? What precisely happened in there before… before Lord Alistair was found?”
 
-Eleanor, her voice tight with tension, answered Madame Petrova. "No, Madame Petrova, nothing... nothing unusual. We were merely discussing… estate matters. And I did not notice any specific items of interest. My mind was preoccupied with… other things."
+Madame Petrova, her voice laced with a touch of sympathetic curiosity, spoke to Eleanor. “Miss Finch,” she said, “You mentioned being with Lord Alistair in the library. Did you happen to notice anything… unusual, before you parted ways? Any indication that… something was amiss? Or any… specific items that may have captured your attention?” Her eyes flitted over Eleanor briefly, adding with a subtle emphasis, “Or any… specific items that may have captured your attention?”
 
-Dubois, undeterred, turned his attention back to Eleanor. "Miss Finch," he said, his voice calm but firm, "You were with Lord Alistair shortly before his death, in the library, you say. And you noticed nothing… amiss. However, the oil, and the circumstances in the Study, are… concerning. Could you perhaps describe, in detail, the nature of your discussion with Lord Alistair? Specifically, what *estate matters* were you discussing?"
+Davies, his face an impassive mask, replied to Dubois, “The precise details, Mr. Dubois, are best left to the authorities. Suffice to say, Lord Alistair was discovered in the Study. The circumstances… are currently under investigation. I will answer further questions when the Inspector arrives.”
 
-Mr. Davies, ever the voice of propriety, stated, "Mr. Dubois, I believe it's best if we all await the Inspector's arrival. He is the one who will determine what questions are relevant."
+Eleanor, her voice tight with a barely concealed tension, addressed Madame Petrova. “No, Madame Petrova,” she replied, “Nothing… nothing unusual. We were merely discussing… estate matters. And I did not notice any specific items of interest. My mind was preoccupied with… other things.”
 
-Dr. Thorne, his tone carefully modulated, said "The storm outside is a tempest, indeed, And the questions… they too, swirl about us like the wind. Perhaps, for now, we should all focus on comforting ourselves and finding some semblance of… *calm*."
+“Miss Finch,” Dubois said, his voice calm but firm, “You were with Lord Alistair shortly before his death, in the library, you say. And you noticed nothing… amiss. However, the oil, and the circumstances in the Study, are… concerning. Could you perhaps describe, in detail, the nature of your discussion with Lord Alistair? Specifically, what *estate matters* were you discussing?”
 
-Madame Petrova, her eyes glittering, said, "Mr. Dubois, such thorough questioning is, of course, expected. But perhaps, before we delve too deeply into Miss Finch's affairs, we might consider the *more immediate* implications of… the oil? It seems a rather significant detail, wouldn't you agree? Might it be connected to the… incident in the Study? Perhaps, Mr. Davies, you could enlighten us? Is there anything... valuable that might..."
+“Mr. Dubois, I believe it's best if we all await the Inspector's arrival. He is the one who will determine what questions are relevant,” Davies interjected, his tone suggesting a deliberate attempt to control the narrative.
 
-"Madame Petrova, the source of the oil is, as yet, undetermined," Mr. Davies replied. "It appears to be a… mechanical issue. As for its connection to Lord Alistair's… demise, that, too, is under investigation. I am not at liberty to speculate."
+Thorne, his voice a soothing balm, attempted to calm the rising tide of suspicion. “The storm outside is a tempest, indeed, And the questions… they too, swirl about us like the wind. Perhaps, for now, we should all focus on comforting ourselves and finding some semblance of… *calm*.”
 
-Eleanor, her anxiety palpable, turned to Mr. Davies. "Mr. Davies, has the… source of the oil been identified? And, more importantly… is there any danger? Is it… flammable?"
+Madame Petrova, her voice taking on a more theatrical tone, said, “Mr. Dubois, such thorough questioning is, of course, expected. But perhaps, before we delve too deeply into Miss Finch’s affairs, we might consider the *more immediate* implications of… the oil? It seems a rather significant detail, wouldn't you agree? Might it be connected to the… incident in the Study? Perhaps, Mr. Davies, you could enlighten us? Is there anything… valuable that might...”
 
-"Flammable," Madame Petrova murmured, her voice low and carrying just enough to be overheard, "That would be… *unfortunate*. Such a dreadful thing, a fire. Destroys everything. And, of course, it would be a terrible shame if any of the… more *irreplaceable* pieces were to be… damaged."
+“Madame Petrova, the source of the oil is, as yet, undetermined. It appears to be a… mechanical issue. As for its connection to Lord Alistair’s… demise, that, too, is under investigation. I am not at liberty to speculate,” Davies replied, his voice flat, devoid of emotion.
 
-Dr. Thorne, seeing Eleanor's distress, offered, "Miss Finch, perhaps the smell of oil is causing some… uneasiness. If you are feeling unwell, I would be more than happy to… examine you. It would be a shame if any of us were to succumb to the stresses of the day. Such a thing might complicate… matters further."
+Eleanor, her voice edged with anxiety, turned to Davies. “Mr. Davies, has the… source of the oil been identified? And, more importantly… is there any danger? Is it… flammable?”
 
-Dubois, his gaze fixed on Mr. Davies, stated, "Mr. Davies, you seem particularly concerned about the authorities' investigation. Is there something specific you believe they might overlook? Perhaps something… hidden?"
+Madame Petrova, her voice low and carrying just enough to be overheard, murmured, “Flammable… That would be… *unfortunate*. Such a dreadful thing, a fire. Destroys everything. And, of course, it would be a terrible shame if any of the… more *irreplaceable* pieces were to be… damaged.”
 
-Madame Petrova, her voice now laced with a hint of impatience, said, "Mr. Dubois, I find your line of questioning… *fascinating*. And perhaps, a little… *premature*. Before we concern ourselves with the mysteries of the oil, wouldn't you agree that we should first establish the identity of those who were *closest* to Lord Alistair in his final hours? Those, for example, who were involved in… *financial discussions*?"
+Thorne, his voice soft and concerned, addressed Eleanor. “Miss Finch, perhaps the smell of oil is causing some… uneasiness. If you are feeling unwell, I would be more than happy to… examine you. It would be a shame if any of us were to succumb to the stresses of the day. Such a thing might complicate… matters further.”
 
-Dr. Thorne, ever the voice of reason, added, "Mr. Dubois, While Madame Petrova's suggestion is… prudent, I believe we should remain focused on the immediate concerns. Your interest in Miss Finch's affairs, while perhaps well-intentioned, feels a touch… precipitous. Before we cast stones, perhaps we should consider the *practical* implications of this oil. Mr. Davies, could you confirm if there are any flammable materials stored near the Study door? A fire, as Madame Petrova so aptly..."
+Dubois, his gaze fixed on Davies, his voice steady and low, said, “Mr. Davies, you seem particularly concerned about the authorities' investigation. Is there something specific you believe they might overlook? Perhaps something… hidden?”
 
-Dubois, his eyes narrowed, turned to Madame Petrova. "Madame Petrova, While I agree that establishing Lord Alistair's immediate associates is crucial, I believe we are remiss if we ignore the tangible evidence before us. The oil, the circumstances in the Study, and the… *compromised* state of whatever container it originated from. These are the physical clues, the tangible starting points. If we dismiss them too readily, we risk overlooking..."
+“Mr. Dubois, I find your line of questioning… *fascinating*. And perhaps, a little… *premature*. Before we concern ourselves with the mysteries of the oil, wouldn't you agree that we should first establish the identity of those who were *closest* to Lord Alistair in his final hours? Those, for example, who were involved in… *financial discussions*?” Madame Petrova countered, her eyes glinting with a hint of challenge.
 
-Mr. Davies remained steadfast. "Mr. Dubois, as I have stated, the investigation is best left to the authorities. I am not at liberty to discuss the specifics of the situation in
------------------------------------
+“Mr. Dubois,” Thorne said, his voice calm but with a subtle undercurrent of steel, “While Madame Petrova’s suggestion is… prudent, I believe we should remain focused on the immediate concerns. Your interest in Miss Finch’s affairs, while perhaps well-intentioned, feels a touch… precipitous. Before we cast stones, perhaps we should consider the *practical* implications of this oil. Mr. Davies, could you confirm if there are any flammable materials stored near the Study door? A fire, as Madame Petrova so aptly…”
 
+“Madame Petrova, While I agree that establishing Lord Alistair's immediate associates is crucial, I believe we are remiss if we ignore the tangible evidence before us. The oil, the circumstances in the Study, and the… *compromised* state of whatever container it originated from. These are the physical clues, the tangible starting points. If we dismiss them too readily, we risk
+ … overlooking,” Dubois finished, his voice unwavering.
+
+“Mr. Dubois, as I have stated, the investigation is best left to the authorities. I am not at liberty to discuss the specifics of the situation in the Study, or the state of the container, whatever it may have been. Your persistence is... unproductive,” Davies said, his voice a cold wall.
+
+Eleanor, suddenly appearing unwell, subtly moved towards the door leading to the guest bedroom. She needed to escape the suffocating tension of the drawing-room.
+
+Davies, ignoring Eleanor's departure, turned to face the fireplace, taking a slow step towards it. The fire crackled, casting dancing shadows that seemed to mock the gravity of the situation.
+
+Eleanor, once in the guest bedroom, quickly scooped a muddy boot into a suitcase, closing it with a decisive snap. The muddy footprint was a crucial piece of evidence that needed to be hidden.
+
+Madame Petrova, her voice cutting through the tense silence, addressed Davies, “I slowly lift a perfectly manicured hand, gesturing towards the Study door with a languid grace. “The oil, as Mr. Davies has noted, is the more… *tangible* concern at the moment. And, *perhaps*, a rather significant distraction. But I must confess, my mind keeps returning to one particular detail of my conversation with Lord Alistair. We were, of course, discussing… acquisitions. And one item in particular, that might have potentially changed hands had he been… more fortunate. Perhaps, Mr. Davies, *if* the authorities have already surveyed the Study, you could shed some light on…”
+
+Thorne rose slowly, moving to the silver tray on the coffee table. He picked it up, turning it in the firelight, examining it with a careful eye.
+
+Dubois, his gaze still fixed on the oil stain, slowly moved towards the Study door.
+
+“The tray,” Davies stated, his voice flat and devoid of emotion, “was used to carry refreshments. It was found near the Study door. It appears to have… *fallen*.” A moment of silence hung in the air before he added, “The circumstances surrounding its presence are, as always, under investigation.”
+
+“Mr. Thorne,” Dubois said, his voice calm but carrying the weight of scrutiny, “if you would be so kind as to place that tray back on the table, undisturbed. Before it is potentially examined by the authorities. I believe it would be prudent to preserve the evidence.”
+
+“Mr. Thorne, how... *curious*. To find the tray fallen near the Study. And, even more intriguing, to find *oil* present. Perhaps, the authorities would appreciate you keeping a careful eye on it before… before they take it away,” Madame Petrova observed, her voice laced with subtle insinuation.
+
+Eleanor, in the guest bedroom, glanced around the room, reached for the window latch, and subtly tested the weight of the suitcase. She was assessing her options, calculating her chances of escape.
+
+Thorne, feigning a thoughtful expression, slowly lowered the silver tray. “Mr. Dubois, of course. Preservation of evidence is paramount. I wouldn’t want to… impede the investigation. However,” he said, directing his gaze towards Madame Petrova, “I must confess, Madame Petrova, I find your… *fascination* with this tray rather interesting. Perhaps you could enlighten us as to why you find it so… *intriguing*? Did you, perhaps, see it earlier? Or, perhaps, its current proximity to the Study sparks certain… associations?” He then placed the tray back onto the table, carefully.
+
+Eleanor, her nerves frayed, moved to the dressing table, picked up the mirror, and scanned the room, her eyes darting around nervously.
+
+“Mr. Davies,” Dubois said, his voice steady and low, “You seem particularly anxious about the authorities' investigation, and the details surrounding the Study. Perhaps you could alleviate some of that anxiety by simply answering a few questions. For example, what type of oil is present, and what was its original container? A simple answer, if you have one, would be most helpful.”
+
+“The specifics of the oil and its container are matters for the investigation. Your continued questioning, Mr. Dubois, is becoming tiresome. I have nothing further to add on the matter,” Davies replied, his voice laced with barely concealed irritation.
+
+“Miss Finch,” Thorne said, his voice low and soothing, “The… *unpleasantness* in the Study seems to be causing a degree of unease. Are you quite alright? The stress of the situation could potentially exacerbate any… sensitivities. Perhaps a brief rest in your chambers would be beneficial. I would, of course, be available to… attend to you.” He paused, allowing his gaze to linger on her face before adding, “Should you require it, a calming draught might be… *necessary*.”
+
+“Oh, the *irony*! To be gathered here, discussing shadows and oil, when the true tragedy lies in the *untold story*! Lord Alistair, gone before the ink could dry on the agreement! And, I daresay, before I could even *admire* the masterpiece he had promised me... the 'Shadow of the Raven'," Madame Petrova lamented, her voice dripping with a theatrical sorrow.
+
+Dubois circled the silver tray, touched its edge with a gloved finger, and sniffed, his face carefully neutral. He was meticulously examining the scene for any clues.
+
+“The *Shadow of the Raven*," Madame Petrova whispered, her voice barely audible, yet calculated to carry across the room. "A painting, they say, of such exquisite darkness… a true masterpiece. And, alas, now… *unattainable*.”
+
+“Madame Petrova, the 'Shadow of the Raven'? An ambitious commission indeed. One that, I understand, required a rather… *significant* initial investment. And, if I may be so bold, perhaps a rather… *unwise* one, given Lord Alistair’s current… predicament. A painting is a tangible item, Madame. Far easier to… *dispose of* than, say, a considerable sum of money already spent,” Thorne countered, his voice laced with a subtle edge.
+
+“Mr. Thorne, your pronouncements regarding Lord Alistair's affairs are… *impertinent*. The financial arrangements, or lack thereof, surrounding a painting are hardly the focus of the current, far more pressing, situation. I suggest you confine your inquiries to the matters at hand,” Davies snapped, his voice sharp.
+
+Eleanor, having returned to the drawing room, closed the wardrobe, leaned against it, took a breath, and walked towards the Drawing Room door, maintaining a slow pace. She was trying to appear calm, despite the turmoil within.
+
+“Mr. Thorne, your concerns about the 'initial investment' are... *intriguing*. Perhaps you have some insight into the details of my agreement with the late Lord Alistair? Did *you* know the precise sum, the terms, the specifics of this... *untimely* acquisition?" Madame Petrova challenged, her eyes narrowed.
+
+Davies turned towards the grandfather clock, feigning interest and checked his watch with exaggerated care. He was subtly observing the room, carefully gauging the reactions of those present.
+
+“Mr. Davies, your reluctance to discuss the oil is… *understandable*. However, a simple denial would suffice. Silence, in this circumstance, is far more revealing. Are you perhaps... protecting something? Or someone?” Dubois pressed, his gaze unwavering.
+
+“Miss Finch,” Thorne said, his voice carrying just enough concern to be heard over the crackling fire, “Perhaps you would be best served by remaining here, in the company of those who care for your wellbeing. The chill of the storm, and indeed… the prevailing atmosphere, may not be conducive to… *recovery*. Are you quite certain you wish to venture out alone?”
+
+“My silence, Mr. Dubois, is not a sign of guilt, but of discretion. I am under no obligation to answer your insinuations. I suggest you direct your attention towards more relevant matters, before you find yourself... unwelcome,” Davies retorted, his voice a low growl.
+
+Eleanor, her voice trembling slightly, replied to Thorne, “Mr. Thorne, I appreciate your… *concern*. However, I assure you, I am quite capable of looking after myself. The air in here… is becoming rather oppressive. I simply require some… *fresh air*.”
+
+“Miss Finch,” Dubois said, his voice calm but firm, “I understand your desire for fresh air, but I must strongly advise against it. The storm outside is treacherous, and the circumstances within... well, they require our immediate attention. Before you leave, perhaps you could answer a simple question. Do you know the nature of the oil present near the Study door, and whether you saw the silver tray before the incident?”
+
+“Mr. Dubois, while I appreciate your... *persistence*, Miss Finch is clearly distressed. Pressing her with questions now would be, in my professional opinion, quite insensitive. Let us, at least, allow her to gather her composure. Perhaps, *after* a period of… reflection, she may be more inclined to answer your inquiries. Unless, of course," Thorne added, his gaze flickering towards Mr. Davies and then back to Eleanor, "you believe her to be... *hiding* something. In which…”
+
+“My dear Miss Finch," Madame Petrova said, her tone silky smooth, "The oppressive atmosphere, you say? Perhaps a breath of *fresh air* would be lovely, indeed. However, wouldn't it be more *refreshing* to have the answers to a few
+ …to a few simple questions? Namely, what exactly was the late Lord Alistair *doing* in the Study before his… untimely demise? And…”
+
+Dubois turned his attention to Thorne. “Mr. Thorne, Your observations are astute, as always. However, rather than speculate on Miss Finch's potential reticence, perhaps you could enlighten us on the nature of your *professional* opinion. Specifically, Mr. Thorne, what *exactly* do you do, and what would be the professional benefit of preventing Miss Finch from being questioned…”
+
+Davies, his voice a low, steady rumble, interrupted, “The questions regarding the oil, and the events in the Study, will be answered in due course. For now, I suggest we maintain a degree of… decorum. The Inspector’s arrival is imminent.”
+
+Madame Petrova, her eyes gleaming with a mixture of excitement and calculation, added, “Oh, but isn't it fascinating? The path to *Lord Alistair's final moments* is so… *clearly marked*. Footprints leading from the scene of… *tragedy*! The oil, the blood, the… *untold stories*… They simply *whisper* for us to unravel them. And what, pray tell, is the *meaning* of these…”
+
+Thorne, his voice a low, measured tone, turned to Davies, a hint of a smile playing on his lips. "The Inspector's arrival, you say, Mr. Davies? How *convenient*. One might almost think the authorities were... *expected*. Perhaps Lord Alistair's passing was not quite as unexpected as it initially appeared, wouldn't you agree?" He allowed his gaze to linger on Mr. Davies, gauging his reaction before adding, "Or perhaps you simply wished to expedite matters? To… control the narrative, as it were."
+
+Eleanor, seeing her chance, took two steps back, feigning interest in escaping, and then turned her gaze towards the Guest Bedroom door and began to move towards it, subtly distancing herself from the mounting accusations.
+
+Dubois, his mind racing, knelt, dabbing at the oil stain with his handkerchief, and closed his eyes, murmuring to himself. He was attempting to identify the oil and its source, trying to discern its properties.
+
+Eleanor, once in the guest bedroom, picked up the muddy boot and rummaged inside it. Her fingers probed the interior, searching for something hidden within its depths, hoping to buy herself some time.
+
+Davies, his voice a low rumble, stated, “The Inspector’s arrival is indeed imminent. I trust you will all comport yourselves accordingly. Further speculation, at this juncture, is… *unwise*. I suggest you conserve your… *energies*.”
+
+Madame Petrova, her voice a theatrical whisper, said, “I slowly turn my gaze towards the partially obscured oil stain on the floor, drawing a gloved hand towards my cheek in a gesture of thoughtful contemplation. \"Oil, of course,\" I murmur, my voice a low, theatrical whisper that carries across the room. \"Such a… *messy* substance. And its presence near the Study... most intriguing, wouldn't you say? One wonders, does it have any connection to the *subject* of our final discussion with Lord Alistair, specifically the *source* of his financial outlay? The painting's composition, its… *handling* of the pigments…” I trail…”
+
+Thorne took a step towards the coffee table, subtly glancing at the Study doorway and Eleanor, then back to the bloodied handprint on the Study door, murmuring about the tragedy and untidiness. He was subtly assessing the scene and subtly directing attention towards the Study and Eleanor.
+
+Davies, his voice as steady as the ticking clock, turned to Madame Petrova. "Madam Petrova," he said, "Your speculations are, as always, *theatrical*. However, they serve only to distract from the matter at hand. Lord Alistair is dead. The details of his demise will be revealed in due course. I advise you to cease your… *performances* and await the Inspector's arrival with the same degree of… *respect* afforded to those who have passed.”
+
+Eleanor, her fingers still probing the muddy boot, reached into the interior, her movements hidden from view.
+
+Thorne’s voice, soft but laced with a subtle urgency, addressed Eleanor, “Miss Finch, before you depart, I would be remiss if I did not remind you that your father… cared deeply for your wellbeing. And I, of course, share the same sentiments. Please, allow me to at least escort you to the guest bedroom. It is closest, should you need… anything at all. Or, if you would prefer, I could call for a servant to accompany you.”
+
+Madame Petrova, her voice laced with a touch of amusement, turned to Davies. “My dear Mr. Davies, *respect* for the dead is certainly paramount, *particularly* when dealing with valuable assets. But perhaps you misunderstand. My 'performances' – as you so delicately put it – are merely an attempt to understand. And I, for one, find…”
+
+Dubois, his voice calm but firm, turned to Davies, “The presence of the oil, the blood, and the recent, albeit brief, discussion of finances suggests a connection. Mr. Davies, can you confirm if Lord Alistair had any specific disagreements or pending matters with anyone present regarding his financial dealings, particularly concerning an artwork?”
+
+Eleanor, her fingers still searching, shook the muddy boot over the floor, dislodging some dirt. Her eyes scanned the floorboards, seeking any telltale sign of something hidden.
+
+Madame Petrova, her voice dripping with sarcasm, turned to Davies, “Indeed, Mr. Davies, it's *always* about the assets, isn't it? Perhaps the esteemed Inspector, when he arrives, might be *particularly* interested in the whereabouts of a certain *'Madonna of Shadows'*. I believe it was the subject of our *last* negotiation, wouldn't you say? Its value is... *significant*, wouldn't…”
+
+Dubois, his voice unwavering, turned to Davies, “Mr. Davies, while I appreciate your attempts to redirect the focus, the financial aspects of Lord Alistair's life are *absolutely* relevant. A potential motive, a missing asset... these are crucial considerations. Now, before the Inspector arrives, perhaps you could simply answer the question: Did Lord Alistair have any recent disagreements about money, specifically pertaining to a painting, and if so, with whom?”
+
+Thorne, his gaze carefully measuring Dubois, interjected, “Mr. Dubois, you seem particularly keen on the financial aspects. Perhaps you might enlighten us on *your* interest in the painting, and the nature of your recent interactions with Lord Alistair. I'm simply curious as to the *depth* of your knowledge. Perhaps it goes beyond a simple… observation of the finances.”
+
+Eleanor, on her knees, carefully examined the floor around the muddy boot, searching for any small objects or imperfections.
+
+Madame Petrova, her heels clicking softly on the wooden floor, slowly glided towards the oil stain, drawing the attention of those present. She was investigating the crime scene, her curiosity insatiable.
+
+Dubois, his voice steady, addressed Thorne, “My interest stems from a simple pursuit of the truth, Mr. Thorne. A dead man, a potential financial dispute, and a painting of significant value... these are the elements of a potential crime. As for my interactions with Lord Alistair, they were limited to the polite formalities of a dinner guest. Now, if you'll indulge me, let's return to the matter at hand: the painting, and any potential disagreements regarding it. Did anyone here know of any such disputes, and if so, with whom?”
+
+Thorne took a slow step towards Madame Petrova, subtly positioning himself between her and the oil stain. He was, perhaps, attempting to protect her, or perhaps, to observe her reaction.
+
+Davies, his voice laced with irritation, cut in, “Mr. Dubois, your persistent inquiries are becoming an affront. I will not be subjected to this… *interrogation* before the Inspector arrives. If you insist on questioning me, I suggest you await his presence, as I am certain *he* will be far more… *thorough*. Until then, I advise you to restrain your incessant… *speculations*.”
+
+Madame Petrova, her voice barely a whisper, yet calculated to carry across the room, added, “Such a tragedy. And to think, all this… *unraveling*… over a painting. A painting of such… *delicate* beauty, wouldn't you say? Perhaps, its true…”
+
+Davies walked towards the grandfather clock, placing a hand on its polished wood. He was emphasizing the importance of truth and the arrival of the Inspector.
+
+Thorne, his voice a low murmur, said, “The wind… can be a cruel mistress, indeed. And these… *storms*, they often bring unwelcome… *visitors*.”
+
+Eleanor, in the guest bedroom, pressed her fingertips against the floorboards, found a seam, and lifted the floorboard to reveal a small compartment.
+
+Dubois, his gaze unwavering, picked up the teacup, examined it, and placed it near the oil stain. He was hoping to observe the reactions of those present.
+
+Davies picked up the silver tray and turned it in his hands, examining it with a practiced eye.
+
+Thorne, his movements deliberate, knelt beside the oil stain, touched it with his gloved finger, inhaled deeply, and murmured to
+ …himself. He was examining the oil stain to gather clues about its composition and origin.
+
+Eleanor Finch, in the guest bedroom, carefully lifted the floorboard, revealing a small compartment, and pulled out a velvet pouch. She was searching for something hidden, something that could change everything.
+
+“Mr. Davies,” Dubois said, his voice unwavering, “you seem particularly keen on directing my attention elsewhere. Yet, the facts remain: oil, blood, and a potential financial motive. Before the Inspector arrives, perhaps you could tell me, was the silver tray, now on the floor near the Study door, used to serve food or drinks to Lord Alistair earlier this evening?”
+
+Madame Petrova, her voice a theatrical whisper, added, “Such a *waste*, isn't it? All this… *passion*… reduced to ashes. And the secrets… perhaps they’ll burn with them.”
+
+“Almonds, Mr. Thorne?” Madame Petrova inquired, her voice a silken thread. “That’s an intriguing observation. Tell me, is that a common ingredient in the… *perfumes* favored by those who frequent the study? Or perhaps, are you suggesting the oil's composition is more… *culinary*?”
+
+Dubois, his movements precise, knelt and dabbed the oil stain with his handkerchief, then inhaled deeply. He was attempting to analyze the oil stain's scent, to identify its source.
+
+Davies, his voice a low rumble, replied, “Mr. Dubois, your questions are a relentless barrage. I will answer no further inquiries until the Inspector arrives. He will have the authority to demand the truth, and you, sir, will have to wait your turn. Now, I suggest you refrain from any further… *unwarranted* attempts to direct this… *investigation*.”
+
+Eleanor, her hands shaking slightly, reached into the velvet pouch, pulled out a rolled-up piece of parchment, and slowly uncurled it, leaning in to read it. The contents of the parchment held the key to a hidden truth.
+
+Dubois, his voice a warning, turned to the assembled guests. “Mr. Davies, your repeated refusals to cooperate are, shall we say, *unhelpful*. While I understand your desire to await the official investigation, the immediacy of the situation demands a more proactive approach. The presence of oil, blood, and a potential financial motive strongly suggests a carefully planned event. I suggest, then, that *everyone* refrains from touching any further objects within this room, and remain where they are. The Inspector will want to…”
+ … the Inspector will want to see everything undisturbed.”
+
+Eleanor, her face a mask of controlled panic, carefully folded the parchment and hid it back where she found it. The secret was safe, for now.
+
+Madame Petrova, her voice a silken thread, turned to Thorne. “Almonds, Mr. Thorne? That's an… *intriguing* observation. Tell me, is that a common ingredient in the… *perfumes* favored by those who frequent the study? Or perhaps, are you suggesting the oil's composition is more… *culinary*?”
+
+Thorne, his voice calm but with an underlying intensity, responded, “Madam Petrova, the composition of the oil is, indeed, of some interest. But before we explore that further, let us consider the presence of… *blood*. I believe we have all, perhaps, overlooked a rather crucial detail. *Who* among us knew of Lord Alistair's... *allergy* to almonds?”
+
+Davies, his voice a low rumble, stated, “Mr. Thorne, your questions are becoming... *unsettling*. I find your constant probing of Lord Alistair's… *afflictions* quite distasteful. Perhaps you should focus on the more immediate concerns, such as the *manner* of his passing, rather than delving into... *senseless* details.”
+
+Madame Petrova, her eyes narrowed, turned to Davies. “Mr. Davies, are you suggesting that Lord Alistair's allergy was a *secret*? A secret perhaps known only to those privy to his… *private* life? Or, perhaps, a secret known only to those who… *benefited* from his demise?”
+
+Dubois, his gaze unwavering, turned to Thorne. “Mr. Thorne, you seem to have a particular interest in the oil. Could you describe its scent, if you will? Does it, perhaps, remind you of a specific substance, perhaps something that might be found in a study, or even in a kitchen?”
+
+Eleanor, her face pale but composed, tucked the parchment into the pouch, replaced it in the secret compartment, and smoothed the floorboard back into place. She was trying to hide the rolled parchment, hoping to buy herself some time before someone discovered its secrets.
+
+Davies, his voice a low rumble, turned to Madame Petrova. “Madam Petrova," he stated, "Lord Alistair's secrets are now... *irrelevant*. His death is the matter at hand. I suggest we all focus our attention on the *reality* of this situation, before the Inspector arrives.”
+
+Thorne, his voice measured, addressed Dubois, “Mr. Dubois, the scent of the oil is quite distinct. As I mentioned, linseed oil and a hint of almonds, which, as you rightly point out, *could* be found in both a study and a kitchen. However, the more pertinent question, I believe, is not *where* it might be found, but *why* it's there. And, specifically, if it relates to Lord Alistair's sudden demise.”
+
+Eleanor, in the guest bedroom, opened the wardrobe, searching for a bag, a means of escape.
+
+Thorne, his eyes narrowed, turned to Madame Petrova. “Madam Petrova, your interest in *passion* is… noteworthy. Tell me, are you implying that Lord Alistair's death was driven by… *love*? Or perhaps… *revenge*?”
+
+Dubois, his gaze unwavering, examined the dusting cloth stained with oil and a faint smear of blood. He was meticulously investigating the crime scene, gathering every possible clue.
+
+Davies placed his hand on the cold marble of the fireplace mantel, his gaze sweeping across the room. He was assessing the situation, gathering his thoughts before the Inspector arrived.
+
+Madame Petrova, her voice laced with a hint of theatricality, turned to Thorne, “Revenge, Mr. Thorne? Or perhaps simply… *business*? After all, sometimes the most… *valuable* transactions involve a certain… *exchange* of assets. And Lord Alistair, let's not forget, possessed…”
+
+Thorne slowly walked towards the wet footprints, tracing one with his gloved finger, and then addressed the room. He was investigating the crime scene, seeking a pattern.
+
+Madame Petrova, having made her way to the Study, rose, assessed the room, and took a step towards the Study door, leaning in to inhale. She was investigating the scene of the crime, her curiosity insatiable.
+
+Davies, his voice sharp, addressed Thorne. “Mr. Thorne, I suggest you cease your *unnecessary* investigations. The Inspector will arrive shortly, and he will be the one to determine the *truth*. Your… *antics* are, frankly, delaying the process.”
+
+Dubois, his gaze unwavering, turned to Davies. “Mr. Davies, you appear to be taking a particular interest in the fireplace. May I ask if you noticed anything unusual about its operation this evening? Did you, perhaps, see anyone near the fireplace, perhaps attending to it, before Lord Alistair was discovered?”
+
+Eleanor, desperate to escape, pulled down the worn leather satchel from the shelf, opened it, and examined the interior. She needed a discreet container for the parchment and assessed the satchel's suitability.
+
+Davies, his voice a low growl, replied to Dubois, “Mr. Dubois, you are becoming *intrusive*. My attention is focused on the *facts* of this dreadful situation, not on idle speculation about the fireplace. I will not be answering any more questions until the Inspector arrives, and I suggest you cease your attempts to *interrogate* me further.”
+
+Dubois, his movements precise, knelt and carefully examined the muddy footprints, extracting a mud sample with his handkerchief. He was investigating the muddy footprints to gather evidence.
+
+Eleanor placed the velvet pouch into the satchel, tucked it into the lining, closed the satchel, secured the clasp, and quickly scanned the room. She was trying to hide the velvet pouch and assess how much time she had before someone might find it.
+
+Madame Petrova, her movements deliberate, pivoted towards the hidden passage in the Study, took a step, and gently brushed against the bookshelf's edge, carefully assessing the shadows and the scent of oil. She was investigating the scene of the crime and assessing the situation.
+
+Thorne, his voice a low murmur, addressed himself, “The passage of time…it is a relentless judge, is it not? Tick…tock…tick…tock…”
+
+Madame Petrova, her voice filled with a hint of intrigue, touched the bookshelf, observed the scene, and spoke aloud, "Intriguing… and perhaps… *revealing*." She was investigating the scene of the crime and assessing the situation.
+
+Eleanor, her mind racing, walked towards the window. She was desperate to escape the confines of the guest bedroom.
+
+Thorne, his voice a soft murmur, turned to Dubois, “The fire is certainly roaring tonight, isn't it? Such a stark contrast to the… *chill* in the air, both inside and out. I do hope someone remembered to inform the staff about keeping the flames contained; a fire in such a grand old house would be a catastrophe.”
+
+Davies, his voice a low rumble, stated, “The hour is late. Let us all await the Inspector's arrival in *silence*.”
+
+Dubois, his voice firm, turned to Davies. “Mr. Thorne, you mentioned almonds and a possible connection to the kitchen. Considering the oily footprint leading from the kitchen towards this room, and the bloodied handprint on the Study doorframe, I believe it prudent to secure the kitchen immediately. Mr. Davies, I must insist that you instruct the staff to seal the kitchen off. No one is to enter or leave until the official investigation commences, and the Inspector arrives. I would suggest that any kitchen staff remain…”
+
+Eleanor, her heart pounding, cautiously pushed the window open a crack, assessing the wind and the possibility of escape. She was testing the window's potential for escape.
+
+Davies, his expression hardening, turned to Dubois. "The kitchen will remain *unsecured*," he stated, his voice a low, unwavering growl. "I will handle the instructions to the staff, and any attempt to *restrict* their movements will be… *counterproductive* to the investigation. The Inspector will decide, and until he arrives, *this house* will remain under my command."
+
+Thorne, his voice laced with a subtle edge, turned to Dubois. “Mr. Dubois, your insistence on securing the kitchen is... *intriguing*. I am certain the staff are devastated by Lord Alistair's passing, and the thought of them being unfairly accused is quite… *unsettling*. But perhaps,” he paused, his gaze drifting towards Mr. Davies, “perhaps *someone* within this house is keen on controlling the narrative. I would hate to see the innocent... *punished*.”
+
+Dubois, his gaze unwavering, turned to Thorne. “Mr. Thorne, you seem concerned about the potential innocence of the staff and the 'narrative'. Given that you have so readily identified the scent of the oil as linseed, and, considering Lord Alistair's known allergy, could you perhaps enlighten us as to your knowledge of the contents of Lord Alistair's Study, or indeed, his Kitchen? Does either room hold any significance to you, and, if so, why?”
+
+Xenia Petrova, in the Study, opened her handbag and retrieved a silver compact. She wanted to check her appearance, a final act of
+ … a final act of vanity in the face of tragedy.
+
+“Mr. Dubois,” Thorne said, his voice laced with mock innocence, “are you suggesting *I* possess knowledge that might… *incriminate* me? How very… *preposterous*. While I am Lord Alistair's physician, my duties are solely medical. My familiarity with his, or indeed, the *kitchen's* contents, stems from no nefarious intent, but rather, a long-standing professional relationship. However, now that you mention it, I do believe there may be some almond oil stored away…”
+
+Eleanor, her face a mask of controlled panic, closed and latched the window. The storm raged outside, but she was trapped within.
+
+Dubois, his gaze unwavering, turned to Davies. “Mr. Davies, is it common practice for the staff to use linseed oil in the vicinity of the fireplace, or perhaps in any rooms frequented by Lord Alistair, who, as we know, suffered from a severe nut allergy? Your adamant refusal to secure the kitchen, coupled with your insistence on controlling the narrative, raises further questions in my mind. Perhaps you could elaborate on your reasons for this resistance. Your reticence suggests that you might be concealing information that could…”
+
+Davies, his voice a low rumble, cut him off. “Mr. Dubois, your *accusations* are as *unfounded* as they are *offensive*. The kitchen will remain under *my* supervision, as *this entire house* does. And I will *not* answer any more of your impertinent *questions* until the Inspector arrives.”
+
+Xenia Petrova, still in the Study, traced the edge of the bloodstain with a gloved finger, brought it to her nose, and sniffed. She was investigating the crime scene, seeking a deeper understanding of the events.
+
+Davies turned his back on Dubois and began polishing the silver tray, his movements precise and deliberate. He was trying to appear calm and in control, but his actions betrayed his inner turmoil.
+
+Xenia Petrova, her investigation of the Study continuing, carefully examined the loose thread, placed it in an evidence bag, and sealed it. She was meticulously collecting evidence, determined to uncover the truth.
+
+Dubois, his voice a low murmur, turned to the assembled guests. “The portraits of the Finch ancestors observe us, silently. Their presence within this house should remind us all of the weight of history and the consequences of our actions. The truth, I believe, is often found not in what is said, but in what is *left unsaid*, and the details we choose to *ignore*. Perhaps, in the face of such a tragedy, it is we all pause, and reflect…”
+
+Eleanor, finally emerging from the guest bedroom, took a tentative step towards the drawing-room door and listened intently. She was trying to gauge the situation, to assess the risk of rejoining the others.
+
+Thorne, his voice filled with a carefully constructed concern, turned to Eleanor, “Eleanor, dear, are you quite alright? The storm outside seems to have matched the tumultuous events within. Perhaps you should sit down and allow me to fetch you some restorative tea. It might help steady your nerves.”
+
+Dubois, his gaze unwavering, slowly walked towards the door to the Study, pausing at the edge of the oil stain. He was drawn to the scene of the crime, seeking answers.
+
+Eleanor, her voice trembling slightly, addressed Thorne, “Thank you, Aris, but I… I don’t think I can. The storm, and… everything… is rather overwhelming. Perhaps I might just… retire to my room. If you'll excuse me.”
+
+Thorne, his eyes narrowed slightly, but his voice still full of concern, replied to Eleanor, “Eleanor, please, before you go, there is something I must ask you. Were you, by any chance, in Lord Alistair's study this evening? I only ask because... well, it may be important to clear up any misunderstandings, and I wouldn't want you to… *misinterpret* Mr. Dubois's inquiries. It is best to be forthright and honest, you know. It alleviates any suspicion.”
+
+Xenia Petrova, her voice smooth and filled with a hint of amusement, turned to Dubois. “Mr. Dubois,” she said, “perhaps you can enlighten me. Is it considered… *impolite* to inquire about the finer details of Lord Alistair’s… *business affairs* in the midst of such a… *spectacle*? Or is that, perhaps, a question best left unanswered until the *Inspector* arrives?”
+
+Davies, his voice a low rumble, turned to Eleanor, “Miss Finch, before you retire, perhaps you could enlighten us as to your whereabouts earlier this evening? It would be prudent to account for everyone's movements, wouldn't you agree?”
+ …before you depart, perhaps you could enlighten us as to your whereabouts earlier this evening? It would be prudent to account for everyone's movements, wouldn't you agree?” The question hung in the air, heavy with accusation. Eleanor’s face paled further, her hand instinctively reaching for the satchel she had hidden in the wardrobe.
+
+The silence was broken only by the crackling fire and the relentless drumming of the rain against the windows. Dubois, his gaze unwavering, watched Eleanor closely, his mind piecing together the fragments of the puzzle. The oil, the footprints, the hidden pouch, the muddy boot… they all spoke of a carefully orchestrated plan.
+
+The door to the drawing-room finally opened, and a tall, imposing figure strode into the room. The Inspector had arrived. He surveyed the scene with a practiced eye, his gaze sweeping over the assembled guests, taking in the tense atmosphere and the subtle clues that littered the room. He was a man of few words, but his presence commanded attention.
+
+“Good evening,” the Inspector said, his voice a low, gravelly tone. “I am Inspector Davies, and I am here to investigate the death of Lord Alistair Finch. I understand you have all been… informed of the unfortunate circumstances.” He paused, allowing his gaze to settle on each of the guests in turn. “I will be asking each of you some questions. I suggest you answer them truthfully. Deception will only serve to prolong the inevitable.”
+
+He turned his attention to Dubois, who had been observing the scene with unwavering focus. “And you, sir, are…?”
+
+“Thomas Dubois, Inspector,” Dubois replied, his voice calm and steady. “A guest of Lord Alistair. I was present when… the discovery was made.”
+
+“Indeed,” the Inspector said, his eyes narrowing slightly. “And what were you doing, Mr. Dubois, when you discovered the… incident?”
+
+“I was in the drawing-room, Inspector, along with the other guests. We were discussing… the events of the evening when we realized something was amiss. The smell of oil, the… state of the Study, and the absence of Lord Alistair.”
+
+“The oil,” the Inspector repeated, his gaze sweeping across the room. “Yes, I am aware of the oil. And the… footprints. Mr. Davies, perhaps you could enlighten us as to the source of the oil, and its connection to the deceased?”
+
+Davies stepped forward, his face a mask of controlled composure. “The source of the oil is currently under investigation, Inspector. It appears to be a… mechanical issue. As for its connection to Lord Alistair’s… demise, that, too, is under investigation.”
+
+“A mechanical issue, you say?” The Inspector raised an eyebrow. “And yet, I see signs of a struggle. A bloodied handprint on the Study door. The scent of almonds, which, according to Dr. Thorne, Lord Alistair was severely allergic to. These are hardly the hallmarks of a simple ‘mechanical issue’, Mr. Davies.”
+
+Thorne, his face betraying a flicker of unease, stepped forward. “Inspector, as Lord Alistair’s physician, I can confirm his allergy. It was… severe. Exposure could have… dire consequences.”
+
+“Indeed,” the Inspector replied, his gaze sweeping across the room. “And yet, no one seems to know how the oil, and the almonds, came to be present in the Study. Miss Finch, you were the last to see Lord Alistair alive, were you not?”
+
+Eleanor, her voice trembling slightly, replied, “Yes, Inspector. I was with him in the library. We were discussing… estate matters. We parted ways shortly before dinner.”
+
+“And did you notice anything… unusual, Miss Finch, before you parted ways? Anything that might have indicated something was amiss?”
+
+Eleanor hesitated, her eyes darting around the room, as if seeking an escape route. “No, Inspector. Nothing… unusual.”
+
+“Madame Petrova, you were negotiating a valuable acquisition with Lord Alistair, were you not? A painting, I believe? The ‘Shadow of the Raven’?”
+
+Madame Petrova, her voice a silken thread, replied, “Indeed, Inspector. A masterpiece, of significant value. Its acquisition would have been… mutually beneficial.”
+
+“And were there any… disagreements, Madame Petrova, regarding the terms of this acquisition? Any… disputes that might have led to… animosity?”
+
+Madame Petrova, her eyes narrowed, replied, “Inspector, business is business. Disagreements are… inevitable. But animosity? Certainly not. Our relationship was purely… professional.”
+
+The Inspector turned his attention back to Davies. “Mr. Davies, you seem to be taking a particular interest in controlling the narrative. Why is that?”
+
+Davies, his face impassive, replied, “I am merely ensuring that the investigation proceeds with… decorum, Inspector. Lord Alistair’s reputation must be… protected.”
+
+“Protected, Mr. Davies?” The Inspector raised an eyebrow. “Or perhaps, something else? Something… hidden?”
+
+Davies remained silent, his gaze unwavering. The tension in the room was palpable.
+
+Dubois, his gaze fixed on the oil stain, finally spoke. “Inspector, I believe the answers to the mystery lie within the details. The oil, the footprints, the tray, the muddy boot, the hidden passage… and the scent of almonds. All the elements are here, and they speak of a carefully planned crime. The question, then, is not *what* happened, but *how*. And, of course, *who*.”
+
+The Inspector turned to Dubois, his eyes narrowed. “And you, Mr. Dubois, who do you believe is responsible?”
+
+Dubois took a deep breath, his gaze sweeping across the assembled guests. “I believe,” he said, his voice clear and steady, “that the killer is Mr. Davies. His control over the narrative, his reluctance to allow the kitchen to be secured, his knowledge of Lord Alistair’s allergy, the muddy boot, the linseed oil, the silver tray, and the hidden passage - all point to his guilt.”
+
+The room erupted in a cacophony of gasps and protests. Davies stood motionless, his face a mask of shock.
+
+“Explain yourself, Mr. Dubois,” the Inspector demanded, his voice sharp.
+
+“Certainly, Inspector,” Dubois replied, his voice calm and measured. “The key to this crime lies in the almonds and the linseed oil. The linseed oil, as Dr. Thorne has already noted, was used to coat the hinges of the Study door, and the floorboards. The muddy footprint from the kitchen to the Study door, and the bloodied handprint on the Study doorframe, indicated that the murder was committed in the Study.”
+
+“And the almonds, Mr. Dubois?” the Inspector prompted.
+
+“The almonds, Inspector, were the weapon. Or rather, the vehicle. Lord Alistair was severely allergic. Davies, knowing this, used the almonds to kill him. The oil was used to ensure that any evidence of the crime was easily removed.”
+
+“But the motive, Mr. Dubois?” the Inspector asked. “Why would Mr. Davies murder Lord Alistair?”
+
+Dubois turned to Davies, his gaze unwavering. “The motive, Inspector, was control. Mr. Davies, as the long-serving butler, was privy to all of Lord Alistair’s secrets. He knew of the painting, the ‘Shadow of the Raven’, and the financial arrangements. He knew that Lord Alistair was in debt. Davies knew that Lord Alistair was about to change his will, leaving everything to Eleanor Finch. Davies, therefore, stood to lose everything. He had to eliminate Lord Alistair, and he had to make it look like an accident. He used the almonds, concealed in a dish, to trigger the allergic reaction, and the linseed oil to ensure any evidence of the crime could be removed. He then staged the scene, making it appear as though Lord Alistair had simply stumbled upon a mechanical issue, and then, fallen victim to his allergy.”
+
+The Inspector turned to Davies, his gaze unwavering. “Mr. Davies, is this true?”
+
+Davies remained silent for a moment, his face a mask of despair. Then, slowly, he nodded. “Yes,” he said, his voice barely a whisper. “It is true. I killed him. I couldn’t bear to see his legacy destroyed. To see the estate, the family, fall to ruin. I had to protect it.”
+
+The Inspector nodded, his gaze filled with a mixture of sadness and understanding. “Take him away,” he said to his officers. “The case is closed.”
+
+As Davies was led away, Eleanor Finch turned to Dubois, her face a mixture of relief and gratitude. “Thank you, Mr. Dubois,” she said. “You saved me.”
+
+Dubois simply nodded, his gaze already moving on to the next mystery, the next puzzle. The storm outside had finally passed, and the sun began to peek through the clouds, casting a golden light on the scene. The truth, as always, had been found.
