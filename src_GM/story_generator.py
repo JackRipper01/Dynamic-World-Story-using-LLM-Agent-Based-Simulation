@@ -332,7 +332,7 @@ Instructions for the Story:
     - **Seamless Transitions:** Ensure smooth, logical, and evocative transitions between scenes and events. Avoid abrupt shifts and chronological leaps without proper narrative bridging. Each new scene should naturally follow the previous one.
     - **Pacing & Rhythm:** Vary sentence structure and paragraph length to create a dynamic reading experience that reflects the story's tension and calm.
     - **Unified Story, Not a List:** The ultimate goal is a flowing, prose-driven narrative, not a factual report or a series of bullet points disguised as text. Every event should feel earned and contribute to the overall story progression. Avoid starting sentences with "Then," or similar repetitive chronological markers.
-- **Leveraging the Narrative Goal:** Continuously keep the overarching "Narrative Premise/Goal" in mind. How do the events contribute to or evolve this goal? Use it to guide the story's direction, emotional tone, and ultimate conclusion.
+- **Leveraging the Narrative Goal:** Continuously keep the overarching "Narrative Premise/Goal" in mind. How do the events contribute to or evolve this goal? Use it to guide the story's direction and emotional tone.
 - **Introduction:** Begin with an engaging introduction (1-2 paragraphs) that sets the stage, introduces the primary characters, and hints at the overarching premise. Make sure that the introduction is coherent with the logs. For example, if the logs start with a character in a certain location, ensure the introduction connects to that.
 Your Story:
 """
@@ -343,7 +343,7 @@ Your Story:
             print("-----------------------------")
 
         # Use max_output_tokens from your config
-        generated_story = self._call_llm_for_story(prompt, max_tokens=8192)
+        generated_story = self._call_llm_for_story(prompt, max_tokens=2048)
 
         if not generated_story or "[ERROR]" in generated_story:
             failure_message = generated_story if "[ERROR]" in generated_story else "The LLM storyteller produced an empty draft."
@@ -445,4 +445,85 @@ Your Response (starting with either [CONTINUE_WRITING] or [STORY_COMPLETE] ):
             print(
                 "WARNING: LLM did not start response with expected tag. Treating as continuation.")
             return "[CONTINUE_WRITING]" + response_text # Default to continue if no tag
+        
+    def continue_narrative_from_logs(self, current_story_so_far: str, full_log_content: str, agent_configs: list, narrative_goal: str) -> str:
+        """
+        Continues generating the narrative from simulation logs, aiming to cover all significant events.
+        The LLM will indicate if it believes the logs are sufficiently covered.
+        
+        Args:
+            current_story_so_far: The story written so far.
+            full_log_content: The complete, raw simulation logs.
+            agent_configs: Configuration for agents/characters.
+            narrative_goal: The overall goal for the story.
+            
+        Returns:
+            A string indicating either "[LOGS_COMPLETE]" or "[CONTINUE_FROM_LOGS]" or "[CONTINUE_FROM_LOGS_STARTING_FROM_A_NEW_SENTENCE]" followed by the new segment.
+            Returns "[ERROR]" if the LLM call fails or returns an unexpected format.
+        """
+        try:
+            character_intros = []
+            for agent_conf in agent_configs:
+                intro = f"- {agent_conf['name']}: {agent_conf['identity']}."
+                character_intros.append(intro)
+            characters_summary = "The characters involved were:\n" + \
+                "\n".join(character_intros)
 
+            system_prompt = f"""
+            You are a master storyteller. Your task is to transform raw simulation logs into a vivid, coherent, and engaging story.
+            Your task is to review the existing story draft against the provided simulation logs and to continue writing it if necessary.
+            
+            **Instructions:**
+            1.  **Review Coverage:** Carefully read the `Current Story Draft` and compare it against the `Simulation Logs`.
+                Identify if there are significant events, crucial character interactions, or key plot points in the logs that have not yet been fully integrated or narrated in the story.
+            2.  **Continue if Necessary:** If you identify uncovered significant logs, continue the story to incorporate them.
+                Add new narrative segments that flow naturally from the `Current Story Draft`.
+                Maintain the tone, style, and established plot of the story.
+                Focus on moving the plot forward based on the next chronological events in the logs that haven't been covered.
+            3.  **Conclude if Sufficient:** If you believe the `Current Story Draft` has adequately covered all *crucial* events from the `Simulation Logs`
+                to form a coherent and compelling narrative (even if not every minor log entry is literally transcribed), then indicate that the log conversion phase is complete.
+                
+            **Narrative Goal:** {narrative_goal}
+            
+            **Characters:**
+            {characters_summary}
+            
+            **Tone:** {self.tone}
+            
+            How to build a good story:
+            - **Narrative Expansion:** Your primary goal is to *elaborate upon* and *contextualize* these events while maintaining high fidelity to the core events in the logs, *do not simply recount them*. Instead, use them as the structural backbone upon which you build a compelling story. Be careful not to simply list them or present only dialogue.
+            - **Show, Don't Tell:**
+                - **Setting & Atmosphere:** Immerse the reader by vividly describing the environment, time of day, weather, and the overall atmosphere *as it changes and relates to the events*.
+                - **Character Immersion:** Go beyond simple actions. Describe characters' appearances, expressions, body language, and subtle gestures. Infuse their internal thoughts, feelings, and emotional reactions to the unfolding events. Reveal their evolving motivations and the dynamics of their relationships through their interactions and dialogue.
+                - **Sensory & Action Detail:** Incorporate rich sensory details (sights, sounds, smells, tactile sensations). For actions, detail *how* they were performed, the *purpose* behind them, and the *challenges or successes* encountered.
+            - **Cohesion and Flow:**
+                - **Seamless Transitions:** Ensure smooth, logical, and evocative transitions between scenes and events. Avoid abrupt shifts and chronological leaps without proper narrative bridging. Each new scene should naturally follow the previous one.
+                - **Pacing & Rhythm:** Vary sentence structure and paragraph length to create a dynamic reading experience that reflects the story's tension and calm.
+                - **Unified Story, Not a List:** The ultimate goal is a flowing, prose-driven narrative, not a factual report or a series of bullet points disguised as text. Every event should feel earned and contribute to the overall story progression. Avoid starting sentences with "Then," or similar repetitive chronological markers.
+            - **Leveraging the Narrative Goal:** Continuously keep the overarching "Narrative Premise/Goal" in mind. How do the events contribute to or evolve this goal? Use it to guide the story's direction and emotional tone.
+
+            **Simulation Logs (full chronological record):**
+            {full_log_content}
+            
+            **Current Story Draft (what you have written so far):**
+            {current_story_so_far}
+            
+            **Your Response Format:**
+            -   If you need to continue the story to cover more logs and you want to start from a incomplete sentence, start your response with [CONTINUE_FROM_LOGS_STARTING_FROM_INCOMPLETE_SENTENCE] followed by the new narrative segment you want to append.
+            -   If you need to continue the story to cover more logs and you want to start from a new sentence, start your response with [CONTINUE_FROM_LOGS_STARTING_FROM_A_NEW_SENTENCE] followed by the new narrative segment you want to append.
+            -   If you believe all crucial logs have been converted into the narrative and this phase is complete, start your response with [LOGS_COMPLETE] . DO NOT re-output the entire story, just the tag [LOGS_COMPLETE] .
+            """
+
+            response = self._call_llm_for_story(
+                prompt=system_prompt,max_tokens=2048)
+
+            # Keep the check simple; the calling script will handle the content
+            if response.startswith("[CONTINUE_FROM_LOGS_STARTING_FROM_INCOMPLETE_SENTENCE]") or response.startswith("[LOGS_COMPLETE]") or response.startswith("[CONTINUE_FROM_LOGS_STARTING_FROM_A_NEW_SENTENCE]"):
+                return response
+            else:
+                print(
+                    f"DEBUG: Unexpected LLM response format: {response[:500]}...")
+                return "[ERROR] Unexpected LLM response format for continue_narrative_from_logs."
+        except Exception as e:
+            print(f"Error in continue_narrative_from_logs: {e}")
+            return "[ERROR] " + str(e)

@@ -1,9 +1,11 @@
+# In complete_story_iteratively_no_limit.py
+
 import time
 from main import create_llm_instance
+from logs import append_to_log_file
 from story_generator import LLMIterativeStoryGenerator
 from config import agent_configs
 import config
-
 
 # Create an instance of StoryGenerator
 llm = create_llm_instance(
@@ -12,14 +14,26 @@ llm = create_llm_instance(
     purpose="Story Generator"
 )
 
-story_generator = LLMIterativeStoryGenerator(llm,config.TONE)
+story_generator = LLMIterativeStoryGenerator(llm, config.TONE)
 
 final_story = ""
 current_story_draft = ""
-max_iterations = 5  # Safety break to prevent infinite loops
-iteration_count = 0
+max_log_conversion_iterations = 10
+max_refinement_iterations = 10
+log_conversion_iteration_count = 0
+refinement_iteration_count = 0
 
-# STEP 1: Generate the initial draft
+try:
+    with open("murderer_case_logs.txt", "r", encoding="utf-8") as f:
+        full_log_content = f.read()
+except FileNotFoundError:
+    print(f"Error: Log file not found at {config.LOG_FILE_PATH}. Exiting.")
+    exit()
+except Exception as e:
+    print(f"Error reading log file: {e}. Exiting.")
+    exit()
+
+print("\n--- Generating Initial Story Segment from Logs ---")
 current_story_draft = story_generator.generate_initial_story_draft(
     log_file_path="murderer_case_logs.txt",
     agent_configs=config.agent_configs,
@@ -27,12 +41,63 @@ current_story_draft = story_generator.generate_initial_story_draft(
 )
 
 if "[ERROR]" in current_story_draft:
-        print("Initial story generation failed. Exiting.")
+    print("Initial story segment generation failed. Exiting.")
 else:
-    # STEP 2: Enter the iteration loop
-    while iteration_count < max_iterations:
-        iteration_count += 1
-        print(f"\n--- Iteration {iteration_count} of Story Refinement ---")
+    print("\n--- Iteratively Extending Story to Cover All Logs ---")
+    while log_conversion_iteration_count < max_log_conversion_iterations:
+        log_conversion_iteration_count += 1
+        print(
+            f"\n--- Log Conversion Iteration {log_conversion_iteration_count} ---")
+
+        response_from_llm = story_generator.continue_narrative_from_logs(
+            current_story_so_far=current_story_draft,
+            full_log_content=full_log_content,
+            agent_configs=config.agent_configs,
+            narrative_goal=config.NARRATIVE_GOAL
+        )
+
+        if "[ERROR]" in response_from_llm:
+            print("Error during log conversion. Stopping log conversion iteration.")
+            break
+
+        if response_from_llm.startswith("[LOGS_COMPLETE]"):
+            # The current_story_draft already holds the full story generated in this phase.
+            # No need to extract content from LLM's response after the tag.
+            print(
+                f"Logs successfully converted to narrative after {log_conversion_iteration_count} iterations.")
+            break
+        elif response_from_llm.startswith("[CONTINUE_FROM_LOGS_STARTING_FROM_INCOMPLETE_SENTENCE]"):
+            new_segment = response_from_llm[len(
+                "[CONTINUE_FROM_LOGS_STARTING_FROM_INCOMPLETE_SENTENCE]"):].strip()
+            current_story_draft += " " + new_segment
+            print(
+                f"Initial Story Draft continued to cover more logs. Current length: {len(current_story_draft.split())} words.")
+            append_to_log_file("Initial_Story_Draft.txt", new_segment)
+        elif response_from_llm.startswith("[CONTINUE_FROM_LOGS_STARTING_FROM_A_NEW_SENTENCE]"):
+            new_segment = response_from_llm[len(
+                "[CONTINUE_FROM_LOGS_STARTING_FROM_A_NEW_SENTENCE]"):].strip()
+            current_story_draft += "\n" + new_segment
+            print(
+                f"Initial Story Draft continued to cover more logs. Current length: {len(current_story_draft.split())} words.")
+            append_to_log_file("Initial_Story_Draft.txt", new_segment)
+        else:
+            print(
+                "Unexpected response format during log conversion. Stopping log conversion.")
+            break
+
+        time.sleep(10)
+
+    if log_conversion_iteration_count >= max_log_conversion_iterations:
+        print(
+            f"Max log conversion iterations ({max_log_conversion_iterations}) reached. Logs may not be fully covered.")
+
+    
+    
+    print("\n--- Entering Story Refinement Phase ---")
+    while refinement_iteration_count < max_refinement_iterations:
+        refinement_iteration_count += 1
+        print(
+            f"\n--- Story Refinement Iteration {refinement_iteration_count} ---")
 
         response_from_llm = story_generator.refine_and_conclude_story(
             current_story_so_far=current_story_draft,
@@ -42,33 +107,37 @@ else:
 
         if "[ERROR]" in response_from_llm:
             print("Error during story refinement. Stopping iteration.")
-            final_story = current_story_draft # Use the last good draft
+            final_story = current_story_draft
             break
 
         if response_from_llm.startswith("[STORY_COMPLETE]"):
-            final_story = response_from_llm[len("[STORY_COMPLETE]"):].strip()
-            print(f"Story completed after {iteration_count} iterations.")
+            # The current_story_draft already holds the complete story.
+            # No need to extract content from LLM's response after the tag.
+            final_story = current_story_draft
+            print(
+                f"Story completed after {refinement_iteration_count} refinement iterations.")
             break
         elif response_from_llm.startswith("[CONTINUE_WRITING]"):
             new_segment = response_from_llm[len("[CONTINUE_WRITING]"):].strip()
-            current_story_draft += "\n" + new_segment # Append new segment
-            print("Story continued. Current length:", len(current_story_draft.split()))
+            current_story_draft += "\n" + new_segment
+            print("Story continued. Current length:",
+                  len(current_story_draft.split()))
         else:
-            print("Unexpected response format. Stopping iteration.")
+            print("Unexpected response format during refinement. Stopping iteration.")
             final_story = current_story_draft
             break
-        
+
         time.sleep(10)
 
-    if iteration_count >= max_iterations and not final_story:
-        print(f"Max iterations ({max_iterations}) reached. Story may be incomplete.")
-        final_story = current_story_draft # Use the last state as final
+    if refinement_iteration_count >= max_refinement_iterations and not final_story:
+        print(
+            f"Max refinement iterations ({max_refinement_iterations}) reached. Story may be incomplete.")
+        final_story = current_story_draft
 
     print("\n--- FINAL GENERATED STORY ---")
     print(final_story)
     print("-----------------------------\n")
 
-    # Save the final story
     try:
         with open("simulation_story.txt", "w", encoding="utf-8") as f:
             f.write(f"Simulation Goal: {config.NARRATIVE_GOAL}\n")
