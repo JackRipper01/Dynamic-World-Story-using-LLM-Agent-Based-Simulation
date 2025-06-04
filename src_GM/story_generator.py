@@ -539,7 +539,6 @@ class LLMChunkedStoryGenerator(BaseStoryGenerator):
         self.tone = tone
         self.name = "LLMChunkedStoryGenerator"  # For error messages
 
-
     def _call_llm_for_story(self, prompt: str, max_tokens: int) -> str:
         """Helper function to make the LLM call with error handling."""
         try:
@@ -571,10 +570,102 @@ class LLMChunkedStoryGenerator(BaseStoryGenerator):
                 print(feedback_message)
             return f"[ERROR]: An unexpected error occurred: {e}"
 
+    # ADDED: The refine_and_conclude_story method from LLMIterativeStoryGenerator
+    def refine_and_conclude_story(self, current_story_so_far: str, agent_configs: list, narrative_goal: str) -> str:
+        """
+        Iteratively refines and attempts to conclude the story based on previous content.
+        The LLM determines if it's complete or needs to continue.
+        """
+        print(
+            "\n--- Refining Story and Checking for Conclusion (from Chunked Generator) ---")
+
+        # Re-gather context as it's passed in each iteration
+        character_intros = []
+        for agent_conf in agent_configs:
+            intro = f"- {agent_conf['name']}: {agent_conf['identity']}."
+            character_intros.append(intro)
+        characters_summary = "The characters involved were:\n" + \
+            "\n".join(character_intros)
+
+        tone_prompt = self.tone if self.tone else "Neutral"
+
+        # The core iterative prompt
+        prompt = f"""You are a master storyteller. You are currently reviewing a story in progress.
+
+Narrative Premise/Goal:
+{narrative_goal if narrative_goal else "An emergent narrative adventure."}
+
+Tone: {tone_prompt}
+
+{characters_summary}
+
+**Story So Far (Read this carefully):**
+{current_story_so_far}
+
+---
+
+**Your Task & Decision Process:**
+
+1.  **Review the "Story So Far":**
+    *   Does it feel like it has reached a compelling, natural, and conclusive narrative ending that aligns with the "Narrative Premise/Goal"?.
+
+2.  **Determine Action:**
+    *   **IF the story is NOT yet complete OR needs further development/elaboration based on remaining logs or to reach a proper conclusion:**
+        *   Begin your response with the tag: `[CONTINUE_WRITING]`
+        *   Then, write the *next coherent segment* of the story, picking up exactly where the "Story So Far" left off.
+        *   Continue to incorporate any remaining logs, or start building towards a satisfying conclusion if logs are exhausted.
+        *   Ensure new content is consistent with established characters and world.
+    *   **IF the story IS complete and has reached a satisfactory, conclusive ending:**
+        *   Begin your response with the tag: `[STORY_COMPLETE]`
+        *   Then, provide the *final, polished version* of the entire story. This should be the "Story So Far" potentially with a final concluding paragraph or two. Ensure it flows perfectly as a complete work.
+---
+
+**General Storytelling Guidelines:**
+- **Narrative Expansion:** Elaborate upon and contextualize events. Do not simply list them or present only dialogue.
+- **Show, Don't Tell:** Expand descriptions of settings, character expressions, body language, actions, and incorporate sensory details.
+- **Character Depth:** Deepen character insight by inferring their thoughts, feelings, and motivations, consistent with their personalities.
+- **Pacing & Flow:** Ensure smooth transitions, varied sentence structure, and overall readability.
+- **Avoid Repetition:** Ensure variety in language and sentence structure.
+
+Your Response (starting with either [CONTINUE_WRITING] or [STORY_COMPLETE] ):
+"""
+        if config.SIMULATION_MODE == 'debug':
+            print("--- Story Refinement/Conclusion Prompt ---")
+            print(prompt[:2000] + "..." if len(prompt) > 2000 else prompt)
+            print("-----------------------------")
+
+        # Set a high max_output_tokens because the model might either append a short segment
+        # or output the entire story if it determines it's complete.
+        response_text = self._call_llm_for_story(prompt, max_tokens=8192)
+
+        if not response_text or "[ERROR]" in response_text:
+            failure_message = response_text if "[ERROR]" in response_text else "The LLM produced an empty response or an error during refinement."
+            print(failure_message)
+            return failure_message  # Return error to stop iteration
+
+        # Parse the response based on the tags
+        if response_text.startswith("[CONTINUE_WRITING]"):
+            segment = response_text[len("[CONTINUE_WRITING]"):].strip()
+            print("LLM chose to CONTINUE WRITING.")
+            # Preserve tag for external loop to process
+            return "[CONTINUE_WRITING]" + segment
+        elif response_text.startswith("[STORY_COMPLETE]"):
+            final_story = response_text[len("[STORY_COMPLETE]"):].strip()
+            print("LLM determined story is COMPLETE.")
+            # Preserve tag for external loop to process
+            return "[STORY_COMPLETE]" + final_story
+        else:
+            print(
+                "WARNING: LLM did not start response with expected tag. Treating as continuation.")
+            # Default to continue if no tag
+            return "[CONTINUE_WRITING]" + response_text
+
     # Overriding the abstract method with a different signature, consistent with original file's implementation
+
     def generate_story(self, log_file_path: str, agent_configs: list, narrative_goal: str, chunk_size: int = 10, max_story_context_tokens: int = 1500) -> str:
         """
-        Generates a story by processing simulation logs in chunks.
+        Generates a story by processing simulation logs in chunks, iteratively building the narrative.
+        After building the draft from chunks, it uses an iterative refinement process to conclude.
 
         Args:
             log_file_path: Path to the simulation event log file.
@@ -619,7 +710,7 @@ class LLMChunkedStoryGenerator(BaseStoryGenerator):
         full_story_draft = ""
         num_chunks = (len(all_raw_events) + chunk_size - 1) // chunk_size
 
-        # 3. Process Chunks
+        # 3. Process Chunks to build initial draft
         for i in range(num_chunks):
             start_index = i * chunk_size
             end_index = min((i + 1) * chunk_size, len(all_raw_events))
@@ -698,6 +789,7 @@ Your Story Segment:
             # Ensure the segment starts with a new sentence if the previous one ended abruptly
             # or if the LLM provided an introduction. This is for robustness.
             clean_segment = segment.strip()
+            # Logic to ensure clean appending between segments
             if full_story_draft and not full_story_draft.endswith(('.', '!', '?')) and clean_segment and clean_segment[0].isupper():
                 # If previous story didn't end with punctuation but new one starts with capital,
                 # force a period for better flow.
@@ -706,47 +798,71 @@ Your Story Segment:
                 # If previous story didn't end with punctuation and new one doesn't start capital,
                 # it's likely a sentence continuation (good). Add a space.
                 full_story_draft += " "
-
             full_story_draft += clean_segment
             print(
                 f"Segment {i+1} generated. Current story length: {len(full_story_draft.split())} words.")
             # Use configured delay to manage API rate limits
             time.sleep(2)
 
-        append_to_log_file("Initial_Story_Draft.txt",full_story_draft)
-        
-        # 4. Add Conclusion
-        print("\n--- Generating Final Conclusion ---")
-        conclusion_prompt = f"""You are a master storyteller. You have completed the main body of a story based on simulation logs.
+        # Log the draft after chunking is complete
+        append_to_log_file("Initial_Story_Draft.txt",
+                           "\n--- Story Draft After Chunked Processing ---\n")
+        append_to_log_file("Initial_Story_Draft.txt", full_story_draft)
+        append_to_log_file("Initial_Story_Draft.txt",
+                           "------------------------------------------\n")
 
-Narrative Premise/Goal:
-{narrative_goal if narrative_goal else "An emergent narrative adventure."}
+        # 4. Iterative Refinement and Conclusion (using the requested logic)
+        max_refinement_iterations = 3  # Safety break for the refinement loop
+        refinement_count = 0
+        final_story_result = full_story_draft  # Start with the chunked draft
 
-Tone: {tone_prompt}
+        print("\n--- Entering Iterative Refinement and Conclusion Phase ---")
 
-{characters_summary}
-
-The Story So Far (read this to understand the narrative and context):
-{full_story_draft}
-
-Instructions:
-- Review the "Story So Far" carefully.
-- Write a compelling and conclusive ending for the entire story.
-- The conclusion should provide a fitting resolution, an impactful cliffhanger, or a thoughtful reflection on the events, aligning with the narrative goal.
-- Ensure the entire story (including your conclusion) reads as a complete, unified, and polished work.
-- Do NOT rewrite the "Story So Far". Just provide the concluding paragraphs.
-- The conclusion should be a few paragraphs long, bringing the narrative to a satisfying close.
-
-Your Conclusion:
-"""
-        final_conclusion = self._call_llm_for_story(
-            conclusion_prompt, max_tokens=512)
-        if "[ERROR]" in final_conclusion:
+        while refinement_count < max_refinement_iterations:
+            refinement_count += 1
             print(
-                "Error generating conclusion. Returning story without explicit conclusion.")
-            final_story = full_story_draft
-        else:
-            final_story = full_story_draft + "\n\n" + final_conclusion.strip()
+                f"\n--- Refinement Iteration {refinement_count}/{max_refinement_iterations} ---")
+
+            response_from_llm = self.refine_and_conclude_story(
+                current_story_so_far=final_story_result,  # Pass the current state of the story
+                agent_configs=agent_configs,
+                narrative_goal=narrative_goal
+            )
+
+            if "[ERROR]" in response_from_llm:
+                print("Error during story refinement. Stopping iteration.")
+                final_story_result = final_story_result  # Keep the last good draft
+                break
+
+            if response_from_llm.startswith("[STORY_COMPLETE]"):
+                final_story_result = response_from_llm[len(
+                    "[STORY_COMPLETE]"):].strip()
+                print(
+                    f"Story concluded after {refinement_count} refinement iterations.")
+                break
+            elif response_from_llm.startswith("[CONTINUE_WRITING]"):
+                new_segment = response_from_llm[len(
+                    "[CONTINUE_WRITING]"):].strip()
+                # Ensure new segment smoothly attaches
+                if final_story_result and not final_story_result.endswith(('.', '!', '?')) and new_segment and new_segment[0].isupper():
+                    final_story_result += ". "
+                elif final_story_result and not final_story_result.endswith(('.', '!', '?')) and new_segment and not new_segment[0].isupper():
+                    final_story_result += " "
+                final_story_result += new_segment
+                print("Story continued. Current total length:",
+                      len(final_story_result.split()), "words.")
+            else:
+                print(
+                    "Unexpected response format during refinement. Stopping iteration.")
+                break  # Exit loop on unexpected format
+
+            # Delay between refinement calls
+            time.sleep(config.LLM_CALL_DELAY if hasattr(
+                config, 'LLM_CALL_DELAY') else 5)
+
+        if refinement_count >= max_refinement_iterations and not response_from_llm.startswith("[STORY_COMPLETE]"):
+            print(
+                f"Max refinement iterations ({max_refinement_iterations}) reached. Story may be incomplete.")
 
         print("--- Story Generation Complete ---")
 
@@ -759,10 +875,10 @@ Your Conclusion:
                 f.write("Characters:\n")
                 for ac in agent_configs:
                     f.write(f"  - {ac['name']}: {ac['identity']}\n")
-                f.write("\n--- STORY (Chunked Generation) ---\n")
-                f.write(final_story)
-            print(f"\n(Story also saved to {output_filename})")
+                f.write("\n--- FINAL STORY (Chunked & Iteratively Refined) ---\n")
+                f.write(final_story_result)
+            print(f"\n(Final story also saved to {output_filename})")
         except Exception as e:
-            print(f"\n[Error] Could not save story to file: {e}")
+            print(f"\n[Error] Could not save final story to file: {e}")
 
-        return final_story
+        return final_story_result
