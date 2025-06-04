@@ -43,6 +43,7 @@ current_story_draft = story_generator.generate_initial_story_draft(
 if "[ERROR]" in current_story_draft:
     print("Initial story segment generation failed. Exiting.")
 else:
+    
     append_to_log_file("Initial_Story_Draft.txt",current_story_draft)
     
     print("\n--- Iteratively Extending Story to Cover All Logs ---")

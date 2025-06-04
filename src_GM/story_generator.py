@@ -527,3 +527,242 @@ Your Response (starting with either [CONTINUE_WRITING] or [STORY_COMPLETE] ):
         except Exception as e:
             print(f"Error in continue_narrative_from_logs: {e}")
             return "[ERROR] " + str(e)
+
+
+class LLMChunkedStoryGenerator(BaseStoryGenerator):
+    """
+    Generates a story by processing simulation logs in chunks, iteratively building the narrative.
+    """
+
+    def __init__(self, model, tone: str = None):
+        self.llm = model
+        self.tone = tone
+        self.name = "LLMChunkedStoryGenerator"  # For error messages
+
+
+    def _call_llm_for_story(self, prompt: str, max_tokens: int) -> str:
+        """Helper function to make the LLM call with error handling."""
+        try:
+            story_generation_config = {
+                "temperature": 0.7,
+                "top_p": 0.95,
+                "top_k": 60,
+                "max_output_tokens": max_tokens,
+            }
+            response = self.llm.generate_content(
+                prompt, generation_config=story_generation_config)
+            story_text = response.text.strip()
+            return story_text
+
+        except ResourceExhausted as e:
+            print(f"[{self.name} Error]: LLM generation failed due to resource exhaustion: {e}. Waiting 10 seconds and retrying...")
+            time.sleep(10)
+            return self._call_llm_for_story(prompt, max_tokens)
+        except GoogleAPICallError as e:
+            print(
+                f"[{self.name} Error]: Google API call failed: {e}. Waiting 10 seconds and retrying...")
+            time.sleep(10)
+            return self._call_llm_for_story(prompt, max_tokens)
+        except Exception as e:
+            error_message = f"[{self.name} Error]: LLM story generation failed: {e}"
+            print(error_message)
+            if 'response' in locals() and hasattr(response, 'prompt_feedback') and response.prompt_feedback:
+                feedback_message = f" (Safety Feedback: {response.prompt_feedback})"
+                print(feedback_message)
+            return f"[ERROR]: An unexpected error occurred: {e}"
+
+    # Overriding the abstract method with a different signature, consistent with original file's implementation
+    def generate_story(self, log_file_path: str, agent_configs: list, narrative_goal: str, chunk_size: int = 10, max_story_context_tokens: int = 1500) -> str:
+        """
+        Generates a story by processing simulation logs in chunks.
+
+        Args:
+            log_file_path: Path to the simulation event log file.
+            agent_configs: List of agent configurations.
+            narrative_goal: The overarching narrative goal.
+            chunk_size: Number of log events per processing chunk.
+            max_story_context_tokens: Maximum tokens from the 'story so far' to include in prompt.
+                                    This helps manage context window limits.
+
+        Returns:
+            A string containing the generated story.
+        """
+        print("\n--- Generating Story from Chunks of Simulation Logs ---")
+
+        # 1. Gather Character Information
+        character_intros = []
+        for agent_conf in agent_configs:
+            intro = f"- {agent_conf['name']}: {agent_conf['identity']}."
+            character_intros.append(intro)
+        characters_summary = "The characters involved were:\n" + \
+            "\n".join(character_intros)
+
+        tone_prompt = self.tone if self.tone else "Neutral"
+
+        # 2. Read All Events from File
+        all_raw_events = []
+        try:
+            with open(log_file_path, 'r', encoding='utf-8') as f:
+                all_raw_events = [line.strip() for line in f if line.strip()]
+            if not all_raw_events:
+                print("No events found in the log file. Cannot generate story.")
+                return "No events were logged during the simulation, so no story could be generated."
+            print(f"Read {len(all_raw_events)} events from {log_file_path}")
+        except FileNotFoundError:
+            print(
+                f"Error: The event log file '{log_file_path}' was not found.")
+            return f"Error: Event log file '{log_file_path}' not found."
+        except Exception as e:
+            print(f"Error reading event log file '{log_file_path}': {e}")
+            return f"Error reading event log: {e}"
+
+        full_story_draft = ""
+        num_chunks = (len(all_raw_events) + chunk_size - 1) // chunk_size
+
+        # 3. Process Chunks
+        for i in range(num_chunks):
+            start_index = i * chunk_size
+            end_index = min((i + 1) * chunk_size, len(all_raw_events))
+            current_chunk_events = all_raw_events[start_index:end_index]
+
+            events_text = "\n".join(current_chunk_events)
+
+            # Truncate story so far to fit context window
+            # A simple way to truncate is by characters, assuming ~4 chars per token.
+            # This is a rough estimate; for better accuracy, use a proper tokenizer.
+            truncated_story_context = full_story_draft
+            if len(truncated_story_context) > max_story_context_tokens * 4:  # Convert tokens to chars
+                truncated_story_context = truncated_story_context[-(
+                    max_story_context_tokens * 4):]
+                # Try to cut at a sentence boundary for better context
+                last_period_index = truncated_story_context.rfind('.')
+                if last_period_index != -1:
+                    truncated_story_context = truncated_story_context[last_period_index+1:].strip(
+                    )
+                truncated_story_context = "... " + truncated_story_context  # Indicate truncation
+
+            chunk_prompt = f"""You are a master storyteller. You are currently building a narrative based on simulation logs, segment by segment.
+
+Narrative Premise/Goal:
+{narrative_goal if narrative_goal else "An emergent narrative adventure."}
+
+Tone: {tone_prompt}
+
+{characters_summary}
+
+Story So Far (for context and continuity; DO NOT rewrite, just append to it smoothly. This is the narrative that has already been generated):
+{truncated_story_context if truncated_story_context else "No story written yet. Start with an engaging introduction for the overall narrative."}
+
+Events for this segment (These are the *next* chronological events from the simulation log. Focus on narrating THESE events and seamlessly integrating them into the story):
+{events_text}
+
+Instructions:
+- Write ONLY the NEXT narrative segment. It must flow directly and coherently from the "Story So Far".
+- For the first segment, include an engaging introduction that sets the stage and introduces characters, consistent with the first events.
+- For subsequent segments, seamlessly continue the narrative from the last sentence of the "Story So Far".
+- **Elaborate, describe, and immerse:**
+    - Show, don't tell: Describe settings, character expressions, body language, sensory details (sights, sounds, smells).
+    - Infer character thoughts, feelings, and motivations *as they relate to these events*.
+    - Expand on actions: Instead of "moved to kitchen," describe *how* they moved, their purpose, and what they encountered.
+- Maintain the established tone and narrative style.
+- Do NOT add a conclusion at this stage. Just continue the story.
+- Do NOT re-state events directly as they appear in the logs; transform them into vivid prose.
+- Ensure smooth transitions between scenes and events within this segment and from the previous story.
+- End your segment at a natural break, ready for the next part to be appended.
+
+Your Story Segment:
+"""
+            print(
+                f"\n--- Generating Story Segment {i+1}/{num_chunks} (Events {start_index+1}-{end_index}) ---")
+            if config.SIMULATION_MODE == 'debug':
+                # Print a reasonable portion of the prompt for debugging
+                debug_prompt_display_length = 1500
+                print(chunk_prompt[:debug_prompt_display_length] + "..." if len(
+                    chunk_prompt) > debug_prompt_display_length else chunk_prompt)
+                print("-" * 20)
+
+            # Allocate tokens for each segment
+            segment = self._call_llm_for_story(chunk_prompt, max_tokens=2048)
+            if "[ERROR]" in segment:
+                print(
+                    f"Error generating segment {i+1}. Stopping chunked generation early.")
+                append_to_log_file("simulation_story_chunked.txt",
+                                   "\n--- PARTIAL STORY (Error during chunked generation) ---\n")
+                append_to_log_file(
+                    "simulation_story_chunked.txt", full_story_draft)
+                append_to_log_file("simulation_story_chunked.txt",
+                                   f"\n[ERROR occurred at chunk {i+1}: {segment}]\n")
+                # Return what we have or the error
+                return full_story_draft if full_story_draft else segment
+
+            # Ensure the segment starts with a new sentence if the previous one ended abruptly
+            # or if the LLM provided an introduction. This is for robustness.
+            clean_segment = segment.strip()
+            if full_story_draft and not full_story_draft.endswith(('.', '!', '?')) and clean_segment and clean_segment[0].isupper():
+                # If previous story didn't end with punctuation but new one starts with capital,
+                # force a period for better flow.
+                full_story_draft += ". "
+            elif full_story_draft and not full_story_draft.endswith(('.', '!', '?')) and clean_segment and not clean_segment[0].isupper():
+                # If previous story didn't end with punctuation and new one doesn't start capital,
+                # it's likely a sentence continuation (good). Add a space.
+                full_story_draft += " "
+
+            full_story_draft += clean_segment
+            print(
+                f"Segment {i+1} generated. Current story length: {len(full_story_draft.split())} words.")
+            # Use configured delay to manage API rate limits
+            time.sleep(2)
+
+        append_to_log_file("Initial_Story_Draft.txt",full_story_draft)
+        
+        # 4. Add Conclusion
+        print("\n--- Generating Final Conclusion ---")
+        conclusion_prompt = f"""You are a master storyteller. You have completed the main body of a story based on simulation logs.
+
+Narrative Premise/Goal:
+{narrative_goal if narrative_goal else "An emergent narrative adventure."}
+
+Tone: {tone_prompt}
+
+{characters_summary}
+
+The Story So Far (read this to understand the narrative and context):
+{full_story_draft}
+
+Instructions:
+- Review the "Story So Far" carefully.
+- Write a compelling and conclusive ending for the entire story.
+- The conclusion should provide a fitting resolution, an impactful cliffhanger, or a thoughtful reflection on the events, aligning with the narrative goal.
+- Ensure the entire story (including your conclusion) reads as a complete, unified, and polished work.
+- Do NOT rewrite the "Story So Far". Just provide the concluding paragraphs.
+- The conclusion should be a few paragraphs long, bringing the narrative to a satisfying close.
+
+Your Conclusion:
+"""
+        final_conclusion = self._call_llm_for_story(
+            conclusion_prompt, max_tokens=512)
+        if "[ERROR]" in final_conclusion:
+            print(
+                "Error generating conclusion. Returning story without explicit conclusion.")
+            final_story = full_story_draft
+        else:
+            final_story = full_story_draft + "\n\n" + final_conclusion.strip()
+
+        print("--- Story Generation Complete ---")
+
+        # Save the final story
+        try:
+            output_filename = "simulation_story_chunked.txt"
+            with open(output_filename, "w", encoding="utf-8") as f:
+                f.write(
+                    f"Simulation Goal: {narrative_goal if narrative_goal else 'N/A'}\n")
+                f.write("Characters:\n")
+                for ac in agent_configs:
+                    f.write(f"  - {ac['name']}: {ac['identity']}\n")
+                f.write("\n--- STORY (Chunked Generation) ---\n")
+                f.write(final_story)
+            print(f"\n(Story also saved to {output_filename})")
+        except Exception as e:
+            print(f"\n[Error] Could not save story to file: {e}")
+
+        return final_story
