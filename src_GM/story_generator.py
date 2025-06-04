@@ -805,10 +805,6 @@ Your Story Segment:
             time.sleep(2)
 
         # Log the draft after chunking is complete
-        append_to_log_file("Initial_Story_Draft.txt",
-                           "\n--- Story Draft After Chunked Processing ---\n")
         append_to_log_file("Initial_Story_Draft.txt", full_story_draft)
-        append_to_log_file("Initial_Story_Draft.txt",
-                           "------------------------------------------\n")
 
         return full_story_draft

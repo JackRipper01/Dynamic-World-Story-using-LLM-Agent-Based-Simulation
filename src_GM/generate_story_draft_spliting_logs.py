@@ -1,13 +1,13 @@
 # story_from_chunks.py
+import config
 import time
 # Assuming create_llm_instance is in main.py or a utility file accessible.
 # If not, you'll need to define how your LLM model is initialized here.
+
 try:
     from main import create_llm_instance
 except ImportError:
     print("Warning: 'create_llm_instance' not found in main.py. Please ensure it's accessible or define LLM initialization here.")
-
-
 
 from story_generator import LLMChunkedStoryGenerator
 import config  # Assuming config.py has necessary settings
@@ -29,6 +29,8 @@ chunk_size = 64  # Number of log entries per chunk to process at a time
 
 print(
     f"Starting chunked story generation for '{log_file_to_process}' with chunk size {chunk_size}...")
+print(
+    f"--- PHASE 1: Generating Initial Story Draft by Chunking Logs from '{log_file_to_process}' ---")
 
 final_story = story_generator.generate_story(
     log_file_path=log_file_to_process,
@@ -37,8 +39,6 @@ final_story = story_generator.generate_story(
     chunk_size=chunk_size
 )
 
-print("\n--- FINAL CHUNKED GENERATED STORY (Printed to Console) ---")
-print(final_story)
-print("----------------------------------------------------------\n")
-
-# The story is also saved to "simulation_story_chunked.txt" by the generator itself.
+print("\n--- Initial Story Draft Generation Complete ---")
+print("The initial draft has been saved to 'Initial_Story_Draft.txt'.")
+print("To proceed, run the refinement script: python refine_story.py")
