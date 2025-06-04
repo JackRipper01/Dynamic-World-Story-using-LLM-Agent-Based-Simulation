@@ -662,7 +662,7 @@ Your Response (starting with either [CONTINUE_WRITING] or [STORY_COMPLETE] ):
 
     # Overriding the abstract method with a different signature, consistent with original file's implementation
 
-    def generate_story(self, log_file_path: str, agent_configs: list, narrative_goal: str, chunk_size: int = 10, max_story_context_tokens: int = 1500) -> str:
+    def generate_story(self, log_file_path: str, agent_configs: list, narrative_goal: str, chunk_size: int = 10) -> str:
         """
         Generates a story by processing simulation logs in chunks, iteratively building the narrative.
         After building the draft from chunks, it uses an iterative refinement process to conclude.
@@ -718,19 +718,19 @@ Your Response (starting with either [CONTINUE_WRITING] or [STORY_COMPLETE] ):
 
             events_text = "\n".join(current_chunk_events)
 
-            # Truncate story so far to fit context window
-            # A simple way to truncate is by characters, assuming ~4 chars per token.
-            # This is a rough estimate; for better accuracy, use a proper tokenizer.
-            truncated_story_context = full_story_draft
-            if len(truncated_story_context) > max_story_context_tokens * 4:  # Convert tokens to chars
-                truncated_story_context = truncated_story_context[-(
-                    max_story_context_tokens * 4):]
-                # Try to cut at a sentence boundary for better context
-                last_period_index = truncated_story_context.rfind('.')
-                if last_period_index != -1:
-                    truncated_story_context = truncated_story_context[last_period_index+1:].strip(
-                    )
-                truncated_story_context = "... " + truncated_story_context  # Indicate truncation
+            # # Truncate story so far to fit context window
+            # # A simple way to truncate is by characters, assuming ~4 chars per token.
+            # # This is a rough estimate; for better accuracy, use a proper tokenizer.
+            # truncated_story_context = full_story_draft
+            # if len(truncated_story_context) > max_story_context_tokens * 4:  # Convert tokens to chars
+            #     truncated_story_context = truncated_story_context[-(
+            #         max_story_context_tokens * 4):]
+            #     # Try to cut at a sentence boundary for better context
+            #     last_period_index = truncated_story_context.rfind('.')
+            #     if last_period_index != -1:
+            #         truncated_story_context = truncated_story_context[last_period_index+1:].strip(
+            #         )
+            #     truncated_story_context = "... " + truncated_story_context  # Indicate truncation
 
             chunk_prompt = f"""You are a master storyteller. You are currently building a narrative based on simulation logs, segment by segment.
 
@@ -742,7 +742,7 @@ Tone: {tone_prompt}
 {characters_summary}
 
 Story So Far (for context and continuity; DO NOT rewrite, just append to it smoothly. This is the narrative that has already been generated):
-{truncated_story_context if truncated_story_context else "No story written yet. Start with an engaging introduction for the overall narrative."}
+{full_story_draft if full_story_draft else "No story written yet. Start with an engaging introduction for the overall narrative."}
 
 Events for this segment (These are the *next* chronological events from the simulation log. Focus on narrating THESE events and seamlessly integrating them into the story):
 {events_text}
@@ -811,74 +811,4 @@ Your Story Segment:
         append_to_log_file("Initial_Story_Draft.txt",
                            "------------------------------------------\n")
 
-        # 4. Iterative Refinement and Conclusion (using the requested logic)
-        max_refinement_iterations = 3  # Safety break for the refinement loop
-        refinement_count = 0
-        final_story_result = full_story_draft  # Start with the chunked draft
-
-        print("\n--- Entering Iterative Refinement and Conclusion Phase ---")
-
-        while refinement_count < max_refinement_iterations:
-            refinement_count += 1
-            print(
-                f"\n--- Refinement Iteration {refinement_count}/{max_refinement_iterations} ---")
-
-            response_from_llm = self.refine_and_conclude_story(
-                current_story_so_far=final_story_result,  # Pass the current state of the story
-                agent_configs=agent_configs,
-                narrative_goal=narrative_goal
-            )
-
-            if "[ERROR]" in response_from_llm:
-                print("Error during story refinement. Stopping iteration.")
-                final_story_result = final_story_result  # Keep the last good draft
-                break
-
-            if response_from_llm.startswith("[STORY_COMPLETE]"):
-                final_story_result = response_from_llm[len(
-                    "[STORY_COMPLETE]"):].strip()
-                print(
-                    f"Story concluded after {refinement_count} refinement iterations.")
-                break
-            elif response_from_llm.startswith("[CONTINUE_WRITING]"):
-                new_segment = response_from_llm[len(
-                    "[CONTINUE_WRITING]"):].strip()
-                # Ensure new segment smoothly attaches
-                if final_story_result and not final_story_result.endswith(('.', '!', '?')) and new_segment and new_segment[0].isupper():
-                    final_story_result += ". "
-                elif final_story_result and not final_story_result.endswith(('.', '!', '?')) and new_segment and not new_segment[0].isupper():
-                    final_story_result += " "
-                final_story_result += new_segment
-                print("Story continued. Current total length:",
-                      len(final_story_result.split()), "words.")
-            else:
-                print(
-                    "Unexpected response format during refinement. Stopping iteration.")
-                break  # Exit loop on unexpected format
-
-            # Delay between refinement calls
-            time.sleep(config.LLM_CALL_DELAY if hasattr(
-                config, 'LLM_CALL_DELAY') else 5)
-
-        if refinement_count >= max_refinement_iterations and not response_from_llm.startswith("[STORY_COMPLETE]"):
-            print(
-                f"Max refinement iterations ({max_refinement_iterations}) reached. Story may be incomplete.")
-
-        print("--- Story Generation Complete ---")
-
-        # Save the final story
-        try:
-            output_filename = "simulation_story_chunked.txt"
-            with open(output_filename, "w", encoding="utf-8") as f:
-                f.write(
-                    f"Simulation Goal: {narrative_goal if narrative_goal else 'N/A'}\n")
-                f.write("Characters:\n")
-                for ac in agent_configs:
-                    f.write(f"  - {ac['name']}: {ac['identity']}\n")
-                f.write("\n--- FINAL STORY (Chunked & Iteratively Refined) ---\n")
-                f.write(final_story_result)
-            print(f"\n(Final story also saved to {output_filename})")
-        except Exception as e:
-            print(f"\n[Error] Could not save final story to file: {e}")
-
-        return final_story_result
+        return full_story_draft
