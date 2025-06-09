@@ -4,7 +4,6 @@ import random
 import time  # For pausing execution (e.g., between agent actions)
 # For type hinting lists (e.g., list of Agents)
 from typing import List, Optional
-from django import conf
 import google.generativeai as genai  # Google's Generative AI library
 import argparse  # For parsing command-line arguments
 

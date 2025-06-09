@@ -10,7 +10,7 @@ if not GEMINI_API_KEY:
         "Gemini API Key not found. Make sure it's set in the .env file.")
 
 # Model Name
-MODEL_NAME = "gemini-2.0-flash-lite"  # "gemini-pro"
+MODEL_NAME = "gemini-2.0-flash-lite" 
 
 # LLM Generation Settings
 GENERATION_CONFIG = {
