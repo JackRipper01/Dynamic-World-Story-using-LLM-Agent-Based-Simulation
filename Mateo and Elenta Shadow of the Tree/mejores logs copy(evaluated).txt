@@ -1,0 +1,160 @@
+Elena's turn in Elena's House:
+ Elena reaches out and touches the bark of the small fruit tree, closes her eyes, and whispers a silent prayer. Because Elena wants to connect with the tree and pray for its protection.
+
+
+Mateo's turn in Mateo's House:
+ Mateo takes a deep breath, unfolds the document, rereads the expansion plan, folds it, and seals it in his pocket. Because Mateo is reviewing and securing the expansion plan.
+
+
+Elena's turn in Elena's House:
+ Elena rises from her chair, walks slowly to the old wooden bench, and sits down. Because Elena intends to sit on the bench to contemplate and interact with her journal.
+
+
+Mateo's turn in Mateo's House:
+ Mateo puts on his muddy work boots. Because Mateo is preparing to work in the fields.
+
+
+Elena's turn in Elena's House:
+ Elena  : ""I will remember every leaf, every branch, every scar. Your history is mine, and I will keep it safe.""
+
+
+Mateo's turn in Mateo's House:
+ Mateo kicks at a clod of earth, sending a small puff of dust into the air. He then turns and looks at the Abuelo Ceibo, muttering to himself. Because Mateo is expressing his mixed feelings about felling the Abuelo Ceibo.
+
+
+Elena's turn in Elena's House:
+ Elena slowly rises from the bench, walks towards the porch, picks up the watering can, and begins to water the herbs. Because Elena wants to tend to her garden.
+
+
+Mateo's turn in Abuelo Ceibo:
+ Mateo walks towards the Abuelo Ceibo. Because Mateo is going to the Abuelo Ceibo to look at it.
+
+
+Elena's turn in Abuelo Ceibo:
+ Elena slowly walks towards the Abuelo Ceibo, her hand outstretched. Because Elena intends to interact with the Abuelo Ceibo and needs to move to its location first.
+
+
+Mateo's turn in Abuelo Ceibo:
+ Mateo to Elena, ""Elena, we need to talk. About the tree.""
+
+
+Elena's turn in Abuelo Ceibo:
+ Elena to Mateo, ""Mateo, what is there to talk about? You know this tree. It has been here longer than either of us. It is not yours to decide its fate.""
+
+
+Mateo's turn in Abuelo Ceibo:
+ Mateo to Elena, ""Elena, the legal documents are clear. The land belongs to my family. And the branches... they're a danger. They could fall, and someone could get hurt. We need to consider our responsibility here.""
+
+
+Elena's turn in Abuelo Ceibo:
+ Elena to Mateo, ""Danger? This tree *is* life, Mateo. It shelters us, it gives us air, it has watched over us for generations. Those documents… they are just words. The true measure of this land is not in lines on a paper, but in the memories we hold. This tree's branches are not a danger; they are a legacy, a promise of life. What do you truly plan to do?""
+
+
+Mateo's turn in Abuelo Ceibo:
+ Mateo to Elena, ""I point towards the fallen fruit, its flesh exposed. Life? Elena, look at this fruit. It's fallen, rotting. This tree isn't providing life, it's becoming a hazard. The new crop will bring prosperity, sustainability for our family, and a future. A future that the tree is now preventing us from building.""
+
+
+Elena's turn in Abuelo Ceibo:
+ Elena to Mateo, ""Is it only about the fruit, Mateo? Or is it about forgetting all the other fruits it has given? The shade in summer? The homes for the birds? The stories we tell beneath its branches? This tree gives us all of those things.""
+
+
+Mateo's turn in Abuelo Ceibo:
+ Mateo to Elena, ""Elena," I say, my voice softening slightly, "This isn't just about the fruit, or the shade, or even the birds. It's about the future. This device, this weather station, is a tool for predicting the best conditions for our crops. It helps us get a better yield, helps us feed our families. The tree's shadow disrupts the data, makes it less accurate. We""
+
+
+Elena's turn in Abuelo Ceibo:
+ Elena picks up the weather station, examining it before turning to Mateo. Because Elena wants to demonstrate the insignificance of the weather station compared to the tree.
+
+
+Mateo's turn in Abuelo Ceibo:
+ Mateo to Elena, ""Look, I understand. You care for the tree. I do too, in a way. But there are practical concerns. Tell me, Elena, have you considered what could happen if a branch falls? The responsibility would fall on both of us.""
+
+
+Elena's turn in Abuelo Ceibo:
+ Elena walks towards the axe. Because Elena wants to stand before the axe to make a point to Mateo.
+
+
+Mateo's turn in Abuelo Ceibo:
+ Mateo takes a step toward the tree, positioning himself between Elena and the axe. He hesitates before touching the trunk.
+
+
+Elena's turn in Abuelo Ceibo:
+ Elena reaches out and gently touches the wooden bird, then turns to Mateo and speaks. Because Elena wants to emphasize the importance of listening to nature and the tree's significance, before addressing Mateo.
+
+
+Mateo's turn in Abuelo Ceibo:
+ Mateo observes Elena’s actions.
+
+
+Elena's turn in Abuelo Ceibo:
+ Elena carefully picks up Mateo's Journal, flips to the drawing of the Abuelo Ceibo, touches the drawing, then looks up at Mateo. Because Elena wants to understand Mateo's perspective and initiate a conversation about the tree and the property dispute.
+
+
+Mateo's turn in Abuelo Ceibo:
+ Mateo picks up the pencil, carefully draws a new crop line on the survey map, and looks at Elena expectantly. Because Mateo wants to propose a compromise by redrawing the property line to accommodate the tree.
+
+
+Elena's turn in Abuelo Ceibo:
+ Elena to Mateo, ""Do you remember your Abuelo's stories, Mateo? The stories of the tree's resilience, its strength… and its *spirit*?""
+
+
+Mateo's turn in Abuelo Ceibo:
+ Mateo to Elena, ""Yes, Elena. I do. That's why I want to find a way to make this work. I remember Abuelo's stories. I remember what the tree means.""
+
+
+Elena's turn in Abuelo Ceibo:
+ Elena to Mateo, ""You remember the stories, yes? But do you *feel* them, Mateo? Feel the heart of the tree, beating in this valley as it always has, for us? Tell me, what does your heart say, looking at this drawing?""
+
+
+Mateo's turn in Abuelo Ceibo:
+ Mateo to Elena, ""My heart… My heart says that we can find a way to do both, Elena. To honor the tree, and to secure our future. It says… let’s try. Let’s really try.""
+
+Elena's turn in Abuelo Ceibo:
+ Elena smiles happily
+
+Mateo's turn in Abuelo Ceibo:
+ Mateo to Elena, ""Elena, look at the survey map. I brought it, it's in the scroll. The property lines, before the dispute. See if there's a way to adjust the crop line to still allow us the space to expand without hurting the tree. Let's look at the map together.""
+
+
+Elena's turn in Abuelo Ceibo:
+ Elena to Mateo, ""The lines on this paper... they are not as important as the lines etched on the bark of this tree, are they, Mateo? Let us look at the map first, but I want you to remember what is truly valuable here. What is truly *ours*.""
+
+
+Mateo's turn in Abuelo Ceibo:
+ Mateo to Elena, ""See, Elena? Before the dispute, the lines were different. Maybe, just maybe, we can adjust the planting area slightly, using these original lines. We could still get the space we need for the new crop, while respecting the tree. Let's see if it's even possible.""
+
+
+Elena's turn in Abuelo Ceibo:
+ Elena, her expression thoughtful, knelt and unfurled the ancient map, tracing the lines with a reverence that mirrored her connection to the land. She then looks at Mateo. Because Elena wants to interact with the map with Mateo.
+
+
+Mateo's turn in Abuelo Ceibo:
+ Mateo to Elena, ""Elena, if we can shift the crop line just a bit, it might allow us to have the space needed for the new crop. And we can avoid touching the tree. Look, it won't be easy, but maybe we can find a way to make this work. Let's see if we can make this map give us the answer, together.""
+
+
+Elena's turn in Abuelo Ceibo:
+ Elena to Mateo, ""Mateo, let us look at the map *together*. But first, promise me this: Promise me that we will remember the whispers of the wind, the songs of the birds, the very lifeblood this tree provides before deciding on anything.""
+
+
+Mateo's turn in Abuelo Ceibo:
+ Mateo to Elena, ""Elena, I promise. Before we make *any* decisions, we will listen to the whispers of the wind and the songs of the birds. I will also remember the lifeblood the tree provides. Now, let's look at the map, *together*. We'll see if there's a way to make this work for both of us.""
+
+
+Elena's turn in Abuelo Ceibo:
+ Elena reaches out and gently places her hand on the gnarled bark of the Abuelo Ceibo. Because Elena wants to connect with the tree and begin a conversation with Mateo.
+
+
+Mateo's turn in Abuelo Ceibo:
+ Mateo to Elena, ""Elena, let's trace the potential new crop line on the map. I brought my pencil. It’s sharp. If we move this line *here*," I say, pointing with the pencil, "we might gain the necessary space without jeopardizing the tree. It is just an idea, and it will require a lot of work.""
+
+Elena's turn in Abuelo Ceibo:
+ Elena to Mateo, ""The future is not only built with lines on a map, Mateo. It is built on the roots that run deep, the history that breathes around us... and the promise we make to each other, to *the tree*.""
+
+
+Mateo's turn in Abuelo Ceibo:
+ Mateo to Elena, ""You are right, Elena. The future is about more than lines on a map. But the map helps us *see* the roots, the history. It helps us find a compromise. And, yes... I promise the tree. Let's start with that promise. Let's build a future *together*, with the tree.""
+
+
+Elena's turn in Abuelo Ceibo:
+ Elena to Mateo, ""Let us not speak of compromise just yet, Mateo. Let us first touch the earth, and remember what we stand to lose... and what we stand to *gain* by honoring the old ways. Perhaps this stone will show us the right path.""
+
