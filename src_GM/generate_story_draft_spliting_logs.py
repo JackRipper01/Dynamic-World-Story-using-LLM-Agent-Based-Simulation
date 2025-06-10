@@ -23,7 +23,7 @@ story_generator = LLMChunkedStoryGenerator(llm, config.TONE)
 
 # Define parameters for chunked generation
 # Make sure this file exists and contains events
-log_file_to_process = "murderer_case_logs.txt"
+log_file_to_process = "mateo vs elena logs.txt"
 chunk_size = 64  # Number of log entries per chunk to process at a time
 # Max tokens from the 'story so far' to pass to the LLM for context
 

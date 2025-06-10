@@ -694,7 +694,31 @@ Your Response (starting with either [CONTINUE_WRITING] or [STORY_COMPLETE] ):
         all_raw_events = []
         try:
             with open(log_file_path, 'r', encoding='utf-8') as f:
-                all_raw_events = [line.strip() for line in f if line.strip()]
+                current_event_lines = []
+                for line in f:
+                    stripped_line = line.strip()
+
+                    # Skip entirely empty lines
+                    if not stripped_line:
+                        continue
+
+                    # Check if this line signals the start of a new event
+                    # Based on your log format, new events start with a line ending in ':'
+                    if stripped_line.endswith(':'):
+                        # If we've collected lines for a previous event, add it to our list
+                        if current_event_lines:
+                            all_raw_events.append(
+                                "\n".join(current_event_lines))
+                        # Start a new event with this line
+                        current_event_lines = [stripped_line]
+                    else:
+                        # This line is a continuation of the current event
+                        current_event_lines.append(stripped_line)
+
+                # After the loop, add the very last event if there are any pending lines
+                if current_event_lines:
+                    all_raw_events.append("\n".join(current_event_lines))
+
             if not all_raw_events:
                 print("No events found in the log file. Cannot generate story.")
                 return "No events were logged during the simulation, so no story could be generated."
@@ -716,21 +740,8 @@ Your Response (starting with either [CONTINUE_WRITING] or [STORY_COMPLETE] ):
             end_index = min((i + 1) * chunk_size, len(all_raw_events))
             current_chunk_events = all_raw_events[start_index:end_index]
 
+            print(f"START INDEX: {start_index} END INDEX: {end_index} ")
             events_text = "\n".join(current_chunk_events)
-
-            # # Truncate story so far to fit context window
-            # # A simple way to truncate is by characters, assuming ~4 chars per token.
-            # # This is a rough estimate; for better accuracy, use a proper tokenizer.
-            # truncated_story_context = full_story_draft
-            # if len(truncated_story_context) > max_story_context_tokens * 4:  # Convert tokens to chars
-            #     truncated_story_context = truncated_story_context[-(
-            #         max_story_context_tokens * 4):]
-            #     # Try to cut at a sentence boundary for better context
-            #     last_period_index = truncated_story_context.rfind('.')
-            #     if last_period_index != -1:
-            #         truncated_story_context = truncated_story_context[last_period_index+1:].strip(
-            #         )
-            #     truncated_story_context = "... " + truncated_story_context  # Indicate truncation
 
             chunk_prompt = f"""You are a master storyteller. You are currently building a narrative based on simulation logs, segment by segment.
 
