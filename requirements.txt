@@ -1,0 +1,25 @@
+# Core dependencies for Dynamic World Story LLM Agent-Based Simulation
+google-generativeai>=0.3.0
+python-dotenv>=1.0.0
+typing-extensions>=4.0.0
+
+# Optional dependencies for enhanced functionality
+matplotlib>=3.5.0  # For visualization
+seaborn>=0.11.0    # For enhanced plotting
+pandas>=1.3.0      # For data analysis
+numpy>=1.21.0      # For numerical operations
+rich>=12.0.0       # For enhanced console output
+click>=8.0.0       # For CLI interface
+pydantic>=2.0.0    # For data validation
+jsonschema>=4.0.0  # For configuration validation
+
+# Development dependencies
+pytest>=7.0.0      # For testing
+pytest-cov>=4.0.0  # For test coverage
+black>=22.0.0      # For code formatting
+flake8>=5.0.0      # For linting
+mypy>=1.0.0        # For type checking
+
+# Documentation dependencies
+sphinx>=5.0.0      # For documentation generation
+sphinx-rtd-theme>=1.0.0  # For documentation theme
